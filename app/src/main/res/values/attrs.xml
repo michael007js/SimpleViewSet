@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="SimpleProgressBar">
+        <!--文字区域最大宽度-->
+        <attr name="simple_progressbar_textMaxWidth" format="dimension" />
+        <!--进度条绘制区域高度-->
+        <attr name="simple_progressbar_progressHeight" format="dimension" />
+        <!--文字大小-->
+        <attr name="simple_progressbar_textSize" format="dimension" />
+        <!--文字-->
+        <attr name="simple_progressbar_text" format="string" />
+        <!--依附于前景或背景绘制-->
+        <attr name="simple_progressbar_attachToBackground" format="boolean" />
+        <!--文字与进度条之间的距离-->
+        <attr name="simple_progressbar_distance" format="dimension" />
+        <!--按百分比绘制-->
+        <attr name="simple_progressbar_isPercent" format="boolean" />
+        <!--圆角-->
+        <attr name="simple_progressbar_raduis" format="dimension" />
+        <!--总进度-->
+        <attr name="simple_progressbar_totalProgress" format="integer" />
+        <!--实时进度-->
+        <attr name="simple_progressbar_currentProgress" format="integer" />
+        <!--文字色-->
+        <attr name="simple_progressbar_textColor" format="color" />
+        <!--前景色-->
+        <attr name="simple_progressbar_foregroundColor" format="string" />
+        <!--背景色-->
+        <attr name="simple_progressbar_backgroundColor" format="color" />
+    </declare-styleable>
+</resources>
