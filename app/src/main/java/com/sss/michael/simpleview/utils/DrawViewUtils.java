@@ -6,6 +6,7 @@ import android.graphics.PathMeasure;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.text.TextPaint;
 
 import java.util.ArrayList;
@@ -410,6 +411,30 @@ public class DrawViewUtils {
      * @return 面积
      */
     public static double calculateOverlapArea(Rect rect1, Rect rect2) {
+        if (rect1 == null || rect2 == null) {
+            return -1;
+        }
+        double p1X = rect1.left, p1Y = rect1.top + rect1.height();
+        double p2X = p1X + rect1.width(), p2Y = p1Y + rect1.height();
+        double p3X = rect2.left, p3Y = rect2.top + rect2.height();
+        double p4X = p3X + rect2.width(), p4Y = p3Y + rect2.height();
+
+        if (p1X > p4X || p2X < p3X || p1Y > p4Y || p2Y < p3Y) {
+            return 0;
+        }
+        double length = Math.min(p2X, p4X) - Math.max(p1X, p3X);
+        double width = Math.min(p2Y, p4Y) - Math.max(p1Y, p3Y);
+        return length * width;
+    }
+
+    /**
+     * 获取两个矩形的相交面积
+     *
+     * @param rect1 矩形
+     * @param rect2 矩形
+     * @return 面积
+     */
+    public static double calculateOverlapAreaF(RectF rect1, RectF rect2) {
         if (rect1 == null || rect2 == null) {
             return -1;
         }
