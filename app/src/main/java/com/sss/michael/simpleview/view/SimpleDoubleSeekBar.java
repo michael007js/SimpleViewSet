@@ -8,11 +8,14 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.Shader;
+import android.graphics.Typeface;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
 import com.sss.michael.simpleview.utils.DensityUtil;
+import com.sss.michael.simpleview.utils.DrawViewUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -112,6 +115,54 @@ public class SimpleDoubleSeekBar extends View {
      * 滑块内部颜色
      */
     private int sliderInnerColor = Color.parseColor("#FFFFFF");
+    /**
+     * 滑块条顶部文字
+     */
+    private String sliderLeftText = "", sliderRightText = "";
+    /**
+     * 滑块条顶部文字颜色
+     */
+    private int sliderTextColor = Color.parseColor("#212121");
+    /**
+     * 滑块条顶部文字大小
+     */
+    private float sliderTextSize = DensityUtil.sp2px(14f);
+    /**
+     * 滑块条顶部文字字体
+     */
+    private Typeface sliderTextStyle = Typeface.DEFAULT_BOLD;
+    /**
+     * 滑块条顶部文字与滑块条间距
+     */
+    private float distanceBetweenSliderTextAndSeek = DensityUtil.dp2px(5f);
+    /**
+     * 滑块条两边文字
+     */
+    private String sideLeftText = "", sideRightText = "";
+    /**
+     * 滑块条两边文字颜色
+     */
+    private int sideTextColor = Color.parseColor("#4A4A4A");
+    /**
+     * 滑块条两边文字大小
+     */
+    private float sideTextSize = DensityUtil.sp2px(12f);
+    /**
+     * 滑块条两边文字字体
+     */
+    private Typeface sideTextStyle = Typeface.DEFAULT;
+    /**
+     * 滑块条两边文字与滑块条间距
+     */
+    private float distanceBetweenSideTextAndSeek = DensityUtil.dp2px(10f);
+    /**
+     * 文字尺寸
+     */
+    private float[] sideLeftTextSize = new float[]{0, 0}, sideRightTextSize = new float[]{0, 0}, sliderLeftTextSize = new float[]{0, 0}, sliderRightTextSize = new float[]{0, 0};
+    /**
+     * 是否显示文字
+     */
+    private boolean isShowTextMode = true;
 
     private OnSimpleDoubleSeekBarCallBack onSimpleDoubleSeekBarCallBack;
 
@@ -133,9 +184,11 @@ public class SimpleDoubleSeekBar extends View {
 
     private List<RectF> rectFList = new ArrayList<>();
 
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
         width = MeasureSpec.getSize(widthMeasureSpec);
         height = MeasureSpec.getSize(heightMeasureSpec);
         if (height == 0) {
@@ -144,21 +197,52 @@ public class SimpleDoubleSeekBar extends View {
         }
         centerPoint.set(width / 2, height / 2);
 
-        float totalEffectiveWidth = width - sliderRadius - sliderRadius;
+        paint.setTextSize(sideTextSize);
+        paint.setTypeface(sideTextStyle);
+        sideLeftTextSize = DrawViewUtils.getTextWHF(paint, sideLeftText);
+        sideRightTextSize = DrawViewUtils.getTextWHF(paint, sideRightText);
+        paint.setTextSize(sliderTextSize);
+        paint.setTypeface(sliderTextStyle);
+        sliderLeftTextSize = DrawViewUtils.getTextWHF(paint, sliderLeftText);
+        sliderRightTextSize = DrawViewUtils.getTextWHF(paint, sliderRightText);
+
+
+        if (isShowTextMode) {
+            backgroundArea.left = distanceBetweenSideTextAndSeek + sideLeftTextSize[0];
+            backgroundArea.right = width - distanceBetweenSideTextAndSeek - sideRightTextSize[0];
+        } else {
+            backgroundArea.left = 0;
+            backgroundArea.right = width;
+        }
+        backgroundArea.top = centerPoint.y - backgroundHeight / 2;
+        backgroundArea.bottom = centerPoint.y + backgroundHeight / 2;
+
+        float totalEffectiveWidth = backgroundArea.width() - sliderRadius * 2;
+
+
         eachPercentByWidth = totalEffectiveWidth / 100;
         rectFList.clear();
         for (int i = 0; i < 100; i++) {
             RectF rectF = new RectF();
-            rectF.left = (i == 0) ? 0 : sliderRadius + eachPercentByWidth * (i + 1);
+            if (isShowTextMode) {
+                if (i == 0) {
+                    rectF.left = backgroundArea.left + sliderRadius;
+                    rectF.right = backgroundArea.left + eachPercentByWidth + sliderRadius;
+                } else {
+                    rectF.left = rectFList.get(rectFList.size() - 1).right;
+                    rectF.right = rectFList.get(rectFList.size() - 1).right + eachPercentByWidth;
+                }
+
+
+            } else {
+                rectF.left = (i == 0) ? backgroundArea.left : sliderRadius + eachPercentByWidth * (i + 1);
+                rectF.right = rectF.left + eachPercentByWidth;
+            }
             rectF.top = 0;
-            rectF.right = rectF.left + eachPercentByWidth;
             rectF.bottom = height;
             rectFList.add(rectF);
         }
-        backgroundArea.left = 0;
-        backgroundArea.top = centerPoint.y - backgroundHeight / 2;
-        backgroundArea.right = width;
-        backgroundArea.bottom = centerPoint.y + backgroundHeight / 2;
+
         calc();
     }
 
@@ -185,6 +269,22 @@ public class SimpleDoubleSeekBar extends View {
         canvas.drawCircle(currentRightPoint.x, currentRightPoint.y, sliderRadius, paint);
         paint.setColor(sliderInnerColor);
         canvas.drawCircle(currentRightPoint.x, currentRightPoint.y, sliderRadius - sliderStrokeWidth, paint);
+        if (isShowTextMode) {
+            paint.setColor(sideTextColor);
+            paint.setTextSize(sideTextSize);
+            paint.setTypeface(sideTextStyle);
+            paint.setTextAlign(Paint.Align.LEFT);
+            canvas.drawText(sideLeftText, backgroundArea.left - distanceBetweenSideTextAndSeek - sideLeftTextSize[0], centerPoint.y + sideLeftTextSize[1] / 3, paint);
+            canvas.drawText(sideRightText, backgroundArea.left + backgroundArea.width() + distanceBetweenSideTextAndSeek, centerPoint.y + sideRightTextSize[1] / 3, paint);
+
+            paint.setColor(sliderTextColor);
+            paint.setTextSize(sliderTextSize);
+            paint.setTypeface(sliderTextStyle);
+            paint.setTextAlign(Paint.Align.CENTER);
+            canvas.drawText(sliderLeftText, currentLeftPoint.x, currentLeftPoint.y - sliderLeftTextSize[1] - distanceBetweenSliderTextAndSeek, paint);
+            canvas.drawText(sliderRightText, currentRightPoint.x, currentRightPoint.y - sliderLeftTextSize[1] - distanceBetweenSliderTextAndSeek, paint);
+        }
+
     }
 
     /**
@@ -227,7 +327,12 @@ public class SimpleDoubleSeekBar extends View {
                     lastX = event.getX();
                     for (int i = 0; i < rectFList.size(); i++) {
                         if (rectFList.get(i).contains(event.getX(), event.getY())) {
-                            currentMinPosition = i == 0 ? 0 : (i + 1 + percent);
+                            if (isShowTextMode) {
+                                Log.e("SSSSS", i + "");
+                                currentMinPosition = i == 0 ? percent : (i + 1 + percent);
+                            } else {
+                                currentMinPosition = i == 0 ? 0 : (i + 1 + percent);
+                            }
                             calc();
                             invalidate();
                             break;
@@ -279,9 +384,13 @@ public class SimpleDoubleSeekBar extends View {
      * 左右滑块碰撞纠正
      */
     public void correctPosition() {
-        currentLeftPoint.set(eachPercentByWidth * currentMinPosition + sliderRadius, height / 2);
-        currentRightPoint.set(eachPercentByWidth * currentMaxPosition + sliderRadius, height / 2);
-
+        if (isShowTextMode) {
+            currentLeftPoint.set(eachPercentByWidth * currentMinPosition + sliderRadius + sideLeftTextSize[0] + distanceBetweenSideTextAndSeek, height / 2);
+            currentRightPoint.set(eachPercentByWidth * currentMaxPosition + sliderRadius + sideLeftTextSize[0] + distanceBetweenSideTextAndSeek, height / 2);
+        } else {
+            currentLeftPoint.set(eachPercentByWidth * currentMinPosition + sliderRadius, height / 2);
+            currentRightPoint.set(eachPercentByWidth * currentMaxPosition + sliderRadius, height / 2);
+        }
         //实时最大值出界纠正
         if (currentMaxPosition > 100f && effectiveRightTouch) {
             currentMaxPosition -= 0.01f;
@@ -309,6 +418,10 @@ public class SimpleDoubleSeekBar extends View {
             currentMaxPosition += 0.1f;
             correctPosition();
         }
+        sliderLeftText = String.valueOf(Math.round(currentMinPosition * eachPercentByValue) + minValue);
+        sliderRightText = String.valueOf(Math.round(currentMaxPosition * eachPercentByValue) + minValue);
+        sideLeftText = String.valueOf(minValue);
+        sideRightText = String.valueOf(maxValue);
     }
 
     private LinearGradient linearGradient;
