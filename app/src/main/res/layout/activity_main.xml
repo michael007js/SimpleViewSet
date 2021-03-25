@@ -18,6 +18,10 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
+            <com.sss.michael.simpleview.view.SimpleAutoScrollInfiniteLoopView
+                android:layout_width="match_parent"
+                android:layout_height="250dp"/>
+
             <com.sss.michael.simpleview.view.SimpleDoubleSeekBar
                 android:id="@+id/simpleDoubleSeekBar"
                 android:layout_width="match_parent"
