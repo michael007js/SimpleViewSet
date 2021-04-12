@@ -8,7 +8,6 @@
     tools:context=".MainActivity">
 
 
-
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -18,14 +17,27 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="300dp">
+
+                <com.sss.michael.simpleview.view.SimpleTableView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+            </FrameLayout>
+
+
+
             <com.sss.michael.simpleview.view.SimpleAutoScrollInfiniteLoopView
                 android:layout_width="match_parent"
-                android:layout_height="250dp"/>
+                android:layout_height="250dp" />
 
             <com.sss.michael.simpleview.view.SimpleDoubleSeekBar
                 android:id="@+id/simpleDoubleSeekBar"
                 android:layout_width="match_parent"
                 android:layout_height="150dp" />
+
             <com.sss.michael.simpleview.view.SimpleHalfPieChart
                 android:id="@+id/simpleHalfPieChart"
                 android:layout_width="match_parent"
