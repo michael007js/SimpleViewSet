@@ -3,11 +3,11 @@ package com.sss.michael.simpleview;
 import android.animation.ValueAnimator;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 
 import com.sss.michael.simpleview.view.SimpleDoubleSeekBar;
+import com.sss.michael.simpleview.view.SimpleDoubleSeekBar2;
 import com.sss.michael.simpleview.view.SimpleHalfPieChart;
 import com.sss.michael.simpleview.view.SimpleLinearChart;
 import com.sss.michael.simpleview.view.SimpleProgressBar;
@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     private SimpleProgressBar simpleProgressBar;
     private SimpleRotatingView simpleRotatingView;
     private SimpleDoubleSeekBar simpleDoubleSeekBar;
+    private SimpleDoubleSeekBar2 simpleDoubleSeekBar2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,6 +104,15 @@ public class MainActivity extends AppCompatActivity {
         simpleDoubleSeekBar = findViewById(R.id.simpleDoubleSeekBar);
         simpleDoubleSeekBar.setData(false,100, 300, 50, 300);
         simpleDoubleSeekBar.setOnSimpleDoubleSeekBarCallBack(new SimpleDoubleSeekBar.OnSimpleDoubleSeekBarCallBack() {
+            @Override
+            public void onValueChanged(int currentMinValue, int currentMaxValue, float currentMinPosition, float currentMaxPosition) {
+//                Log.e("SSS", "CMinV:" + currentMinValue + ",CMaxV:" + currentMaxValue + ",MinP:" + currentMinPosition + ",MaxP:" + currentMaxPosition);
+            }
+        });
+
+        simpleDoubleSeekBar2 = findViewById(R.id.simpleDoubleSeekBar2);
+        simpleDoubleSeekBar2.setData(true,100, 300, 50, 300);
+        simpleDoubleSeekBar2.setOnSimpleDoubleSeekBarCallBack(new SimpleDoubleSeekBar2.OnSimpleDoubleSeekBar2CallBack() {
             @Override
             public void onValueChanged(int currentMinValue, int currentMaxValue, float currentMinPosition, float currentMaxPosition) {
 //                Log.e("SSS", "CMinV:" + currentMinValue + ",CMaxV:" + currentMaxValue + ",MinP:" + currentMinPosition + ",MaxP:" + currentMaxPosition);
