@@ -17,6 +17,12 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
+            <com.sss.michael.simpleview.view.SimpleArrowTagView
+                android:layout_marginStart="50dp"
+                android:layout_marginEnd="50dp"
+                android:layout_width="30dp"
+                android:layout_height="20dp"/>
+
 
             <com.sss.michael.simpleview.view.SimpleDoubleSeekBar2
                 android:id="@+id/simpleDoubleSeekBar2"
