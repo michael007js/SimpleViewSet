@@ -5,16 +5,18 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.PopupWindow;
 
 import com.sss.michael.simpleview.utils.DensityUtil;
-import com.sss.michael.simpleview.utils.DrawViewUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -139,13 +141,6 @@ public class SimpleDoubleSeekBar2 extends View {
      */
     private RectF leftSliderRect = new RectF(), rightSliderRect = new RectF();
     /**
-     * 前景区域
-     */
-    /**
-     * 文字尺寸
-     */
-    private float[] sliderLeftTextSize = new float[]{0, 0}, sliderRightTextSize = new float[]{0, 0};
-    /**
      * 是否浮动文字
      */
     private boolean isShowFloatText = true;
@@ -189,8 +184,6 @@ public class SimpleDoubleSeekBar2 extends View {
 
         paint.setTextSize(sliderTextSize);
         paint.setTypeface(sliderTextStyle);
-        sliderLeftTextSize = DrawViewUtils.getTextWHF(paint, sliderLeftText);
-        sliderRightTextSize = DrawViewUtils.getTextWHF(paint, sliderRightText);
 
 
         backgroundArea.left = 0;
@@ -217,7 +210,7 @@ public class SimpleDoubleSeekBar2 extends View {
             rectFList.add(rectF);
         }
 
-        calc();
+        calc(false);
     }
 
 
@@ -295,7 +288,7 @@ public class SimpleDoubleSeekBar2 extends View {
                     for (int i = 0; i < rectFList.size(); i++) {
                         if (rectFList.get(i).contains(event.getX(), event.getY())) {
                             currentMinPosition = i == 0 ? percent : (i + 1 + percent);
-                            calc();
+                            calc(true);
                             invalidate();
                             break;
                         }
@@ -308,7 +301,7 @@ public class SimpleDoubleSeekBar2 extends View {
                     for (int i = 0; i < rectFList.size(); i++) {
                         if (rectFList.get(i).contains(event.getX(), event.getY())) {
                             currentMaxPosition = i == rectFList.size() - 1 ? 100 : (i + 1 + percent);
-                            calc();
+                            calc(true);
                             invalidate();
                             break;
                         }
@@ -318,7 +311,12 @@ public class SimpleDoubleSeekBar2 extends View {
             case MotionEvent.ACTION_UP:
                 effectiveLeftTouch = false;
                 effectiveRightTouch = false;
+                calc(true);
+                break;
             default:
+                effectiveLeftTouch = false;
+                effectiveRightTouch = false;
+
         }
         if (effectiveLeftTouch || effectiveRightTouch) {
             return true;
@@ -380,13 +378,31 @@ public class SimpleDoubleSeekBar2 extends View {
     }
 
     private LinearGradient linearGradient;
+    private PopupWindow popWindow;
 
     /**
      * 计算各组件绘制位置
      */
-    private void calc() {
+    private void calc(boolean touchFromUser) {
         correctPosition();
         if (onSimpleDoubleSeekBarCallBack != null) {
+            if (popWindow == null) {
+                popWindow = new PopupWindow(this);
+                popWindow.setContentView(new SimplePopView(getContext()));
+                popWindow.setWidth(DensityUtil.dp2px(40));
+                popWindow.setHeight(DensityUtil.dp2px(30));
+                popWindow.getContentView().setVisibility(touchFromUser ? VISIBLE : INVISIBLE);
+            }
+            popWindow.dismiss();
+            if (effectiveLeftTouch) {
+                popWindow.getContentView().setVisibility(VISIBLE);
+                popWindow.showAsDropDown(this, (int) currentLeftPoint.x - popWindow.getContentView().getWidth() / 2, 0 - popWindow.getContentView().getHeight() - getHeight());
+            } else if (effectiveRightTouch) {
+                popWindow.getContentView().setVisibility(VISIBLE);
+                popWindow.showAsDropDown(this, (int) currentRightPoint.x - popWindow.getContentView().getWidth() / 2, 0 - popWindow.getContentView().getHeight() - getHeight());
+            } else {
+                popWindow.getContentView().setVisibility(INVISIBLE);
+            }
             onSimpleDoubleSeekBarCallBack.onValueChanged(Math.round(currentMinPosition * eachPercentByValue) + minValue, Math.round(currentMaxPosition * eachPercentByValue) + minValue, currentMinPosition, currentMaxPosition);
         }
         foregroundArea.left = currentLeftPoint.x;
@@ -453,11 +469,72 @@ public class SimpleDoubleSeekBar2 extends View {
 
         currentMinPosition = (this.currentMinValue - this.minValue) / eachPercentByValue;
         currentMaxPosition = (this.currentMaxValue - this.minValue) / eachPercentByValue;
-        calc();
+        calc(false);
         invalidate();
     }
 
     public interface OnSimpleDoubleSeekBar2CallBack {
         void onValueChanged(int currentMinValue, int currentMaxValue, float currentMinPosition, float currentMaxPosition);
+    }
+
+
+    public class SimplePopView extends View {
+        private int color = Color.parseColor("#aa000000");
+        private Path path = new Path();
+        private Paint paint = new Paint();
+
+        {
+            paint.setAntiAlias(true);
+        }
+
+        private int triangleHeight = DensityUtil.dp2px(4);
+        private int width = DensityUtil.dp2px(40);
+        private int height = DensityUtil.dp2px(30);
+
+        public SimplePopView(Context context) {
+            super(context);
+        }
+
+        public SimplePopView(Context context, @Nullable AttributeSet attrs) {
+            super(context, attrs);
+        }
+
+        public SimplePopView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+            super(context, attrs, defStyleAttr);
+        }
+
+        @Override
+        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+            setMeasuredDimension(width, height);
+        }
+
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            super.onDraw(canvas);
+            paint.setColor(color);
+            canvas.drawRoundRect(0, 0, width, height - triangleHeight, height - triangleHeight, height - triangleHeight, paint);
+            path.reset();
+            path.moveTo(getWidth() / 2 - triangleHeight, height - triangleHeight);
+            path.lineTo(getWidth() / 2 - triangleHeight, height - triangleHeight);
+            path.lineTo(getWidth() / 2 + triangleHeight, height - triangleHeight);
+            path.lineTo(getWidth() / 2, height);
+            path.lineTo(getWidth() / 2 - triangleHeight, height - triangleHeight);
+            path.close();
+            canvas.drawPath(path, paint);
+            paint.setTextSize(DensityUtil.sp2px(12f));
+            paint.setColor(Color.WHITE);
+            paint.setTextAlign(Paint.Align.CENTER);
+            if (isInTouchMode()) {
+                if (effectiveLeftTouch) {
+                    canvas.drawText(String.valueOf(Math.round(currentMinPosition * eachPercentByValue) + minValue), width / 2, height / 2, paint);
+                } else {
+                    canvas.drawText(String.valueOf(Math.round(currentMaxPosition * eachPercentByValue) + minValue), width / 2, height / 2, paint);
+                }
+
+            }
+        }
+
     }
 }

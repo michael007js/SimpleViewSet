@@ -17,17 +17,29 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <com.sss.michael.simpleview.view.SimpleArrowTagView
-                android:layout_marginStart="50dp"
-                android:layout_marginEnd="50dp"
-                android:layout_width="30dp"
-                android:layout_height="20dp"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <com.sss.michael.simpleview.view.SimpleArrowTagView
+
+                    android:layout_width="30dp"
+                    android:layout_height="20dp" />
+
+                <com.sss.michael.simpleview.view.SimpleArrowTagView2
+
+                    android:layout_width="30dp"
+                    android:layout_height="20dp" />
+
+            </LinearLayout>
 
 
             <com.sss.michael.simpleview.view.SimpleDoubleSeekBar2
                 android:id="@+id/simpleDoubleSeekBar2"
                 android:layout_width="match_parent"
-                android:layout_height="150dp" />
+                android:layout_height="wrap_content" />
 
 
             <FrameLayout
@@ -39,7 +51,6 @@
                     android:layout_height="wrap_content" />
 
             </FrameLayout>
-
 
 
             <com.sss.michael.simpleview.view.SimpleAutoScrollInfiniteLoopView
