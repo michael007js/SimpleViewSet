@@ -148,6 +148,14 @@ public class SimpleDoubleSeekBar2 extends View {
      * 是否显示滑块条中间文字
      */
     private boolean isShowSliderText = true;
+    /**
+     * 左滑块长度
+     */
+    private int leftSlideLength = DensityUtil.dp2px(7.5f);
+    /**
+     * 右滑块长度
+     */
+    private int rightSlideLength = DensityUtil.dp2px(7.5f);
 
     private OnSimpleDoubleSeekBar2CallBack onSimpleDoubleSeekBarCallBack;
 
@@ -240,8 +248,8 @@ public class SimpleDoubleSeekBar2 extends View {
             paint.setTextSize(sliderTextSize);
             paint.setTypeface(sliderTextStyle);
             paint.setTextAlign(Paint.Align.CENTER);
-            canvas.drawText(sliderLeftText, currentLeftPoint.x, currentLeftPoint.y + DensityUtil.dp2px(2.5f), paint);
-            canvas.drawText(sliderRightText, currentRightPoint.x, currentRightPoint.y + DensityUtil.dp2px(2.5f), paint);
+            canvas.drawText(sliderLeftText, currentLeftPoint.x + leftSlideLength , currentLeftPoint.y + DensityUtil.dp2px(2.5f), paint);
+            canvas.drawText(sliderRightText, currentRightPoint.x - rightSlideLength , currentRightPoint.y + DensityUtil.dp2px(2.5f), paint);
         }
 
 
@@ -331,10 +339,10 @@ public class SimpleDoubleSeekBar2 extends View {
      * @return 左滑块返回1 右滑块返回2 不在返回-1
      */
     private int isInclude(float x, float y) {
-        if (x > currentLeftPoint.x - sliderRadius && y > currentLeftPoint.y - sliderRadius && x < currentLeftPoint.x + sliderRadius && y < currentLeftPoint.y + sliderRadius) {
+        if (x > currentLeftPoint.x - sliderRadius - leftSlideLength && y > currentLeftPoint.y - sliderRadius && x < currentLeftPoint.x + sliderRadius + leftSlideLength && y < currentLeftPoint.y + sliderRadius) {
             return 1;
         }
-        if (x > currentRightPoint.x - sliderRadius && y > currentRightPoint.y - sliderRadius && x < currentRightPoint.x + sliderRadius && y < currentRightPoint.y + sliderRadius) {
+        if (x > currentRightPoint.x - sliderRadius - rightSlideLength && y > currentRightPoint.y - sliderRadius && x < currentRightPoint.x + sliderRadius + rightSlideLength && y < currentRightPoint.y + sliderRadius) {
             return 2;
         }
         return -1;
@@ -396,10 +404,10 @@ public class SimpleDoubleSeekBar2 extends View {
             popWindow.dismiss();
             if (effectiveLeftTouch) {
                 popWindow.getContentView().setVisibility(VISIBLE);
-                popWindow.showAsDropDown(this, (int) currentLeftPoint.x - popWindow.getContentView().getWidth() / 2, 0 - popWindow.getContentView().getHeight() - getHeight());
+                popWindow.showAsDropDown(this, (int) currentLeftPoint.x - popWindow.getContentView().getWidth() / 2 + leftSlideLength , 0 - popWindow.getContentView().getHeight() - getHeight());
             } else if (effectiveRightTouch) {
                 popWindow.getContentView().setVisibility(VISIBLE);
-                popWindow.showAsDropDown(this, (int) currentRightPoint.x - popWindow.getContentView().getWidth() / 2, 0 - popWindow.getContentView().getHeight() - getHeight());
+                popWindow.showAsDropDown(this, (int) currentRightPoint.x - popWindow.getContentView().getWidth() / 2 - rightSlideLength , 0 - popWindow.getContentView().getHeight() - getHeight());
             } else {
                 popWindow.getContentView().setVisibility(INVISIBLE);
             }
@@ -411,17 +419,17 @@ public class SimpleDoubleSeekBar2 extends View {
         foregroundArea.bottom = centerPoint.y + foregroundHeight / 2;
 
         leftSliderRect.set(
-                currentLeftPoint.x - DensityUtil.dp2px(7.5f) - sliderRadius,
+                Math.max(currentLeftPoint.x - leftSlideLength - sliderRadius + leftSlideLength ,0),
                 currentLeftPoint.y - DensityUtil.dp2px(1) - sliderRadius,
-                currentLeftPoint.x + DensityUtil.dp2px(7.5f) + sliderRadius,
+                currentLeftPoint.x + leftSlideLength + sliderRadius + leftSlideLength ,
                 currentLeftPoint.y + DensityUtil.dp2px(1) + sliderRadius
 
         );
 
         rightSliderRect.set(
-                currentRightPoint.x - DensityUtil.dp2px(7.5f) - sliderRadius,
+                currentRightPoint.x - rightSlideLength - sliderRadius - rightSlideLength ,
                 currentRightPoint.y - DensityUtil.dp2px(1) - sliderRadius,
-                currentRightPoint.x + DensityUtil.dp2px(7.5f) + sliderRadius,
+                currentRightPoint.x + rightSlideLength + sliderRadius - rightSlideLength ,
                 currentRightPoint.y + DensityUtil.dp2px(1) + sliderRadius
 
         );
