@@ -7,4 +7,16 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <declare-styleable name="SimpleReboundEffectsView">
+        <!--滑动的速度如果大于此值，将拦截该次滑动事件,如果未负数，则关闭该功能-->
+        <attr name="sre_interceptSlideScope" format="dimension" />
+        <!-- 衰减度 越大滑动越困难-->
+        <attr name="sre_attenuation" format="integer" />
+        <!--0全部 1手指向上滑动 2手指向下滑动-->
+        <attr name="sre_orientation">
+            <enum name="portrait_all" value="0" />
+            <enum name="portrait_up" value="1" />
+            <enum name="portrait_down" value="2" />
+        </attr>
+    </declare-styleable>
 </resources>
