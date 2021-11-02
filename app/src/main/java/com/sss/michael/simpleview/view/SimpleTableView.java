@@ -134,12 +134,12 @@ public class SimpleTableView<T> extends View {
             });
             List<SimpleTableViewBean> content = new ArrayList<>();
             for (int i = 0; i < 50; i++) {
-                content.add(new SimpleTableViewBean(200  + ""));
+                content.add(new SimpleTableViewBean(200 + ""));
                 content.add(new SimpleTableViewBean(201 + ""));
-                content.add(new SimpleTableViewBean(202 + ""));
+                content.add(new SimpleTableViewBean(202 + "-/202/202"));
                 content.add(new SimpleTableViewBean(203 + ""));
                 content.add(new SimpleTableViewBean(204 + ""));
-                content.add(new SimpleTableViewBean(205 + ""));
+                content.add(new SimpleTableViewBean(205 + "/-/205"));
                 content.add(new SimpleTableViewBean(206 + ""));
                 content.add(new SimpleTableViewBean(207 + ""));
                 content.add(new SimpleTableViewBean(208 + ""));
@@ -162,6 +162,21 @@ public class SimpleTableView<T> extends View {
             list.get(i).size = size;
             int[] position = getPosition(i);
             list.get(i).position = position;
+        }
+
+        //取同一列最大宽度
+        List<Float> sizes = new ArrayList<>();
+        for (int i = 0; i < columnCount; i++) {
+            paint.setTextSize(list.get(i).textSize);
+            sizes.add(DrawViewUtils.getTextWHF(paint, getValueByPosition(i))[0]);
+        }
+        for (int i = 0; i < list.size(); i++) {
+            paint.setTextSize(list.get(i).textSize);
+            float maxWidth = Math.max(sizes.get(list.get(i).position[0]), DrawViewUtils.getTextWHF(paint, getValueByPosition(i))[0]);
+            sizes.set(list.get(i).position[0], maxWidth);
+        }
+
+        for (int i = 0; i < list.size(); i++) {
             //计算cell的X轴反向是否为可拖动
             for (int j = 0; j < disableColumn.length; j++) {
                 if (list.get(i).position[0] == disableColumn[j]) {
@@ -170,16 +185,12 @@ public class SimpleTableView<T> extends View {
             }
             list.get(i).yCanSlide = list.get(i).position[1] != 0;
 
-            if (i == 0) {
+            if (list.get(i).position[0] % columnCount == 0) {
                 list.get(i).realTimeRectF.left = 0 + getPaddingStart();
             } else {
-                if (position[0] % columnCount == 0) {
-                    list.get(i).realTimeRectF.left = 0 + getPaddingStart();
-                } else {
-                    list.get(i).realTimeRectF.left = list.get(i - 1).realTimeRectF.left + getMaxTextWidthForColumn(i - 1) + paddingLeft + paddingRight;
-                }
+                list.get(i).realTimeRectF.left = list.get(i - 1).realTimeRectF.left + sizes.get(list.get(i-1).position[0])/*getMaxTextWidthForColumn(i - 1)*/ + paddingLeft + paddingRight;
             }
-            list.get(i).realTimeRectF.right = list.get(i).realTimeRectF.left + getMaxTextWidthForColumn(i) + paddingLeft + paddingRight;
+            list.get(i).realTimeRectF.right = list.get(i).realTimeRectF.left + sizes.get(list.get(i).position[0])/*getMaxTextWidthForColumn(i)*/ + paddingLeft + paddingRight;
             //统计第一行宽度
             if (i < columnCount) {
                 measureWidth = (int) (measureWidth + list.get(i).realTimeRectF.width());
@@ -188,13 +199,13 @@ public class SimpleTableView<T> extends View {
             if (i == 0) {
                 list.get(i).realTimeRectF.top = 0 + getPaddingTop();
             } else {
-                if (position[0] == 0) {
-                    list.get(i).realTimeRectF.top = list.get(i - 1).realTimeRectF.top + size[1] + paddingTop + paddingBottom;
+                if (list.get(i).position[0] == 0) {
+                    list.get(i).realTimeRectF.top = list.get(i - 1).realTimeRectF.top + list.get(i).size[1] + paddingTop + paddingBottom;
                 } else {
                     list.get(i).realTimeRectF.top = list.get(i - 1).realTimeRectF.top;
                 }
             }
-            list.get(i).realTimeRectF.bottom = list.get(i).realTimeRectF.top + size[1] + paddingTop + paddingBottom;
+            list.get(i).realTimeRectF.bottom = list.get(i).realTimeRectF.top + list.get(i).size[1] + paddingTop + paddingBottom;
 
             if (MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.AT_MOST) {
                 measureHeight = MeasureSpec.getSize(heightMeasureSpec);
@@ -454,7 +465,8 @@ public class SimpleTableView<T> extends View {
                 paint.setStyle(Paint.Style.FILL);
                 canvas.drawRect(list.get(i).realTimeRectF, paint);
 
-                paint.setColor(Color.BLACK);
+                paint.setColor(list.get(i).lineColor);
+                paint.setStrokeWidth(list.get(i).lineWidth);
                 paint.setStyle(Paint.Style.STROKE);
                 canvas.drawRect(list.get(i).realTimeRectF, paint);
 
@@ -478,7 +490,8 @@ public class SimpleTableView<T> extends View {
                 paint.setStyle(Paint.Style.FILL);
                 canvas.drawRect(list.get(i).realTimeRectF, paint);
 
-                paint.setColor(Color.BLACK);
+                paint.setColor(list.get(i).lineColor);
+                paint.setStrokeWidth(list.get(i).lineWidth);
                 paint.setStyle(Paint.Style.STROKE);
                 canvas.drawRect(list.get(i).realTimeRectF, paint);
 
@@ -501,7 +514,8 @@ public class SimpleTableView<T> extends View {
                 paint.setStyle(Paint.Style.FILL);
                 canvas.drawRect(list.get(i).realTimeRectF, paint);
 
-                paint.setColor(Color.BLACK);
+                paint.setColor(list.get(i).lineColor);
+                paint.setStrokeWidth(list.get(i).lineWidth);
                 paint.setStyle(Paint.Style.STROKE);
                 canvas.drawRect(list.get(i).realTimeRectF, paint);
 
@@ -524,7 +538,8 @@ public class SimpleTableView<T> extends View {
                 paint.setStyle(Paint.Style.FILL);
                 canvas.drawRect(list.get(i).realTimeRectF, paint);
 
-                paint.setColor(Color.BLACK);
+                paint.setColor(list.get(i).lineColor);
+                paint.setStrokeWidth(list.get(i).lineWidth);
                 paint.setStyle(Paint.Style.STROKE);
                 canvas.drawRect(list.get(i).realTimeRectF, paint);
 
@@ -645,7 +660,6 @@ public class SimpleTableView<T> extends View {
         if (onSimpleTableViewCallBack == null) {
             return maxWidth;
         }
-        //获取同列文字最大宽度
         for (int i = 0; i < lineCount; i++) {
             if (position[0] * i < list.size()) {
                 paint.setTextSize(list.get(i).textSize);
@@ -680,7 +694,15 @@ public class SimpleTableView<T> extends View {
     }
 
     private class SimpleTableViewBean<T> {
-        private List<Integer> sameValuePosition=new ArrayList<>();
+        private List<Integer> sameValuePosition = new ArrayList<>();
+        /**
+         * 线条颜色
+         */
+        private int lineColor = Color.parseColor("#cccccc");
+        /**
+         * 线条宽度
+         */
+        private int lineWidth = DensityUtil.dp2px(1);
         /**
          * 文字
          */

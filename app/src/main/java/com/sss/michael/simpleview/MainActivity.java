@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
+import android.widget.Button;
 
 import com.sss.michael.simpleview.view.SimpleDoubleSeekBar;
 import com.sss.michael.simpleview.view.SimpleDoubleSeekBar2;
@@ -102,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         simpleDoubleSeekBar = findViewById(R.id.simpleDoubleSeekBar);
-        simpleDoubleSeekBar.setData(false,100, 300, 50, 300);
+        simpleDoubleSeekBar.setData(false, 100, 300, 50, 300);
         simpleDoubleSeekBar.setOnSimpleDoubleSeekBarCallBack(new SimpleDoubleSeekBar.OnSimpleDoubleSeekBarCallBack() {
             @Override
             public void onValueChanged(int currentMinValue, int currentMaxValue, float currentMinPosition, float currentMaxPosition) {
@@ -111,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         simpleDoubleSeekBar2 = findViewById(R.id.simpleDoubleSeekBar2);
-        simpleDoubleSeekBar2.setData(true,50, 300, 50, 300);
+        simpleDoubleSeekBar2.setData(true, 50, 300, 50, 300);
         simpleDoubleSeekBar2.setOnSimpleDoubleSeekBarCallBack(new SimpleDoubleSeekBar2.OnSimpleDoubleSeekBar2CallBack() {
             @Override
             public void onValueChanged(int currentMinValue, int currentMaxValue, float currentMinPosition, float currentMaxPosition) {
@@ -120,4 +121,5 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
+
 }
