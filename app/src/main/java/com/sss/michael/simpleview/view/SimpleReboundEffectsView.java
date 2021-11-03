@@ -6,6 +6,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
+import android.view.animation.OvershootInterpolator;
 import android.view.animation.TranslateAnimation;
 import android.widget.FrameLayout;
 
@@ -21,7 +22,7 @@ public class SimpleReboundEffectsView extends FrameLayout {
     /**
      * 回弹动画时间
      */
-    private static final int ANIMATION_TIME = 100;
+    private static final int ANIMATION_TIME = 300;
     /**
      * 子View
      */
@@ -166,6 +167,7 @@ public class SimpleReboundEffectsView extends FrameLayout {
         if (isSliding) {
             TranslateAnimation ta = new TranslateAnimation(0, 0, childView.getTop() - top, 0);
             ta.setDuration(ANIMATION_TIME);
+            ta.setInterpolator(new OvershootInterpolator());
             ta.setAnimationListener(new Animation.AnimationListener() {
                 @Override
                 public void onAnimationStart(Animation animation) {
