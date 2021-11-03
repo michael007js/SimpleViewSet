@@ -128,11 +128,7 @@ public class SimpleReboundEffectsView extends FrameLayout {
                         if (isTop) {
                             childView.layout(childView.getLeft(), childView.getTop() + (int) diffY, childView.getRight(), childView.getBottom() + (int) diffY);
                         }
-                        if (isBottom) {
-                            if (childView.getBottom() < bottom) {
-                                childView.layout(childView.getLeft(), childView.getTop() + (int) diffY, childView.getRight(), childView.getBottom() + (int) diffY);
-                            }
-                        }
+
                     } else if ((portraitSwitch == 0 || portraitSwitch == 1) && direction == SlideDirection.SLIDE_UP) {
 
                         if (getRealTimeSlideDirection(event) == SlideDirection.SLIDE_DOWN) {
@@ -142,11 +138,7 @@ public class SimpleReboundEffectsView extends FrameLayout {
                         if (isBottom) {
                             childView.layout(childView.getLeft(), childView.getTop() + (int) diffY, childView.getRight(), childView.getBottom() + (int) diffY);
                         }
-                        if (isTop) {
-                            if (childView.getTop() > top) {
-                                childView.layout(childView.getLeft(), childView.getTop() + (int) diffY, childView.getRight(), childView.getBottom() + (int) diffY);
-                            }
-                        }
+
                     }
                     y = nowY;
                     isSliding = true;
@@ -156,7 +148,7 @@ public class SimpleReboundEffectsView extends FrameLayout {
                     direction = SlideDirection.SLIDE_NORMAL;
                     release();
                     if (onSimpleReboundEffectsViewCallBack != null) {
-                        onSimpleReboundEffectsViewCallBack.onSingleTouchY(0, false);
+                        onSimpleReboundEffectsViewCallBack.onSingleTouchY(event.getY() - this.y, false);
                     }
                     break;
                 default:
