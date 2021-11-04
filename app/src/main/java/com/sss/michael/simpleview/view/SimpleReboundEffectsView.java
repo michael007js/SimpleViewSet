@@ -59,6 +59,10 @@ public class SimpleReboundEffectsView extends FrameLayout {
      * 滑动的速度如果大于此值，将拦截该次滑动事件,如果未负数，则关闭该功能
      */
     private int interceptSlideScope = 20;
+    /**
+     * 反方向滑动是否拦截
+     */
+    private boolean interceptByNegativeOrientation;
 
     private OnSimpleReboundEffectsViewCallBack onSimpleReboundEffectsViewCallBack;
 
@@ -87,21 +91,29 @@ public class SimpleReboundEffectsView extends FrameLayout {
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
-        this.top = childView.getTop();
-        this.bottom = childView.getBottom();
+        if (childView != null) {
+            this.top = childView.getTop();
+            this.bottom = childView.getBottom();
+        }
     }
 
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
+        return intercept || super.onInterceptTouchEvent(ev);
+    }
+    private boolean intercept;
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
-        boolean isTop = !childView.canScrollVertically(-1);
-        boolean isBottom = !childView.canScrollVertically(1);
         if (null != childView && !isReleasing) {
+            boolean isTop = !childView.canScrollVertically(-1);
+            boolean isBottom = !childView.canScrollVertically(1);
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     //记录每次手指的位置
                     y = event.getY();
                     direction = SlideDirection.SLIDE_NORMAL;
+                    intercept = false;
                     break;
                 case MotionEvent.ACTION_MOVE:
                     float nowY = event.getY();
@@ -122,6 +134,9 @@ public class SimpleReboundEffectsView extends FrameLayout {
 
                     if ((portraitSwitch == 0 || portraitSwitch == 2) && direction == SlideDirection.SLIDE_DOWN) {
                         if (getRealTimeSlideDirection(event) == SlideDirection.SLIDE_UP) {
+                            if (interceptByNegativeOrientation) {
+                                intercept = true;
+                            }
                             release();
                             return super.dispatchTouchEvent(event);
                         }
@@ -133,6 +148,9 @@ public class SimpleReboundEffectsView extends FrameLayout {
                     } else if ((portraitSwitch == 0 || portraitSwitch == 1) && direction == SlideDirection.SLIDE_UP) {
 
                         if (getRealTimeSlideDirection(event) == SlideDirection.SLIDE_DOWN) {
+                            if (interceptByNegativeOrientation) {
+                                intercept = true;
+                            }
                             release();
                             return super.dispatchTouchEvent(event);
                         }

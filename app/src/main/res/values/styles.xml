@@ -8,6 +8,8 @@
     </style>
 
     <declare-styleable name="SimpleReboundEffectsView">
+        <!--反方向滑动是否拦截-->
+        <attr name="sre_intercept_by_negative_orientation" format="boolean" />
         <!--滑动的速度如果大于此值，将拦截该次滑动事件,如果未负数，则关闭该功能-->
         <attr name="sre_interceptSlideScope" format="dimension" />
         <!-- 衰减度 越大滑动越困难-->
