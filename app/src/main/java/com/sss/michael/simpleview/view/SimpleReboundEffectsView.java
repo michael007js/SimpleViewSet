@@ -149,6 +149,7 @@ public class SimpleReboundEffectsView extends FrameLayout {
                                 if (childView.getTop() > top) {
 //                                    Log.e("SSSSSS", "xxxxxxxxxxxx" + diffY);
                                     childView.layout(childView.getLeft(), childView.getTop() + (int) diffY, childView.getRight(), childView.getBottom() + (int) diffY);
+                                    onCallBack(event);
                                     y = nowY;
                                     return true;
                                 } else {
@@ -157,6 +158,7 @@ public class SimpleReboundEffectsView extends FrameLayout {
 //                                        Log.e("SSSSSS", "" + childViewOffset);
                                         //防止突然重滑导致底部留白
                                         childView.layout(childView.getLeft(), childView.getTop() + (int) diffY, childView.getRight(), bottom);
+                                        onCallBack(event);
                                     }
                                     y = nowY;
                                     return super.dispatchTouchEvent(event);
@@ -169,6 +171,7 @@ public class SimpleReboundEffectsView extends FrameLayout {
                         }
                         if (isTop() && direction != SlideDirection.SLIDE_NORMAL) {
                             childView.layout(childView.getLeft(), childView.getTop() + (int) diffY, childView.getRight(), childView.getBottom() + (int) diffY);
+                            onCallBack(event);
                         }
 
                     } else if ((portraitSwitch == 0 || portraitSwitch == 1) && direction == SlideDirection.SLIDE_UP) {
@@ -177,6 +180,7 @@ public class SimpleReboundEffectsView extends FrameLayout {
                             if (optimizationReverseSlide) {
                                 if (childView.getBottom() < bottom) {
                                     childView.layout(childView.getLeft(), childView.getTop() + (int) diffY, childView.getRight(), childView.getBottom() + (int) diffY);
+                                    onCallBack(event);
                                     y = nowY;
                                     return true;
                                 } else {
@@ -185,6 +189,7 @@ public class SimpleReboundEffectsView extends FrameLayout {
 //                                        Log.e("SSSSSS", "" + childViewOffset);
                                         //防止突然重滑导致底部留白
                                         childView.layout(childView.getLeft(), top, childView.getRight(), childView.getBottom() + (int) diffY);
+                                        onCallBack(event);
                                     }
                                     y = nowY;
                                     return super.dispatchTouchEvent(event);
@@ -196,6 +201,7 @@ public class SimpleReboundEffectsView extends FrameLayout {
                         }
                         if (isBottom() && direction != SlideDirection.SLIDE_NORMAL) {
                             childView.layout(childView.getLeft(), childView.getTop() + (int) diffY, childView.getRight(), childView.getBottom() + (int) diffY);
+                            onCallBack(event);
                         }
 
                     }
@@ -208,15 +214,11 @@ public class SimpleReboundEffectsView extends FrameLayout {
                     if (inertialSlide) {
                         if (isTop() || isBottom()) {
                             release(childView.getTop() - top);
-                            if (onSimpleReboundEffectsViewCallBack != null) {
-                                onSimpleReboundEffectsViewCallBack.onSingleTouchY(event.getY() - this.y, false);
-                            }
+                            onCallBack(event);
                         }
                     } else {
                         release(childView.getTop() - top);
-                        if (onSimpleReboundEffectsViewCallBack != null) {
-                            onSimpleReboundEffectsViewCallBack.onSingleTouchY(event.getY() - this.y, false);
-                        }
+                        onCallBack(event);
                     }
 
                     isTouchUp = true;
@@ -227,6 +229,13 @@ public class SimpleReboundEffectsView extends FrameLayout {
             }
         }
         return super.dispatchTouchEvent(event);
+    }
+
+    private void onCallBack(MotionEvent event) {
+        if (onSimpleReboundEffectsViewCallBack != null) {
+            boolean isTouch = (event.getAction() != MotionEvent.ACTION_UP && event.getAction() != MotionEvent.ACTION_CANCEL);
+            onSimpleReboundEffectsViewCallBack.onSingleTouchY(event.getY() - this.y, isTouch, getRealTimeSlideDirection(event) != direction);
+        }
     }
 
     /**
@@ -315,7 +324,7 @@ public class SimpleReboundEffectsView extends FrameLayout {
 
         if (onSimpleReboundEffectsViewCallBack != null) {
             boolean isTouch = (event.getAction() != MotionEvent.ACTION_UP && event.getAction() != MotionEvent.ACTION_CANCEL);
-            onSimpleReboundEffectsViewCallBack.onSingleTouchY(result, isTouch);
+            onSimpleReboundEffectsViewCallBack.onSingleTouchY(result, isTouch, getRealTimeSlideDirection(event) != direction);
         }
         if (result < 0) {
             return SlideDirection.SLIDE_UP;
@@ -413,7 +422,7 @@ public class SimpleReboundEffectsView extends FrameLayout {
 
 
     public interface OnSimpleReboundEffectsViewCallBack {
-        void onSingleTouchY(float singleDy, boolean isTouch);
+        void onSingleTouchY(float singleDy, boolean isTouch, boolean reverseDirection);
     }
 
 

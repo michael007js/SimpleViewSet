@@ -12,7 +12,7 @@
         <attr name="sre_optimization_reverse_slide" format="boolean" />
         <!--惯性滑动 -->
         <attr name="sre_inertial_slide" format="boolean" />
-        <!--滑动的速度如果大于此值，将拦截该次滑动事件,如果未负数，则关闭该功能-->
+        <!--滑动的速度如果大于此值，将拦截该次滑动事件,如果为负数，则关闭该功能-->
         <attr name="sre_interceptSlideScope" format="dimension" />
         <!-- 衰减度 越大滑动越困难-->
         <attr name="sre_attenuation" format="integer" />
