@@ -1,11 +1,17 @@
 package com.sss.michael.simpleview.view;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.os.Build;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
+import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
 import android.view.animation.TranslateAnimation;
 import android.widget.FrameLayout;
@@ -22,7 +28,11 @@ public class SimpleReboundEffectsView extends FrameLayout {
     /**
      * 回弹动画时间
      */
-    private static final int ANIMATION_TIME = 300;
+    private final int ANIMATION_TIME = 300;
+    /**
+     * 滑动阈值
+     */
+    private final int SLIDE_VALUE = 500;
     /**
      * 子View
      */
@@ -44,6 +54,10 @@ public class SimpleReboundEffectsView extends FrameLayout {
      */
     private boolean isReleasing;
     /**
+     * 子布局重滑偏移量
+     */
+    private int childViewOffset;
+    /**
      * 滑动意图
      */
     private SlideDirection direction = SlideDirection.SLIDE_NORMAL;
@@ -60,9 +74,13 @@ public class SimpleReboundEffectsView extends FrameLayout {
      */
     private int interceptSlideScope = 20;
     /**
-     * 反方向滑动是否拦截
+     * 优化反方向重滑
      */
-    private boolean interceptByNegativeOrientation;
+    private boolean optimizationReverseSlide;
+    /**
+     * 开启惯性滑动
+     */
+    private boolean inertialSlide = true;
 
     private OnSimpleReboundEffectsViewCallBack onSimpleReboundEffectsViewCallBack;
 
@@ -84,40 +102,33 @@ public class SimpleReboundEffectsView extends FrameLayout {
         portraitSwitch = ta.getInt(R.styleable.SimpleReboundEffectsView_sre_orientation, 0);
         interceptSlideScope = ta.getDimensionPixelSize(R.styleable.SimpleReboundEffectsView_sre_interceptSlideScope, 20);
         slideAttenuation = ta.getInt(R.styleable.SimpleReboundEffectsView_sre_attenuation, 5);
+        optimizationReverseSlide = ta.getBoolean(R.styleable.SimpleReboundEffectsView_sre_optimization_reverse_slide, true);
+        inertialSlide = ta.getBoolean(R.styleable.SimpleReboundEffectsView_sre_inertial_slide, true);
+
         ta.recycle();
         this.setClickable(true);
     }
 
     @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        super.onLayout(changed, left, top, right, bottom);
-        if (childView != null) {
-            this.top = childView.getTop();
-            this.bottom = childView.getBottom();
-        }
-    }
-
-    @Override
-    public boolean onInterceptTouchEvent(MotionEvent ev) {
-        return intercept || super.onInterceptTouchEvent(ev);
-    }
-    private boolean intercept;
-
-    @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
-        if (null != childView && !isReleasing) {
-            boolean isTop = !childView.canScrollVertically(-1);
-            boolean isBottom = !childView.canScrollVertically(1);
+        if (null != childView && !isReleasing || !isInertialSliding) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    //记录每次手指的位置
+                    if (top == 0) {
+                    }
+                    if (bottom == 0) {
+                        this.top = childView.getTop();
+                        this.bottom = childView.getBottom();
+                    }
                     y = event.getY();
                     direction = SlideDirection.SLIDE_NORMAL;
-                    intercept = false;
+                    childViewOffset = 0;
+                    isTouchUp = false;
                     break;
                 case MotionEvent.ACTION_MOVE:
                     float nowY = event.getY();
                     float diffY = (nowY - y) / slideAttenuation;
+
 
                     if (interceptSlideScope > 0 && Math.abs(diffY) > interceptSlideScope) {
                         return super.dispatchTouchEvent(event);
@@ -134,27 +145,56 @@ public class SimpleReboundEffectsView extends FrameLayout {
 
                     if ((portraitSwitch == 0 || portraitSwitch == 2) && direction == SlideDirection.SLIDE_DOWN) {
                         if (getRealTimeSlideDirection(event) == SlideDirection.SLIDE_UP) {
-                            if (interceptByNegativeOrientation) {
-                                intercept = true;
+                            if (optimizationReverseSlide) {
+                                if (childView.getTop() > top) {
+//                                    Log.e("SSSSSS", "xxxxxxxxxxxx" + diffY);
+                                    childView.layout(childView.getLeft(), childView.getTop() + (int) diffY, childView.getRight(), childView.getBottom() + (int) diffY);
+                                    y = nowY;
+                                    return true;
+                                } else {
+                                    if (childView.getBottom() < bottom) {
+                                        childViewOffset = childView.getScrollY();
+//                                        Log.e("SSSSSS", "" + childViewOffset);
+                                        //防止突然重滑导致底部留白
+                                        childView.layout(childView.getLeft(), childView.getTop() + (int) diffY, childView.getRight(), bottom);
+                                    }
+                                    y = nowY;
+                                    return super.dispatchTouchEvent(event);
+                                }
                             }
-                            release();
+                            direction = SlideDirection.SLIDE_NORMAL;
+                            release(childView.getTop() - top);
                             return super.dispatchTouchEvent(event);
-                        }
 
-                        if (isTop) {
+                        }
+                        if (isTop() && direction != SlideDirection.SLIDE_NORMAL) {
                             childView.layout(childView.getLeft(), childView.getTop() + (int) diffY, childView.getRight(), childView.getBottom() + (int) diffY);
                         }
 
                     } else if ((portraitSwitch == 0 || portraitSwitch == 1) && direction == SlideDirection.SLIDE_UP) {
 
                         if (getRealTimeSlideDirection(event) == SlideDirection.SLIDE_DOWN) {
-                            if (interceptByNegativeOrientation) {
-                                intercept = true;
+                            if (optimizationReverseSlide) {
+                                if (childView.getBottom() < bottom) {
+                                    childView.layout(childView.getLeft(), childView.getTop() + (int) diffY, childView.getRight(), childView.getBottom() + (int) diffY);
+                                    y = nowY;
+                                    return true;
+                                } else {
+                                    if (childView.getTop() > top) {
+                                        childViewOffset = childView.getScrollY();
+//                                        Log.e("SSSSSS", "" + childViewOffset);
+                                        //防止突然重滑导致底部留白
+                                        childView.layout(childView.getLeft(), top, childView.getRight(), childView.getBottom() + (int) diffY);
+                                    }
+                                    y = nowY;
+                                    return super.dispatchTouchEvent(event);
+                                }
                             }
-                            release();
+                            direction = SlideDirection.SLIDE_NORMAL;
+                            release(childView.getTop() - top);
                             return super.dispatchTouchEvent(event);
                         }
-                        if (isBottom) {
+                        if (isBottom() && direction != SlideDirection.SLIDE_NORMAL) {
                             childView.layout(childView.getLeft(), childView.getTop() + (int) diffY, childView.getRight(), childView.getBottom() + (int) diffY);
                         }
 
@@ -164,11 +204,22 @@ public class SimpleReboundEffectsView extends FrameLayout {
                     break;
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL:
-                    direction = SlideDirection.SLIDE_NORMAL;
-                    release();
-                    if (onSimpleReboundEffectsViewCallBack != null) {
-                        onSimpleReboundEffectsViewCallBack.onSingleTouchY(event.getY() - this.y, false);
+
+                    if (inertialSlide) {
+                        if (isTop() || isBottom()) {
+                            release(childView.getTop() - top);
+                            if (onSimpleReboundEffectsViewCallBack != null) {
+                                onSimpleReboundEffectsViewCallBack.onSingleTouchY(event.getY() - this.y, false);
+                            }
+                        }
+                    } else {
+                        release(childView.getTop() - top);
+                        if (onSimpleReboundEffectsViewCallBack != null) {
+                            onSimpleReboundEffectsViewCallBack.onSingleTouchY(event.getY() - this.y, false);
+                        }
                     }
+
+                    isTouchUp = true;
                     break;
                 default:
                     direction = SlideDirection.SLIDE_NORMAL;
@@ -179,22 +230,66 @@ public class SimpleReboundEffectsView extends FrameLayout {
     }
 
     /**
+     * 是否到边界
+     */
+    private boolean isBoundary(int value, SlideDirection direction) {
+        if (direction == SlideDirection.SLIDE_DOWN) {
+            int prepare = childView.getTop() + value;
+            return prepare <= SLIDE_VALUE;
+        }
+        return false;
+    }
+
+    /**
+     * 子布局是否滑动到顶部
+     */
+    private boolean isTop() {
+        if (childView != null) {
+            return !childView.canScrollVertically(-1);
+        }
+        return false;
+    }
+
+    /**
+     * 子布局是否滑动到底部
+     */
+    private boolean isBottom() {
+        if (childView != null) {
+            return !childView.canScrollVertically(1);
+        }
+        return false;
+    }
+
+    /**
      * 释放布局
      */
-    private void release() {
+    private void release(int from) {
+//        Log.e("SSSSSS", "release");
         if (isSliding) {
-            TranslateAnimation ta = new TranslateAnimation(0, 0, childView.getTop() - top, 0);
+            TranslateAnimation ta = new TranslateAnimation(0, 0, from, 0);
             ta.setDuration(ANIMATION_TIME);
-            ta.setInterpolator(new OvershootInterpolator());
+            ta.setInterpolator(new DecelerateInterpolator());
             ta.setAnimationListener(new Animation.AnimationListener() {
                 @Override
                 public void onAnimationStart(Animation animation) {
                     isReleasing = true;
+                    if (childViewOffset < 0) {
+                        //偏移发生在顶部
+                        childView.scrollTo(0, childView.getScrollY() - childViewOffset);
+                    } else if (childViewOffset > 0) {
+                        //偏移发生在底部
+                        childView.scrollTo(0, childViewOffset);
+                    }
+
                 }
 
                 @Override
                 public void onAnimationEnd(Animation animation) {
                     isReleasing = false;
+                    isInertialSliding = false;
+                    childViewOffset = 0;
+                    direction = SlideDirection.SLIDE_NORMAL;
+                    childView.layout(childView.getLeft(), top, childView.getRight(), bottom);
                 }
 
                 @Override
@@ -237,6 +332,75 @@ public class SimpleReboundEffectsView extends FrameLayout {
         super.onFinishInflate();
         if (getChildCount() > 0) {
             childView = getChildAt(0);
+            if (inertialSlide && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                childView.setOnScrollChangeListener(new OnScrollChangeListener() {
+                    @Override
+                    public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+                        int offset = (scrollY - oldScrollY) * 2 / slideAttenuation;//原始数据过小，惯性滑动不明显，此处的x2纯粹是启放大效果，
+                        if (isTop()) {
+                            Log.e("SSSSSS", offset + "__________________" + direction.name());
+                            inertialSlide(0, offset);
+                        } else if (isBottom()) {
+                            Log.e("SSSSSS", offset + "__________________" + direction.name());
+                            inertialSlide(0, offset);
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+
+    /**
+     * 是否正在惯性滑动中
+     */
+    private boolean isInertialSliding;
+    /**
+     * 手指是否离开屏幕
+     */
+    private boolean isTouchUp = true;
+
+    /**
+     * 惯性滑动
+     */
+    private void inertialSlide(final int from, final int to) {
+        if (!isInertialSliding && isTouchUp && direction != SlideDirection.SLIDE_NORMAL) {
+            isInertialSliding = true;
+
+            ValueAnimator valueAnimator = ValueAnimator.ofInt(from, to);
+            valueAnimator.setInterpolator(new OvershootInterpolator());
+            valueAnimator.addListener(new AnimatorListenerAdapter() {
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    super.onAnimationEnd(animation);
+//                release(childView.getTop() - top);
+                    if (to < 0) {
+                        //顶部
+                        release(childView.getTop() - top);
+                    } else {
+                        //底部
+                        release(childView.getTop() - top);
+                    }
+//                    childView.scrollTo(0,  0);
+                }
+
+                @Override
+                public void onAnimationStart(Animator animation) {
+                    super.onAnimationStart(animation);
+
+                }
+            });
+            valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    int value = (int) animation.getAnimatedValue();
+                    Log.e("SSSSSS", value + "");
+                    childView.layout(childView.getLeft(), top - value, childView.getRight(), bottom - value);
+                }
+            });
+            valueAnimator.setDuration(ANIMATION_TIME);
+            valueAnimator.start();
         }
     }
 
