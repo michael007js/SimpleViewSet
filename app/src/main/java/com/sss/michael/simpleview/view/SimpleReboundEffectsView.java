@@ -114,8 +114,6 @@ public class SimpleReboundEffectsView extends FrameLayout {
         if (null != childView && !isReleasing || !isInertialSliding) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    if (top == 0) {
-                    }
                     if (bottom == 0) {
                         this.top = childView.getTop();
                         this.bottom = childView.getBottom();
@@ -151,6 +149,7 @@ public class SimpleReboundEffectsView extends FrameLayout {
                                     childView.layout(childView.getLeft(), childView.getTop() + (int) diffY, childView.getRight(), childView.getBottom() + (int) diffY);
                                     onCallBack(event);
                                     y = nowY;
+                                    isSliding = true;
                                     return true;
                                 } else {
                                     if (childView.getBottom() < bottom) {
@@ -161,6 +160,7 @@ public class SimpleReboundEffectsView extends FrameLayout {
                                         onCallBack(event);
                                     }
                                     y = nowY;
+                                    isSliding = true;
                                     return super.dispatchTouchEvent(event);
                                 }
                             }
@@ -182,6 +182,7 @@ public class SimpleReboundEffectsView extends FrameLayout {
                                     childView.layout(childView.getLeft(), childView.getTop() + (int) diffY, childView.getRight(), childView.getBottom() + (int) diffY);
                                     onCallBack(event);
                                     y = nowY;
+                                    isSliding = true;
                                     return true;
                                 } else {
                                     if (childView.getTop() > top) {
@@ -192,6 +193,7 @@ public class SimpleReboundEffectsView extends FrameLayout {
                                         onCallBack(event);
                                     }
                                     y = nowY;
+                                    isSliding = true;
                                     return super.dispatchTouchEvent(event);
                                 }
                             }
@@ -275,13 +277,13 @@ public class SimpleReboundEffectsView extends FrameLayout {
     private void release(int from) {
 //        Log.e("SSSSSS", "release");
         if (isSliding) {
+            isReleasing = true;
             TranslateAnimation ta = new TranslateAnimation(0, 0, from, 0);
             ta.setDuration(ANIMATION_TIME);
             ta.setInterpolator(new DecelerateInterpolator());
             ta.setAnimationListener(new Animation.AnimationListener() {
                 @Override
                 public void onAnimationStart(Animation animation) {
-                    isReleasing = true;
                     if (childViewOffset < 0) {
                         //偏移发生在顶部
                         childView.scrollTo(0, childView.getScrollY() - childViewOffset);
@@ -347,10 +349,10 @@ public class SimpleReboundEffectsView extends FrameLayout {
                     public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
                         int offset = (scrollY - oldScrollY) * 2 / slideAttenuation;//原始数据过小，惯性滑动不明显，此处的x2纯粹是启放大效果，
                         if (isTop()) {
-                            Log.e("SSSSSS", offset + "__________________" + direction.name());
+//                            Log.e("SSSSSS", offset + "__________________" + direction.name());
                             inertialSlide(0, offset);
                         } else if (isBottom()) {
-                            Log.e("SSSSSS", offset + "__________________" + direction.name());
+//                            Log.e("SSSSSS", offset + "__________________" + direction.name());
                             inertialSlide(0, offset);
                         }
                     }
@@ -404,7 +406,7 @@ public class SimpleReboundEffectsView extends FrameLayout {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
                     int value = (int) animation.getAnimatedValue();
-                    Log.e("SSSSSS", value + "");
+//                    Log.e("SSSSSS", value + "");
                     childView.layout(childView.getLeft(), top - value, childView.getRight(), bottom - value);
                 }
             });
