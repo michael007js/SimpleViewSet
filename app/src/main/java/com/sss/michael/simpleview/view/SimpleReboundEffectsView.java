@@ -66,9 +66,9 @@ public class SimpleReboundEffectsView extends FrameLayout {
      */
     private int portraitSwitch;
     /**
-     * 衰减度 越大滑动越困难
+     * 衰减度,越大滑动越困难。注意：如果内部子view为非滚动视图，则可以更改本字段值，否则内部为滑动布局的话带来的副作用是跟子view的滑动坐标不一致,滑动到顶部的时候有顿挫。
      */
-    private int slideAttenuation = 5;
+    private int slideAttenuation = 1;
     /**
      * 滑动的速度如果大于此值，将拦截该次滑动事件,如果未负数，则关闭该功能
      */
@@ -81,6 +81,10 @@ public class SimpleReboundEffectsView extends FrameLayout {
      * 开启惯性滑动
      */
     private boolean inertialSlide = true;
+    /**
+     * 布局跟随手指的最大滑动量
+     */
+    private int valveOfMax = 600;
 
     private OnSimpleReboundEffectsViewCallBack onSimpleReboundEffectsViewCallBack;
 
@@ -101,14 +105,16 @@ public class SimpleReboundEffectsView extends FrameLayout {
         TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.SimpleReboundEffectsView);
         portraitSwitch = ta.getInt(R.styleable.SimpleReboundEffectsView_sre_orientation, 0);
         interceptSlideScope = ta.getDimensionPixelSize(R.styleable.SimpleReboundEffectsView_sre_interceptSlideScope, 20);
-        slideAttenuation = ta.getInt(R.styleable.SimpleReboundEffectsView_sre_attenuation, 5);
+        slideAttenuation = ta.getInt(R.styleable.SimpleReboundEffectsView_sre_attenuation, 1);
         optimizationReverseSlide = ta.getBoolean(R.styleable.SimpleReboundEffectsView_sre_optimization_reverse_slide, true);
         inertialSlide = ta.getBoolean(R.styleable.SimpleReboundEffectsView_sre_inertial_slide, true);
+        valveOfMax = ta.getInt(R.styleable.SimpleReboundEffectsView_sre_valve, 600);
 
         ta.recycle();
         this.setClickable(true);
     }
 
+    float diff_y = 0;
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
         if (null != childView && !isReleasing || !isInertialSliding) {
@@ -118,6 +124,7 @@ public class SimpleReboundEffectsView extends FrameLayout {
                         this.top = childView.getTop();
                         this.bottom = childView.getBottom();
                     }
+                    diff_y = 0;
                     y = event.getY();
                     direction = SlideDirection.SLIDE_NORMAL;
                     childViewOffset = 0;
@@ -127,6 +134,13 @@ public class SimpleReboundEffectsView extends FrameLayout {
                     float nowY = event.getY();
                     float diffY = (nowY - y) / slideAttenuation;
 
+                    if (childView.getTop() + diffY > valveOfMax){
+                        diffY = 0;
+                    }
+                    if (childView.getBottom() + diffY < bottom - valveOfMax){
+                        diffY = 0;
+                    }
+                    diff_y = diffY;
 
                     if (interceptSlideScope > 0 && Math.abs(diffY) > interceptSlideScope) {
                         return super.dispatchTouchEvent(event);
@@ -222,11 +236,15 @@ public class SimpleReboundEffectsView extends FrameLayout {
                         release(childView.getTop() - top);
                         onCallBack(event);
                     }
-
+                    if (isTop() && diff_y > 0) {
+                        return true;
+                    }
                     isTouchUp = true;
                     break;
                 default:
                     direction = SlideDirection.SLIDE_NORMAL;
+                    release(childView.getTop() - top);
+                    onCallBack(event);
                     break;
             }
         }

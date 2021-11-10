@@ -14,8 +14,10 @@
         <attr name="sre_inertial_slide" format="boolean" />
         <!--滑动的速度如果大于此值，将拦截该次滑动事件,如果为负数，则关闭该功能-->
         <attr name="sre_interceptSlideScope" format="dimension" />
-        <!-- 衰减度 越大滑动越困难-->
+        <!-- 衰减度,越大滑动越困难。注意：如果内部子view为非滚动视图，则可以设置本字段值，否则内部为滑动布局的话带来的副作用是跟子view的滑动坐标不一致,滑动到顶部的时候有顿挫。-->
         <attr name="sre_attenuation" format="integer" />
+        <!-- 布局跟随手指的最大滑动量-->
+        <attr name="sre_valve" format="integer" />
         <!--0全部 1手指向上滑动 2手指向下滑动-->
         <attr name="sre_orientation">
             <enum name="portrait_all" value="0" />
