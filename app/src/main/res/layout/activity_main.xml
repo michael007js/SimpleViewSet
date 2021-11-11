@@ -10,7 +10,7 @@
     <com.sss.michael.simpleview.view.SimpleReboundEffectsView
         android:layout_width="match_parent"
         app:sre_interceptSlideScope="0dp"
-        app:sre_attenuation="3"
+        app:sre_attenuation="1"
         android:layout_height="match_parent">
 
         <androidx.core.widget.NestedScrollView
