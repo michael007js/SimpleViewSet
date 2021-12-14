@@ -1,16 +1,22 @@
 package com.sss.michael.simpleview.view;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.DashPathEffect;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
+import android.graphics.RadialGradient;
+import android.graphics.Shader;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 
@@ -28,8 +34,6 @@ import java.util.List;
  */
 @SuppressWarnings("ALL")
 public class SimplePentagonView extends android.view.View {
-    private int maginTopSize = DensityUtil.dp2px(118);
-    private int maginBottomSize = DensityUtil.dp2px(25);
     /**
      * 动画持续时间
      */
@@ -43,13 +47,17 @@ public class SimplePentagonView extends android.view.View {
      */
     private LinearGradient pentagonForeground;
     /**
+     * 圆环
+     */
+    private RadialGradient ringBackground;
+    /**
      * 宽高比例
      */
     private float whPercent = 0.5f;
     /**
-     * 文字与文字之间的距离
+     * 文字与图片之间的距离
      */
-    private int betweenTextDistance = DensityUtil.dp2px(3);
+    private int betweenTextAndImageDistance = DensityUtil.dp2px(3);
     /**
      * 文字与网格线之间的距离
      */
@@ -58,26 +66,33 @@ public class SimplePentagonView extends android.view.View {
     /**
      * 内部的多边形坐标集（包含最外一层）
      */
-    private java.util.List<Point> pointList = new ArrayList<>();
+    private List<Point> pointList = new ArrayList<>();
 
     /**
      * 前景多边形坐标集
      */
-    private java.util.List<Point> foregroundList = new ArrayList<>();
+    private List<Point> foregroundList = new ArrayList<>();
     /**
      * 数据模型
      */
-    private java.util.List<SimpleSpiderViewBean> data = new ArrayList<>();
+    private List<SimpleSpiderViewBean> data = new ArrayList<>();
 
     {
-        data.add(new SimpleSpiderViewBean(R.mipmap.ic_launcher, "", "升学目标", 0f));
-        data.add(new SimpleSpiderViewBean(R.mipmap.ic_launcher, "", "学业水平", 0f));
-        data.add(new SimpleSpiderViewBean(R.mipmap.ic_launcher, "", "心理健康", 0f));
-        data.add(new SimpleSpiderViewBean(R.mipmap.ic_launcher, "", "应用达人", 0f));
-        data.add(new SimpleSpiderViewBean(R.mipmap.ic_launcher, "", "自我认知", 0f));
+        data.add(new SimpleSpiderViewBean(R.mipmap.icon_sx, "升学目标", 0f));
+        data.add(new SimpleSpiderViewBean(R.mipmap.icon_xysp, "学业水平", 0f));
+        data.add(new SimpleSpiderViewBean(R.mipmap.icon_xljk, "心理健康", 0f));
+        data.add(new SimpleSpiderViewBean(R.mipmap.icon_yy, "应用达人", 0f));
+        data.add(new SimpleSpiderViewBean(R.mipmap.icon_zwrz, "自我认知", 0f));
 
 
     }
+
+    private int total = 888;
+    private int number;
+
+    private String title = "生涯学分";
+
+    private String desc = "超过95%的同学";
 
     /**
      * 中心点
@@ -98,61 +113,63 @@ public class SimplePentagonView extends android.view.View {
      */
     private static int circleRadius = DensityUtil.dp2px(3f);
     /**
+     * 五星背景色
+     */
+    private int pentagonbackgroundColor = Color.parseColor("#1AFFFFFF");
+    /**
+     * 五星骨架色
+     */
+    private int pentagonSpiderColor = Color.parseColor("#0DFFFFFF");
+
+    /**
+     * 进度
+     */
+    private float progress;
+
+    /**
      * 画笔
      */
     private Paint backgroundPaint = new Paint();
+    private Paint ringPaint = new Paint();
+    private Paint pentagonBackgroundPaint = new Paint();
     private Paint paint = new Paint();
     private Path path = new Path();
-    private int backgroundColor = Color.parseColor("#1AFFFFFF");
-    private Paint foregroundPaint = new Paint();
+    private Paint pentagonForegroundPaint = new Paint();
     private Paint spiderPaint = new Paint();
-
+    private Paint textPaint = new Paint();
+    private Paint textCenterPaint = new Paint();
 
     {
-
-
+        ringPaint.setStrokeWidth(1);
+        ringPaint.setAntiAlias(true);
+        textCenterPaint.setStrokeWidth(1);
+        textCenterPaint.setAntiAlias(true);
+        textPaint.setStrokeWidth(1);
+        textPaint.setAntiAlias(true);
         backgroundPaint.setStrokeWidth(1);
         backgroundPaint.setAntiAlias(true);
+        pentagonBackgroundPaint.setStrokeWidth(1);
+        pentagonBackgroundPaint.setAntiAlias(true);
         paint.setStrokeWidth(1);
         paint.setAntiAlias(true);
-        foregroundPaint.setStrokeWidth(1);
-        foregroundPaint.setAntiAlias(true);
+        pentagonForegroundPaint.setStrokeWidth(1);
+        pentagonForegroundPaint.setAntiAlias(true);
         spiderPaint.setStrokeWidth(3);
         spiderPaint.setAntiAlias(true);
         setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 List<SimpleSpiderViewBean> data = new ArrayList<>();
-                data.add(new SimpleSpiderViewBean(R.mipmap.ic_launcher, "B", "目标规划", 0.6f));
-                data.add(new SimpleSpiderViewBean(R.mipmap.ic_launcher, "A+", "自我认知", 0.9f));
-                data.add(new SimpleSpiderViewBean(R.mipmap.ic_launcher, "A", "学习状态", 0.67f));
-                data.add(new SimpleSpiderViewBean(R.mipmap.ic_launcher, "A+", "心理健康", 1.0f));
-                data.add(new SimpleSpiderViewBean(R.mipmap.ic_launcher, "A", "生涯学习", 0.8f));
+                data.add(new SimpleSpiderViewBean(R.mipmap.icon_sx, "升学目标", 0.9f));
+                data.add(new SimpleSpiderViewBean(R.mipmap.icon_xysp, "学业水平", 0.9f));
+                data.add(new SimpleSpiderViewBean(R.mipmap.icon_xljk, "心理健康", 0.8f));
+                data.add(new SimpleSpiderViewBean(R.mipmap.icon_yy, "应用达人", 0.6f));
+                data.add(new SimpleSpiderViewBean(R.mipmap.icon_zwrz, "自我认知", 1.0f));
                 setData(data, true);
             }
         });
     }
 
-    /**
-     * 动画
-     */
-    private ValueAnimator valueAnimator;
-    /**
-     * 动画监听器
-     */
-    private ValueAnimator.AnimatorUpdateListener listener = new ValueAnimator.AnimatorUpdateListener() {
-        @Override
-        public void onAnimationUpdate(ValueAnimator animation) {
-            if (data.size() > 0) {
-                foregroundList.clear();
-                float percent = (float) animation.getAnimatedValue();
-                for (int i = 0; i < data.size(); i++) {
-                    foregroundList.add(DrawViewUtils.calculatePoint(center.x, center.y, (int) (radius * percent * data.get(i).percent), getAngleForEach(i)));
-                }
-                invalidate();
-            }
-        }
-    };
 
     public SimplePentagonView(Context context) {
         this(context, null);
@@ -171,7 +188,13 @@ public class SimplePentagonView extends android.view.View {
         super.onDetachedFromWindow();
         if (valueAnimator != null) {
             valueAnimator.cancel();
+            valueAnimator.removeAllListeners();
             valueAnimator.removeAllUpdateListeners();
+        }
+        if (progressAnimator != null) {
+            progressAnimator.cancel();
+            progressAnimator.removeAllListeners();
+            progressAnimator.removeAllUpdateListeners();
         }
     }
 
@@ -186,20 +209,21 @@ public class SimplePentagonView extends android.view.View {
         }
         int maxSize = 0;
         for (int i = 0; i < data.size(); i++) {
-            int[][] size = data.get(i).getSize(backgroundPaint);
+            int[] size = data.get(i).getSize(backgroundPaint);
             //比较各点的文字宽高取得最大宽或高尺寸
-            maxSize = Math.max(Math.max(size[0][0], size[0][1]), Math.max(size[1][0], size[1][1]));
+            maxSize = Math.max(size[0], size[1]);
         }
-        radius = Math.min(width, height) / 2 - betweenTextDistance / 2 + betweenWebAndTextDistance / 2 - maxSize;
+        radius = Math.min(width, height) / 2 - betweenTextAndImageDistance / 2 + betweenWebAndTextDistance / 2 - maxSize;
         center.set(width / 2, height / 2);
         pointList.clear();
         java.util.List<Point> points = new ArrayList<>();
         for (int i = 0; i < data.size(); i++) {
             pointList.add(DrawViewUtils.calculatePoint(center.x, center.y, radius, getAngleForEach(i)));
         }
-        fullBack = new LinearGradient(0f, 0f, width, height, 0xff2c80ff, 0xff0043ff, android.graphics.Shader.TileMode.MIRROR);
-
-        pentagonForeground = new LinearGradient(0f, 0f, width, height, 0xe0ffffff, 0x26ffffff, android.graphics.Shader.TileMode.MIRROR);
+        fullBack = new LinearGradient(0f, height, width, 0, new int[]{0xff2c80ff, 0xff0043ff}, new float[]{0, 1.0f}, android.graphics.Shader.TileMode.MIRROR);
+        pentagonForeground = new LinearGradient(0f, 0f, width, height, 0xfff0f9f, 0x35ffffff, android.graphics.Shader.TileMode.MIRROR);
+        ringBackground = new RadialGradient(center.x, center.y, radius * 2, new int[]{0xfff0f9f, 0xfff0f9f, 0x35ffffff}, new float[]{0, 0.95f, 1.0f}, Shader.TileMode.CLAMP);
+        Log.e("SSSSS", radius + "");
     }
 
 
@@ -210,6 +234,15 @@ public class SimplePentagonView extends android.view.View {
         backgroundPaint.setShader(fullBack);
         canvas.drawRect(0, 0, getWidth(), getHeight(), backgroundPaint);
         backgroundPaint.setShader(null);
+
+        ringPaint.setShader(ringBackground);
+        canvas.drawCircle(center.x, center.y, radius * 2, ringPaint);
+        /*************************************五星骨架*****************************************/
+        for (int i = 0; i < data.size(); i++) {
+            Point point = DrawViewUtils.calculatePoint(center.x, center.y, radius, getAngleForEach(i));
+            spiderPaint.setColor(pentagonSpiderColor);
+            canvas.drawLine(center.x, center.y, point.x, point.y, spiderPaint);
+        }
         /*************************************五星背景*****************************************/
         path.reset();
         path.moveTo(pointList.get(0).x, pointList.get(0).y);
@@ -217,24 +250,81 @@ public class SimplePentagonView extends android.view.View {
             path.lineTo(pointList.get(i).x, pointList.get(i).y);
         }
         path.close();
-        paint.setColor(backgroundColor);
-        canvas.drawPath(path, paint);
+        pentagonBackgroundPaint.setColor(pentagonbackgroundColor);
+        canvas.drawPath(path, pentagonBackgroundPaint);
 
         /*************************************五星前景*****************************************/
         if (foregroundList != null && foregroundList.size() > 0) {
-            backgroundPaint.setShader(pentagonForeground);
-            canvas.drawRect(0, 0, getWidth(), getHeight(), backgroundPaint);
-
+            pentagonForegroundPaint.setShader(pentagonForeground);
             path.reset();
             path.moveTo(foregroundList.get(0).x, foregroundList.get(0).y);
             for (int i = 0; i < pointList.size(); i++) {
                 path.lineTo(foregroundList.get(i).x, foregroundList.get(i).y);
             }
             path.close();
-            paint.setColor(backgroundColor);
-            canvas.drawPath(path, paint);
-            backgroundPaint.setShader(null);
+            canvas.drawPath(path, pentagonForegroundPaint);
+            pentagonForegroundPaint.setShader(null);
         }
+
+        /*************************************五星顶点图标和文字*****************************************/
+        for (int i = 0; i < data.size() * progress; i++) {
+            textPaint.setTextSize(data.get(i).textSize);
+            textPaint.setColor(data.get(i).textColor);
+            textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, data.get(i).textStyle));
+            Bitmap bitmap = ((BitmapDrawable) getResources().getDrawable(data.get(i).iconRes)).getBitmap();
+            Point point = DrawViewUtils.calculatePoint(center.x, center.y, radius, getAngleForEach(i));
+            if (i == 0) {
+                canvas.drawText(data.get(i).text, point.x + betweenWebAndTextDistance + betweenTextAndImageDistance + getBitMapSize(bitmap), point.y, textPaint);
+                if (bitmap != null) {
+                    canvas.drawBitmap(bitmap, point.x + betweenWebAndTextDistance, point.y - data.get(i).getSize(textPaint)[1] + data.get(i).getSize(textPaint)[1] / 4, textPaint);
+                }
+            } else if (i == 1) {
+                canvas.drawText(data.get(i).text, point.x + betweenWebAndTextDistance + betweenTextAndImageDistance + getBitMapSize(bitmap) - DensityUtil.dp2px(30), point.y + data.get(i).getSize(textPaint)[1], textPaint);
+                if (bitmap != null) {
+                    canvas.drawBitmap(bitmap, point.x + betweenWebAndTextDistance - DensityUtil.dp2px(30), point.y + data.get(i).getSize(textPaint)[1] / 4, textPaint);
+                }
+            } else if (i == 2) {
+                canvas.drawText(data.get(i).text, point.x - data.get(i).getSize(textPaint)[0] - betweenWebAndTextDistance - betweenTextAndImageDistance - getBitMapSize(bitmap) + DensityUtil.dp2px(30), point.y + data.get(i).getSize(textPaint)[1], textPaint);
+                if (bitmap != null) {
+                    canvas.drawBitmap(bitmap, point.x - betweenWebAndTextDistance - getBitMapSize(bitmap) + DensityUtil.dp2px(30), point.y + data.get(i).getSize(textPaint)[1] / 4, textPaint);
+                }
+            } else if (i == 3) {
+                canvas.drawText(data.get(i).text, point.x - betweenWebAndTextDistance - data.get(i).getSize(textPaint)[0], point.y, textPaint);
+                canvas.drawBitmap(bitmap, point.x - betweenWebAndTextDistance - betweenTextAndImageDistance - data.get(i).getSize(textPaint)[0] - getBitMapSize(bitmap), point.y - data.get(i).getSize(textPaint)[1] + data.get(i).getSize(textPaint)[1] / 4, textPaint);
+            } else if (i == 4) {
+                canvas.drawText(data.get(i).text, point.x + betweenTextAndImageDistance - getBitMapSize(bitmap) - data.get(i).getSize(textPaint)[0] / 4, point.y - betweenWebAndTextDistance, textPaint);
+                if (bitmap != null) {
+                    canvas.drawBitmap(bitmap, point.x + betweenTextAndImageDistance - getBitMapSize(bitmap) - data.get(i).getSize(textPaint)[0] / 4 - getBitMapSize(bitmap), point.y - betweenWebAndTextDistance - data.get(i).getSize(textPaint)[1] + data.get(i).getSize(textPaint)[1] / 4, textPaint);
+                }
+            }
+        }
+
+        /*************************************中间文字*****************************************/
+        textCenterPaint.setTextSize(DensityUtil.dp2px(36));
+        textCenterPaint.setColor(Color.parseColor("#ffffff"));
+        textCenterPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        textCenterPaint.setTextAlign(Paint.Align.CENTER);
+        canvas.drawText(String.valueOf(number), center.x, center.y - DrawViewUtils.getTextWH(paint, String.valueOf(number))[1], textCenterPaint);
+
+        textCenterPaint.setTextSize(DensityUtil.dp2px(12));
+        textCenterPaint.setColor(Color.argb(Math.min(1f * progress * 5, 1f), 1f, 1f, 1f));
+        textCenterPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
+        textCenterPaint.setTextAlign(Paint.Align.CENTER);
+        canvas.drawText(title, center.x, center.y + DensityUtil.dp2px(20), textCenterPaint);
+
+        textCenterPaint.setTextSize(DensityUtil.dp2px(12));
+        textCenterPaint.setColor(Color.argb(1f * progress, 1f, 1f, 1f));
+        textCenterPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
+        textCenterPaint.setTextAlign(Paint.Align.CENTER);
+        canvas.drawText(desc, center.x, center.y + DensityUtil.dp2px(50), textCenterPaint);
+
+    }
+
+    private int getBitMapSize(Bitmap bitmap) {
+        if (bitmap != null) {
+            return Math.max(bitmap.getWidth(), bitmap.getHeight());
+        }
+        return 0;
     }
 
     /**
@@ -254,9 +344,51 @@ public class SimplePentagonView extends android.view.View {
             for (int i = 0; i < data.size(); i++) {
                 foregroundList.add(DrawViewUtils.calculatePoint(center.x, center.y, (int) (radius * percent * data.get(i).percent), getAngleForEach(i)));
             }
+
+            int distance = 0;
+            if (foregroundList.size() > 0) {
+                for (int i = 0; i < foregroundList.size(); i++) {
+                    distance = (int) Math.max(distance, DrawViewUtils.calculateLength(center.x, center.y, foregroundList.get(i).x, foregroundList.get(i).y));
+                }
+                pentagonForeground = new LinearGradient(distance, 0f, distance * 2, distance * 2, 0xfff0f9f, 0x35ffffff, android.graphics.Shader.TileMode.MIRROR);
+            }
             invalidate();
         }
     }
+
+    /**
+     * 动画
+     */
+    private ValueAnimator valueAnimator, progressAnimator;
+    /**
+     * 动画监听器
+     */
+    private ValueAnimator.AnimatorUpdateListener listener = new ValueAnimator.AnimatorUpdateListener() {
+        @Override
+        public void onAnimationUpdate(ValueAnimator animation) {
+            if (data.size() > 0) {
+                foregroundList.clear();
+                float percent = (float) animation.getAnimatedValue();
+                for (int i = 0; i < data.size(); i++) {
+                    foregroundList.add(DrawViewUtils.calculatePoint(center.x, center.y, (int) (radius * percent * data.get(i).percent), getAngleForEach(i)));
+                }
+                invalidate();
+            }
+        }
+    };
+    /**
+     * 动画监听器
+     */
+    private ValueAnimator.AnimatorUpdateListener progressListener = new ValueAnimator.AnimatorUpdateListener() {
+        @Override
+        public void onAnimationUpdate(ValueAnimator animation) {
+            if (data.size() > 0) {
+                progress = (float) animation.getAnimatedValue();
+                number = (int) (progress * total);
+                invalidate();
+            }
+        }
+    };
 
     /**
      * 开始动画
@@ -265,12 +397,52 @@ public class SimplePentagonView extends android.view.View {
         if (valueAnimator != null) {
             valueAnimator.cancel();
         }
+        if (progressAnimator != null) {
+            progressAnimator.cancel();
+        }
         valueAnimator = ValueAnimator.ofFloat(0, 1f);
         valueAnimator.setRepeatMode(ValueAnimator.RESTART);
         valueAnimator.setDuration(ANIMATION_DURATION);
         valueAnimator.setInterpolator(new LinearInterpolator());
+        valueAnimator.addListener(new AnimatorListenerAdapter() {
+
+            @Override
+            public void onAnimationStart(Animator animation) {
+                super.onAnimationStart(animation);
+                progress = 0;
+                number = 0;
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                int distance = 0;
+                if (foregroundList.size() > 0) {
+                    for (int i = 0; i < foregroundList.size(); i++) {
+                        distance = (int) Math.max(distance, DrawViewUtils.calculateLength(center.x, center.y, foregroundList.get(i).x, foregroundList.get(i).y));
+                    }
+                    pentagonForeground = new LinearGradient(distance, 0f, distance * 2, distance * 2, 0xfff0f9f, 0x35ffffff, android.graphics.Shader.TileMode.MIRROR);
+                }
+                startProgressAnimation();
+            }
+        });
         valueAnimator.addUpdateListener(listener);
         valueAnimator.start();
+    }
+
+    /**
+     * 开始动画
+     */
+    public void startProgressAnimation() {
+        if (progressAnimator != null) {
+            progressAnimator.cancel();
+        }
+        progressAnimator = ValueAnimator.ofFloat(0, 1f);
+        progressAnimator.setRepeatMode(ValueAnimator.RESTART);
+        progressAnimator.setDuration(ANIMATION_DURATION * 2);
+        progressAnimator.setInterpolator(new LinearInterpolator());
+        progressAnimator.addUpdateListener(progressListener);
+        progressAnimator.start();
     }
 
 
@@ -313,19 +485,14 @@ public class SimplePentagonView extends android.view.View {
         private String text;
         private float textSize = DensityUtil.dp2px(16);
         private int textColor = android.graphics.Color.parseColor("#FFFFFF");
-        private int textStyle = Typeface.BOLD;
-        private String remark;
-        private float remarkSize = DensityUtil.dp2px(12);
-        private int remarkColor = android.graphics.Color.parseColor("#FFFFFF");
-        private int remarkStyle = Typeface.NORMAL;
+        private int textStyle = Typeface.NORMAL;
         private int iconRes;
 
         private float percent;
 
 
-        public SimpleSpiderViewBean(int iconRes, String text, String remark, float percent) {
+        public SimpleSpiderViewBean(int iconRes, String text, float percent) {
             this.text = text;
-            this.remark = remark;
             this.percent = percent;
             this.iconRes = iconRes;
         }
@@ -335,10 +502,6 @@ public class SimplePentagonView extends android.view.View {
             this.textSize = textSize;
             this.textColor = textColor;
             this.textStyle = textStyle;
-            this.remark = remark;
-            this.remarkSize = remarkSize;
-            this.remarkColor = remarkColor;
-            this.remarkStyle = remarkStyle;
             this.percent = percent;
         }
 
@@ -346,32 +509,18 @@ public class SimplePentagonView extends android.view.View {
             return text;
         }
 
-        public String getRemark() {
-            return remark;
-        }
 
         public float getPercent() {
             return percent;
         }
 
-        public int getIconRes() {
-            return iconRes;
-        }
+        private int[] getSize(Paint paint) {
 
-        private int[][] getSize(Paint paint) {
-
-            int size[][] = new int[2][2];
             paint.setTextSize(textSize);
             paint.setColor(textColor);
             paint.setTypeface(Typeface.create(Typeface.DEFAULT, textStyle));
             int[] textSize = DrawViewUtils.getTextWH(paint, text);
-            paint.setTextSize(remarkSize);
-            paint.setColor(remarkColor);
-            paint.setTypeface(Typeface.create(Typeface.DEFAULT, remarkStyle));
-            int[] remarkSize = DrawViewUtils.getTextWH(paint, remark);
-            size[0] = textSize;
-            size[1] = remarkSize;
-            return size;
+            return textSize;
         }
     }
 }
