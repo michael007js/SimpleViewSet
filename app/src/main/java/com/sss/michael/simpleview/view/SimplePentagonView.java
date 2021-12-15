@@ -216,14 +216,13 @@ public class SimplePentagonView extends android.view.View {
         int maxSize = 0;
         for (int i = 0; i < data.size(); i++) {
             int[] size = data.get(i).getSize(backgroundPaint);
-            //比较各点的文字宽高取得最大宽或高尺寸
             maxSize = Math.max(size[0], size[1]);
         }
         radius = Math.min(width, height) / 2 - betweenTextAndImageDistance / 2 + betweenWebAndTextDistance / 2 - maxSize;
         radius = (int) (radius * radiusPercent);
         center.set(width / 2, height / 2 + getPaddingTop() - getPaddingBottom());
         pointList.clear();
-        java.util.List<Point> points = new ArrayList<>();
+       List<Point> points = new ArrayList<>();
         for (int i = 0; i < data.size(); i++) {
             pointList.add(DrawViewUtils.calculatePoint(center.x, center.y, radius, getAngleForEach(i)));
         }
