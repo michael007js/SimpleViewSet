@@ -24,7 +24,11 @@
 
                 <com.sss.michael.simpleview.view.SimplePentagonView
                     android:layout_width="match_parent"
-                    android:layout_height="300dp"/>
+                    android:layout_height="370dp"/>
+
+                <com.sss.michael.simpleview.view.SimplePentagonView
+                    android:layout_width="match_parent"
+                    android:layout_height="370dp"/>
 
                 <LinearLayout
                     android:layout_width="match_parent"

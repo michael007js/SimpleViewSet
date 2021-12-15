@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
@@ -16,6 +17,7 @@ import android.graphics.Shader;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
@@ -47,13 +49,14 @@ public class SimplePentagonView extends android.view.View {
      */
     private LinearGradient pentagonForeground;
     /**
-     * 圆环
-     */
-    private RadialGradient ringBackground;
-    /**
      * 宽高比例
      */
     private float whPercent = 0.5f;
+    /**
+     * 半径比例
+     */
+    private float radiusPercent = 0.6f;
+
     /**
      * 文字与图片之间的距离
      */
@@ -61,7 +64,7 @@ public class SimplePentagonView extends android.view.View {
     /**
      * 文字与网格线之间的距离
      */
-    private int betweenWebAndTextDistance = DensityUtil.dp2px(10);
+    private int betweenWebAndTextDistance = DensityUtil.dp2px(6);
 
     /**
      * 内部的多边形坐标集（包含最外一层）
@@ -129,6 +132,7 @@ public class SimplePentagonView extends android.view.View {
     /**
      * 画笔
      */
+    private Paint topPointtPaint = new Paint();
     private Paint backgroundPaint = new Paint();
     private Paint ringPaint = new Paint();
     private Paint pentagonBackgroundPaint = new Paint();
@@ -140,6 +144,8 @@ public class SimplePentagonView extends android.view.View {
     private Paint textCenterPaint = new Paint();
 
     {
+        topPointtPaint.setStrokeWidth(1);
+        topPointtPaint.setAntiAlias(true);
         ringPaint.setStrokeWidth(1);
         ringPaint.setAntiAlias(true);
         textCenterPaint.setStrokeWidth(1);
@@ -214,7 +220,8 @@ public class SimplePentagonView extends android.view.View {
             maxSize = Math.max(size[0], size[1]);
         }
         radius = Math.min(width, height) / 2 - betweenTextAndImageDistance / 2 + betweenWebAndTextDistance / 2 - maxSize;
-        center.set(width / 2, height / 2);
+        radius = (int) (radius * radiusPercent);
+        center.set(width / 2, height / 2 + getPaddingTop() - getPaddingBottom());
         pointList.clear();
         java.util.List<Point> points = new ArrayList<>();
         for (int i = 0; i < data.size(); i++) {
@@ -222,9 +229,12 @@ public class SimplePentagonView extends android.view.View {
         }
         fullBack = new LinearGradient(0f, height, width, 0, new int[]{0xff2c80ff, 0xff0043ff}, new float[]{0, 1.0f}, android.graphics.Shader.TileMode.MIRROR);
         pentagonForeground = new LinearGradient(0f, 0f, width, height, 0xfff0f9f, 0x35ffffff, android.graphics.Shader.TileMode.MIRROR);
-        ringBackground = new RadialGradient(center.x, center.y, radius * 2, new int[]{0xfff0f9f, 0xfff0f9f, 0x35ffffff}, new float[]{0, 0.95f, 1.0f}, Shader.TileMode.CLAMP);
-        Log.e("SSSSS", radius + "");
+        if (ringBitmap == null) {
+            ringBitmap = getBitmap(R.mipmap.icon_ring, 0.75f);
+        }
     }
+
+    Bitmap ringBitmap;
 
 
     @Override
@@ -234,9 +244,10 @@ public class SimplePentagonView extends android.view.View {
         backgroundPaint.setShader(fullBack);
         canvas.drawRect(0, 0, getWidth(), getHeight(), backgroundPaint);
         backgroundPaint.setShader(null);
-
-        ringPaint.setShader(ringBackground);
-        canvas.drawCircle(center.x, center.y, radius * 2, ringPaint);
+        /*************************************月牙环*****************************************/
+        if (ringBitmap != null) {
+            canvas.drawBitmap(ringBitmap, center.x - ringBitmap.getWidth() / 2, center.y - ringBitmap.getHeight() / 2, ringPaint);
+        }
         /*************************************五星骨架*****************************************/
         for (int i = 0; i < data.size(); i++) {
             Point point = DrawViewUtils.calculatePoint(center.x, center.y, radius, getAngleForEach(i));
@@ -267,57 +278,72 @@ public class SimplePentagonView extends android.view.View {
         }
 
         /*************************************五星顶点图标和文字*****************************************/
+
+        int offset = DensityUtil.dp2px(2);
         for (int i = 0; i < data.size() * progress; i++) {
-            textPaint.setTextSize(data.get(i).textSize);
-            textPaint.setColor(data.get(i).textColor);
-            textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, data.get(i).textStyle));
-            Bitmap bitmap = ((BitmapDrawable) getResources().getDrawable(data.get(i).iconRes)).getBitmap();
+            topPointtPaint.setTextSize(data.get(i).textSize);
+            topPointtPaint.setColor(data.get(i).textColor);
+            topPointtPaint.setTypeface(Typeface.create(Typeface.DEFAULT, data.get(i).textStyle));
+            Bitmap bitmap = getBitmap(data.get(i).iconRes, 0.6f);
+            if (bitmap != null) {
+                if (getScreenPercent() > 1f) {
+                    offset = (int) (DensityUtil.dp2px(1.5f) + Math.min(1f - getScreenPercent(), 1f) * getBitMapSize(bitmap));
+                }
+            }
             Point point = DrawViewUtils.calculatePoint(center.x, center.y, radius, getAngleForEach(i));
             if (i == 0) {
-                canvas.drawText(data.get(i).text, point.x + betweenWebAndTextDistance + betweenTextAndImageDistance + getBitMapSize(bitmap), point.y, textPaint);
+                canvas.drawText(data.get(i).text, point.x + betweenWebAndTextDistance + betweenTextAndImageDistance + getBitMapSize(bitmap), point.y, topPointtPaint);
                 if (bitmap != null) {
-                    canvas.drawBitmap(bitmap, point.x + betweenWebAndTextDistance, point.y - data.get(i).getSize(textPaint)[1] + data.get(i).getSize(textPaint)[1] / 4, textPaint);
+                    canvas.drawBitmap(bitmap, point.x + betweenWebAndTextDistance, point.y - data.get(i).getSize(topPointtPaint)[1] + offset, topPointtPaint);
                 }
             } else if (i == 1) {
-                canvas.drawText(data.get(i).text, point.x + betweenWebAndTextDistance + betweenTextAndImageDistance + getBitMapSize(bitmap) - DensityUtil.dp2px(30), point.y + data.get(i).getSize(textPaint)[1], textPaint);
+                canvas.drawText(data.get(i).text, point.x + betweenWebAndTextDistance + betweenTextAndImageDistance + getBitMapSize(bitmap) - DensityUtil.dp2px(30), point.y + betweenWebAndTextDistance + DensityUtil.dp2px(10), topPointtPaint);
                 if (bitmap != null) {
-                    canvas.drawBitmap(bitmap, point.x + betweenWebAndTextDistance - DensityUtil.dp2px(30), point.y + data.get(i).getSize(textPaint)[1] / 4, textPaint);
+                    canvas.drawBitmap(bitmap, point.x + betweenWebAndTextDistance - DensityUtil.dp2px(30), point.y - data.get(i).getSize(topPointtPaint)[1] + betweenWebAndTextDistance + DensityUtil.dp2px(10) + offset, topPointtPaint);
                 }
             } else if (i == 2) {
-                canvas.drawText(data.get(i).text, point.x - data.get(i).getSize(textPaint)[0] - betweenWebAndTextDistance - betweenTextAndImageDistance - getBitMapSize(bitmap) + DensityUtil.dp2px(30), point.y + data.get(i).getSize(textPaint)[1], textPaint);
+                canvas.drawText(data.get(i).text, point.x - data.get(i).getSize(topPointtPaint)[0] - betweenWebAndTextDistance + DensityUtil.dp2px(30), point.y + betweenWebAndTextDistance + DensityUtil.dp2px(10), topPointtPaint);
                 if (bitmap != null) {
-                    canvas.drawBitmap(bitmap, point.x - betweenWebAndTextDistance - getBitMapSize(bitmap) + DensityUtil.dp2px(30), point.y + data.get(i).getSize(textPaint)[1] / 4, textPaint);
+                    canvas.drawBitmap(bitmap, point.x - data.get(i).getSize(topPointtPaint)[0] - betweenWebAndTextDistance - betweenTextAndImageDistance - getBitMapSize(bitmap) + DensityUtil.dp2px(30), point.y - data.get(i).getSize(topPointtPaint)[1] + betweenWebAndTextDistance + DensityUtil.dp2px(10) + offset, topPointtPaint);
                 }
             } else if (i == 3) {
-                canvas.drawText(data.get(i).text, point.x - betweenWebAndTextDistance - data.get(i).getSize(textPaint)[0], point.y, textPaint);
-                canvas.drawBitmap(bitmap, point.x - betweenWebAndTextDistance - betweenTextAndImageDistance - data.get(i).getSize(textPaint)[0] - getBitMapSize(bitmap), point.y - data.get(i).getSize(textPaint)[1] + data.get(i).getSize(textPaint)[1] / 4, textPaint);
+                canvas.drawText(data.get(i).text, point.x - betweenWebAndTextDistance - data.get(i).getSize(topPointtPaint)[0], point.y, topPointtPaint);
+                canvas.drawBitmap(bitmap, point.x - betweenWebAndTextDistance - betweenTextAndImageDistance - data.get(i).getSize(topPointtPaint)[0] - getBitMapSize(bitmap), point.y - data.get(i).getSize(topPointtPaint)[1] + offset, topPointtPaint);
             } else if (i == 4) {
-                canvas.drawText(data.get(i).text, point.x + betweenTextAndImageDistance - getBitMapSize(bitmap) - data.get(i).getSize(textPaint)[0] / 4, point.y - betweenWebAndTextDistance, textPaint);
+                canvas.drawText(data.get(i).text, point.x + betweenTextAndImageDistance - getBitMapSize(bitmap) - data.get(i).getSize(topPointtPaint)[0] / 4, point.y - betweenWebAndTextDistance, topPointtPaint);
                 if (bitmap != null) {
-                    canvas.drawBitmap(bitmap, point.x + betweenTextAndImageDistance - getBitMapSize(bitmap) - data.get(i).getSize(textPaint)[0] / 4 - getBitMapSize(bitmap), point.y - betweenWebAndTextDistance - data.get(i).getSize(textPaint)[1] + data.get(i).getSize(textPaint)[1] / 4, textPaint);
+                    canvas.drawBitmap(bitmap, point.x + betweenTextAndImageDistance - getBitMapSize(bitmap) - data.get(i).getSize(topPointtPaint)[0] / 4 - getBitMapSize(bitmap), point.y - data.get(i).getSize(topPointtPaint)[1] - betweenWebAndTextDistance + offset, topPointtPaint);
                 }
             }
         }
 
         /*************************************中间文字*****************************************/
-        textCenterPaint.setTextSize(DensityUtil.dp2px(36));
+        textCenterPaint.setTextSize(DensityUtil.sp2px(36));
         textCenterPaint.setColor(Color.parseColor("#ffffff"));
         textCenterPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
         textCenterPaint.setTextAlign(Paint.Align.CENTER);
         canvas.drawText(String.valueOf(number), center.x, center.y - DrawViewUtils.getTextWH(paint, String.valueOf(number))[1], textCenterPaint);
 
-        textCenterPaint.setTextSize(DensityUtil.dp2px(12));
+        textCenterPaint.setTextSize(DensityUtil.sp2px(12));
         textCenterPaint.setColor(Color.argb(Math.min(1f * progress * 5, 1f), 1f, 1f, 1f));
         textCenterPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
         textCenterPaint.setTextAlign(Paint.Align.CENTER);
         canvas.drawText(title, center.x, center.y + DensityUtil.dp2px(20), textCenterPaint);
 
-        textCenterPaint.setTextSize(DensityUtil.dp2px(12));
+        textCenterPaint.setTextSize(DensityUtil.sp2px(12));
         textCenterPaint.setColor(Color.argb(1f * progress, 1f, 1f, 1f));
         textCenterPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
         textCenterPaint.setTextAlign(Paint.Align.CENTER);
-        canvas.drawText(desc, center.x, center.y + DensityUtil.dp2px(50), textCenterPaint);
+        canvas.drawText(desc, center.x, center.y + DensityUtil.dp2px(40), textCenterPaint);
 
+    }
+
+    private Bitmap getBitmap(int res, float scale) {
+        Bitmap bitmap = ((BitmapDrawable) getResources().getDrawable(res)).getBitmap();
+        Matrix matrix = new Matrix();
+        matrix.postScale(scale, scale);
+        Bitmap dstbmp = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+        return dstbmp;
     }
 
     private int getBitMapSize(Bitmap bitmap) {
@@ -478,12 +504,24 @@ public class SimplePentagonView extends android.view.View {
         return i * angle - getAngleForZero();
     }
 
+    private float getScreenPercent() {
+        DisplayMetrics dm = new DisplayMetrics();
+        dm = getResources().getDisplayMetrics();
+        float density = dm.density;
+        float screenWidth = dm.widthPixels * density + 0.5f;        // 屏幕宽（px，如：480px）
+        float screenHeight = dm.heightPixels * density + 0.5f;        // 屏幕高（px，如：800px）
+
+        float xdpi = dm.xdpi;
+        float ydpi = dm.ydpi;
+        return screenWidth / screenHeight;
+    }
+
     /**
      * 数据模型
      */
     public static class SimpleSpiderViewBean {
         private String text;
-        private float textSize = DensityUtil.dp2px(16);
+        private float textSize = DensityUtil.sp2px(14);
         private int textColor = android.graphics.Color.parseColor("#FFFFFF");
         private int textStyle = Typeface.NORMAL;
         private int iconRes;
