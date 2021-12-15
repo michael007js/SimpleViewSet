@@ -22,9 +22,10 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical">
 
-                <com.sss.michael.simpleview.view.SimplePentagonView
+                <com.sss.michael.simpleview.view.SimpleHalfRingView
                     android:layout_width="match_parent"
-                    android:layout_height="370dp"/>
+                    android:layout_height="200dp"/>
+
 
                 <com.sss.michael.simpleview.view.SimplePentagonView
                     android:layout_width="match_parent"
