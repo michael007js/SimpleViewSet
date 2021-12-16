@@ -28,7 +28,7 @@ public class SimpleHalfRingView extends View {
     /**
      * 动画持续时间
      */
-    private static final int ANIMATION_DURATION = 500;
+    private static final int ANIMATION_DURATION = 1000;
     /**
      * 中心点
      */
@@ -37,7 +37,7 @@ public class SimpleHalfRingView extends View {
      * 宽高比例
      */
     private float whPercent = 5f;
-    private float ringPercent = 0.35f;
+    private float ringPercent = 0.4f;
     /**
      * 宽度
      */
@@ -69,13 +69,7 @@ public class SimpleHalfRingView extends View {
 
     public SimpleHalfRingView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startAnimation();
-            }
-        });
-        startAnimation();
+        setData(888,1.0f);
     }
 
     public SimpleHalfRingView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
@@ -118,7 +112,7 @@ public class SimpleHalfRingView extends View {
     RectF pointRect = new RectF();
     int startAngle = 120, endAngle = 300;
     DashPathEffect pointDashPathEffect = new DashPathEffect(new float[]{DensityUtil.dp2px(2), 10}, 0);
-    DashPathEffect lineDashPathEffect = new DashPathEffect(new float[]{10, 5}, 0);
+    DashPathEffect lineDashPathEffect = new DashPathEffect(new float[]{3, 5}, 0);
     int forceColor = 0xffffffff;
     int backColor = 0x4dffffff;
 
@@ -144,7 +138,12 @@ public class SimpleHalfRingView extends View {
      * 数字与百分号之间的距离
      */
     private int distanceBetweenNumberAndPercent = DensityUtil.dp2px(2);
+    /**
+     * 任务数字与单位之间的距离
+     */
+    private int distanceBetweenTaskNumberAndSuffix = DensityUtil.dp2px(3);
     private float total = 0.9f;
+    private int number = 888;
 
     private Point temp = new Point();
 
@@ -218,7 +217,7 @@ public class SimpleHalfRingView extends View {
             Rect[] numberRect = calcPointTextRect(temp, true, strNumber, strNumber, 12f, 12f);
             textPaint.setTextSize(DensityUtil.dp2px(22));
             textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-            canvas.drawText(strNumber, numberRect[0].left, numberRect[0].top + numberRect[2].height(), textPaint);
+            canvas.drawText(strNumber, numberRect[0].left-DensityUtil.dp2px(5), numberRect[0].top + numberRect[2].height(), textPaint);
         } else {
             //小于圆环的一半
             /************************************指示点**************************************/
@@ -310,7 +309,6 @@ public class SimpleHalfRingView extends View {
             //指示点
             float progressAngle = getSweepAngle(1f * total);
             float angle = startAngle + progressAngle + (endAngle - progressAngle) / 2;
-            Log.e("SSSSS", progressAngle + "");
             Point point = DrawViewUtils.calculatePoint(centerPoint.x, centerPoint.y, (int) (radius + strokeWidth + pointRadius + betweenPointAndArc), angle);
             drawPaint.setColor(forceColor);
             drawPaint.setStyle(Paint.Style.STROKE);
@@ -349,6 +347,28 @@ public class SimpleHalfRingView extends View {
             textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
             canvas.drawText(strPercent, numberRect[0].left, numberRect[0].top + numberRect[2].height(), textPaint);
         }
+
+
+        int offset = DensityUtil.dp2px(5);
+
+        String numberStr = String.valueOf((int) (percent * number));
+        textPaint.setTextSize(DensityUtil.dp2px(36));
+        textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        int[] numberSize = DrawViewUtils.getTextWH(textPaint, numberStr);
+        canvas.drawText(numberStr, centerPoint.x - (numberSize[0] >> 1) - offset, centerPoint.y + DensityUtil.dp2px(2), textPaint);
+
+
+        String suffixStr = "个";
+        textPaint.setTextSize(DensityUtil.dp2px(18));
+        textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        canvas.drawText(suffixStr, centerPoint.x - (numberSize[0] >> 1) + numberSize[0] + DensityUtil.dp2px(2) + distanceBetweenTaskNumberAndSuffix - offset, centerPoint.y, textPaint);
+
+        String taskStr = "任务";
+        textPaint.setTextSize(DensityUtil.dp2px(14));
+        textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
+        int[] taskSize = DrawViewUtils.getTextWH(textPaint, taskStr);
+        canvas.drawText(taskStr, centerPoint.x - ((taskSize[1] + offset) >> 1), centerPoint.y + (numberSize[1] >> 1) + taskSize[1], textPaint);
+
     }
 
     /**
@@ -484,4 +504,9 @@ public class SimpleHalfRingView extends View {
         }
     };
 
+    public void setData(int number, float total) {
+        this.number = number;
+        this.total = total;
+        startAnimation();
+    }
 }

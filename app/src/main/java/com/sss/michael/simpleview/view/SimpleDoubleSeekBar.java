@@ -466,6 +466,9 @@ public class SimpleDoubleSeekBar extends View {
      * @param maxValue        最大值
      */
     public void setData(boolean mirroring, int currentMinValue, int currentMaxValue, int minValue, int maxValue) {
+        if (maxValue < minValue) {
+            return;
+        }
         if (mirroring) {
             this.currentMinValue = currentMaxValue;
             this.currentMaxValue = currentMinValue;

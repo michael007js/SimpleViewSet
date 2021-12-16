@@ -248,8 +248,8 @@ public class SimpleDoubleSeekBar2 extends View {
             paint.setTextSize(sliderTextSize);
             paint.setTypeface(sliderTextStyle);
             paint.setTextAlign(Paint.Align.CENTER);
-            canvas.drawText(sliderLeftText, currentLeftPoint.x + leftSlideLength , currentLeftPoint.y + DensityUtil.dp2px(2.5f), paint);
-            canvas.drawText(sliderRightText, currentRightPoint.x - rightSlideLength , currentRightPoint.y + DensityUtil.dp2px(2.5f), paint);
+            canvas.drawText(sliderLeftText, currentLeftPoint.x + leftSlideLength, currentLeftPoint.y + DensityUtil.dp2px(2.5f), paint);
+            canvas.drawText(sliderRightText, currentRightPoint.x - rightSlideLength, currentRightPoint.y + DensityUtil.dp2px(2.5f), paint);
         }
 
 
@@ -404,10 +404,10 @@ public class SimpleDoubleSeekBar2 extends View {
             popWindow.dismiss();
             if (effectiveLeftTouch) {
                 popWindow.getContentView().setVisibility(VISIBLE);
-                popWindow.showAsDropDown(this, (int) currentLeftPoint.x - popWindow.getContentView().getWidth() / 2 + leftSlideLength , 0 - popWindow.getContentView().getHeight() - getHeight());
+                popWindow.showAsDropDown(this, (int) currentLeftPoint.x - popWindow.getContentView().getWidth() / 2 + leftSlideLength, 0 - popWindow.getContentView().getHeight() - getHeight());
             } else if (effectiveRightTouch) {
                 popWindow.getContentView().setVisibility(VISIBLE);
-                popWindow.showAsDropDown(this, (int) currentRightPoint.x - popWindow.getContentView().getWidth() / 2 - rightSlideLength , 0 - popWindow.getContentView().getHeight() - getHeight());
+                popWindow.showAsDropDown(this, (int) currentRightPoint.x - popWindow.getContentView().getWidth() / 2 - rightSlideLength, 0 - popWindow.getContentView().getHeight() - getHeight());
             } else {
                 popWindow.getContentView().setVisibility(INVISIBLE);
             }
@@ -419,17 +419,17 @@ public class SimpleDoubleSeekBar2 extends View {
         foregroundArea.bottom = centerPoint.y + foregroundHeight / 2;
 
         leftSliderRect.set(
-                Math.max(currentLeftPoint.x - leftSlideLength - sliderRadius + leftSlideLength ,0),
+                Math.max(currentLeftPoint.x - leftSlideLength - sliderRadius + leftSlideLength, 0),
                 currentLeftPoint.y - DensityUtil.dp2px(1) - sliderRadius,
-                currentLeftPoint.x + leftSlideLength + sliderRadius + leftSlideLength ,
+                currentLeftPoint.x + leftSlideLength + sliderRadius + leftSlideLength,
                 currentLeftPoint.y + DensityUtil.dp2px(1) + sliderRadius
 
         );
 
         rightSliderRect.set(
-                currentRightPoint.x - rightSlideLength - sliderRadius - rightSlideLength ,
+                currentRightPoint.x - rightSlideLength - sliderRadius - rightSlideLength,
                 currentRightPoint.y - DensityUtil.dp2px(1) - sliderRadius,
-                currentRightPoint.x + rightSlideLength + sliderRadius - rightSlideLength ,
+                currentRightPoint.x + rightSlideLength + sliderRadius - rightSlideLength,
                 currentRightPoint.y + DensityUtil.dp2px(1) + sliderRadius
 
         );
@@ -461,6 +461,9 @@ public class SimpleDoubleSeekBar2 extends View {
      * @param maxValue        最大值
      */
     public void setData(boolean mirroring, int currentMinValue, int currentMaxValue, int minValue, int maxValue) {
+        if (maxValue < minValue || currentMaxValue < currentMinValue) {
+            return;
+        }
         if (mirroring) {
             this.currentMinValue = currentMaxValue;
             this.currentMaxValue = currentMinValue;

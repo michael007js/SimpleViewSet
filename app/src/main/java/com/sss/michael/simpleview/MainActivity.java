@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         simpleDoubleSeekBar2 = findViewById(R.id.simpleDoubleSeekBar2);
-        simpleDoubleSeekBar2.setData(true, 50, 300, 50, 300);
+        simpleDoubleSeekBar2.setData(true, 50, 30, 50, 300);
         simpleDoubleSeekBar2.setOnSimpleDoubleSeekBarCallBack(new SimpleDoubleSeekBar2.OnSimpleDoubleSeekBar2CallBack() {
             @Override
             public void onValueChanged(int currentMinValue, int currentMaxValue, float currentMinPosition, float currentMaxPosition) {
