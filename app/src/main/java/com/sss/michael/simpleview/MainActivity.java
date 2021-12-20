@@ -5,10 +5,13 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
+import android.widget.ProgressBar;
+import android.widget.SeekBar;
 
 import com.sss.michael.simpleview.view.SimpleDoubleSeekBar;
 import com.sss.michael.simpleview.view.SimpleDoubleSeekBar2;
 import com.sss.michael.simpleview.view.SimpleHalfPieChart;
+import com.sss.michael.simpleview.view.SimpleHalfRingView;
 import com.sss.michael.simpleview.view.SimpleLinearChart;
 import com.sss.michael.simpleview.view.SimpleProgressBar;
 import com.sss.michael.simpleview.view.SimpleRotatingView;
@@ -27,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private SimpleRotatingView simpleRotatingView;
     private SimpleDoubleSeekBar simpleDoubleSeekBar;
     private SimpleDoubleSeekBar2 simpleDoubleSeekBar2;
+    private SimpleHalfRingView simpleHalfRingView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,6 +120,24 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onValueChanged(int currentMinValue, int currentMaxValue, float currentMinPosition, float currentMaxPosition) {
 //                Log.e("SSS", "CMinV:" + currentMinValue + ",CMaxV:" + currentMaxValue + ",MinP:" + currentMinPosition + ",MaxP:" + currentMaxPosition);
+            }
+        });
+
+        simpleHalfRingView=findViewById(R.id.simple_half_ring_view);
+        ((SeekBar) findViewById(R.id.seek_bar)).setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                simpleHalfRingView.setData(888, progress * 1.0f / 100,false);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
             }
         });
 

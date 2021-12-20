@@ -10,12 +10,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.style.BackgroundColorSpan;
-import android.text.style.ForegroundColorSpan;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 
@@ -25,6 +20,7 @@ import com.sss.michael.simpleview.utils.DrawViewUtils;
 import androidx.annotation.Nullable;
 
 public class SimpleHalfRingView extends View {
+    private boolean pointAnimation = true;
     /**
      * 动画持续时间
      */
@@ -36,7 +32,7 @@ public class SimpleHalfRingView extends View {
     /**
      * 宽高比例
      */
-    private float whPercent = 5f;
+    private float whPercent = 0.5f;
     private float ringPercent = 0.4f;
     /**
      * 宽度
@@ -69,7 +65,13 @@ public class SimpleHalfRingView extends View {
 
     public SimpleHalfRingView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        setData(888,1.0f);
+        setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setData(888, 0.5f, true);
+            }
+        });
+        setData(888, 0.2f, true);
     }
 
     public SimpleHalfRingView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
@@ -137,7 +139,7 @@ public class SimpleHalfRingView extends View {
     /**
      * 数字与百分号之间的距离
      */
-    private int distanceBetweenNumberAndPercent = DensityUtil.dp2px(2);
+    private int distanceBetweenNumberAndPercent = DensityUtil.dp2px(3);
     /**
      * 任务数字与单位之间的距离
      */
@@ -146,6 +148,7 @@ public class SimpleHalfRingView extends View {
     private int number = 888;
 
     private Point temp = new Point();
+    Rect rect = new Rect();
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -173,182 +176,7 @@ public class SimpleHalfRingView extends View {
         drawPaint.setStrokeCap(Paint.Cap.ROUND);
         canvas.drawArc(ringBackgroundRect, startAngle, getSweepAngle(percent * total), false, drawPaint);
         drawPaint.setStrokeCap(Paint.Cap.BUTT);
-        /************************************指示区域**************************************/
-
-        //左侧前景
-        if (total >= 0.5f) {
-            //大于圆环的一半
-            /************************************指示点**************************************/
-            float angle = startAngle + (endAngle >> 2);
-            Point point = DrawViewUtils.calculatePoint(centerPoint.x, centerPoint.y, (int) (radius + strokeWidth + pointRadius + betweenPointAndArc), angle);
-            drawPaint.setColor(forceColor);
-            drawPaint.setStyle(Paint.Style.STROKE);
-            drawPaint.setStrokeWidth(DensityUtil.dp2px(2));
-            canvas.drawCircle(point.x, point.y, pointRadius, drawPaint);
-            /************************************虚线**************************************/
-            drawPaint.setColor(forceColor);
-            drawPaint.setStyle(Paint.Style.FILL);
-            drawPaint.setStrokeWidth(DensityUtil.dp2px(2));
-            drawPaint.setPathEffect(lineDashPathEffect);
-            float centerPointX = point.x - DensityUtil.dp2px(20);
-            float centerPointY = point.y;
-            float endPointX = centerPointX - DensityUtil.dp2px(5);
-            float endPointY = centerPointY;
-            canvas.drawLine(point.x - pointRadius, point.y, centerPointX, centerPointY, drawPaint);
-            canvas.drawLine(centerPointX, centerPointY, endPointX, endPointY, drawPaint);
-            drawPaint.setPathEffect(null);
-            /************************************文字**************************************/
-            //上部文字百分号
-            String strPercent = "%";
-            String strDown = "已完成";
-            temp.set((int) endPointX, (int) endPointY);
-            Rect[] strRect = calcPointTextRect(temp, true, strPercent, strDown, 12, 12f);
-            textPaint.setTextSize(DensityUtil.dp2px(12f));
-            textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-            canvas.drawText(strPercent, strRect[0].left, strRect[0].top + strRect[2].height(), textPaint);
-            //下部文字
-            int offset = DensityUtil.dp2px(5);
-            textPaint.setTextSize(DensityUtil.dp2px(12f));
-            textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
-            canvas.drawText(strDown, strRect[1].left - offset, strRect[1].top + strRect[3].height(), textPaint);
-            //上部数字
-            String strNumber = getProgressStr(true) + "";
-            temp.set(strRect[0].left - distanceBetweenNumberAndPercent - strRect[2].width(), (int) (strRect[0].top + strRect[2].height() * 1.5f));
-            Rect[] numberRect = calcPointTextRect(temp, true, strNumber, strNumber, 12f, 12f);
-            textPaint.setTextSize(DensityUtil.dp2px(22));
-            textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-            canvas.drawText(strNumber, numberRect[0].left-DensityUtil.dp2px(5), numberRect[0].top + numberRect[2].height(), textPaint);
-        } else {
-            //小于圆环的一半
-            /************************************指示点**************************************/
-            float angle = startAngle + (getSweepAngle(1f * total) >> 1);
-            Point point = DrawViewUtils.calculatePoint(centerPoint.x, centerPoint.y, (int) (radius + strokeWidth + pointRadius + betweenPointAndArc), angle);
-            drawPaint.setColor(forceColor);
-            drawPaint.setStyle(Paint.Style.STROKE);
-            drawPaint.setStrokeWidth(DensityUtil.dp2px(2));
-            canvas.drawCircle(point.x, point.y, pointRadius, drawPaint);
-            /************************************虚线**************************************/
-            drawPaint.setColor(forceColor);
-            drawPaint.setStyle(Paint.Style.FILL);
-            drawPaint.setStrokeWidth(DensityUtil.dp2px(2));
-            drawPaint.setPathEffect(lineDashPathEffect);
-            float centerPointX = point.x - DensityUtil.dp2px(20);
-            float centerPointY = point.y - DensityUtil.dp2px(15);
-            float endPointX = centerPointX - DensityUtil.dp2px(20);
-            float endPointY = centerPointY;
-            canvas.drawLine(point.x - pointRadius, point.y - pointRadius, centerPointX, centerPointY, drawPaint);
-            canvas.drawLine(centerPointX, centerPointY, endPointX, endPointY, drawPaint);
-            drawPaint.setPathEffect(null);
-            /************************************文字**************************************/
-            //上部文字百分号
-            String strPercent = "%";
-            String strDown = "已完成";
-            temp.set((int) endPointX, (int) endPointY);
-            Rect[] strRect = calcPointTextRect(temp, true, strPercent, strDown, 12f, 12f);
-            textPaint.setTextSize(DensityUtil.dp2px(12f));
-            textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-            canvas.drawText(strPercent, strRect[0].left, strRect[0].top + strRect[2].height(), textPaint);
-            //下部文字
-            int offset = DensityUtil.dp2px(5);
-            textPaint.setTextSize(DensityUtil.dp2px(12f));
-            textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
-            canvas.drawText(strDown, strRect[1].left - offset, strRect[1].top + strRect[3].height(), textPaint);
-            //上部数字
-            String strNumber = getProgressStr(true) + "";
-            temp.set(strRect[0].left - distanceBetweenNumberAndPercent - strRect[2].width(), (int) (strRect[0].top + strRect[2].height() * 1.5f));
-            Rect[] numberRect = calcPointTextRect(temp, true, strNumber, strNumber, 12f, 12f);
-            textPaint.setTextSize(DensityUtil.dp2px(22f));
-            textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-            canvas.drawText(strNumber, numberRect[0].left, numberRect[0].top + numberRect[2].height(), textPaint);
-        }
-
-        //右侧背景
-        if (total <= 0.5f) {
-            //大于圆环的一半
-            /************************************指示点**************************************/
-            float angle = startAngle + (endAngle >> 1) + (endAngle >> 2);
-            Point point = DrawViewUtils.calculatePoint(centerPoint.x, centerPoint.y, (int) (radius + strokeWidth + pointRadius + betweenPointAndArc), angle);
-            drawPaint.setColor(forceColor);
-            drawPaint.setStyle(Paint.Style.STROKE);
-            drawPaint.setStrokeWidth(DensityUtil.dp2px(2));
-            canvas.drawCircle(point.x, point.y, pointRadius, drawPaint);
-            /************************************虚线**************************************/
-            drawPaint.setColor(forceColor);
-            drawPaint.setStyle(Paint.Style.FILL);
-            drawPaint.setStrokeWidth(DensityUtil.dp2px(2));
-            drawPaint.setPathEffect(lineDashPathEffect);
-            float centerPointX = point.x + DensityUtil.dp2px(20);
-            float centerPointY = point.y;
-            float endPointX = centerPointX + DensityUtil.dp2px(5);
-            float endPointY = centerPointY;
-            canvas.drawLine(point.x + pointRadius, point.y, centerPointX, centerPointY, drawPaint);
-            canvas.drawLine(centerPointX, centerPointY, endPointX, endPointY, drawPaint);
-            drawPaint.setPathEffect(null);
-            /************************************文字**************************************/
-            //上部数字
-            String strNumber = getProgressStr(false) + "";
-            String strDown = "已完成";
-            temp.set((int) endPointX, (int) endPointY);
-            Rect[] strRect = calcPointTextRect(temp, false, strNumber, strDown, 22f, 12f);
-            textPaint.setTextSize(DensityUtil.dp2px(22f));
-            textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-            canvas.drawText(strNumber, strRect[0].left, strRect[0].top + strRect[2].height(), textPaint);
-            //下部文字
-            textPaint.setTextSize(DensityUtil.dp2px(12f));
-            textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
-            canvas.drawText(strDown, strRect[1].left, strRect[1].top + strRect[3].height(), textPaint);
-            //上部文字百分号
-            String strPercent = "%";
-            temp.set(strRect[0].left + distanceBetweenNumberAndPercent + strRect[2].width(), (int) (strRect[0].top + strRect[2].height() * 1.2f));
-            Rect[] numberRect = calcPointTextRect(temp, false, strPercent, strPercent, 12, 12f);
-            textPaint.setTextSize(DensityUtil.dp2px(12f));
-            textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-            canvas.drawText(strPercent, numberRect[0].left, numberRect[0].top + numberRect[2].height(), textPaint);
-        } else {
-            //小于圆环的一半
-            //指示点
-            float progressAngle = getSweepAngle(1f * total);
-            float angle = startAngle + progressAngle + (endAngle - progressAngle) / 2;
-            Point point = DrawViewUtils.calculatePoint(centerPoint.x, centerPoint.y, (int) (radius + strokeWidth + pointRadius + betweenPointAndArc), angle);
-            drawPaint.setColor(forceColor);
-            drawPaint.setStyle(Paint.Style.STROKE);
-            drawPaint.setStrokeWidth(DensityUtil.dp2px(2));
-            canvas.drawCircle(point.x, point.y, pointRadius, drawPaint);
-            //虚线
-            drawPaint.setColor(forceColor);
-            drawPaint.setStyle(Paint.Style.FILL);
-            drawPaint.setStrokeWidth(DensityUtil.dp2px(2));
-            drawPaint.setPathEffect(lineDashPathEffect);
-            float centerPointX = point.x + DensityUtil.dp2px(20);
-            float centerPointY = point.y - DensityUtil.dp2px(15);
-            float endPointX = centerPointX + DensityUtil.dp2px(20);
-            float endPointY = centerPointY;
-            canvas.drawLine(point.x + pointRadius, point.y - pointRadius, centerPointX, centerPointY, drawPaint);
-            canvas.drawLine(centerPointX, centerPointY, endPointX, endPointY, drawPaint);
-            drawPaint.setPathEffect(null);
-            /************************************文字**************************************/
-            //上部数字
-            String strNumber = getProgressStr(false) + "";
-            String strDown = "已完成";
-            temp.set((int) endPointX, (int) endPointY);
-            Rect[] strRect = calcPointTextRect(temp, false, strNumber, strDown, 22f, 12f);
-            textPaint.setTextSize(DensityUtil.dp2px(22));
-            textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-            canvas.drawText(strNumber, strRect[0].left, strRect[0].top + strRect[2].height(), textPaint);
-            //下部文字
-            textPaint.setTextSize(DensityUtil.dp2px(12));
-            textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
-            canvas.drawText(strDown, strRect[1].left, strRect[1].top + strRect[3].height(), textPaint);
-            //上部文字百分号
-            String strPercent = "%";
-            temp.set(strRect[0].left + distanceBetweenNumberAndPercent + strRect[2].width(), (int) (strRect[0].top + strRect[2].height() * 1.2f));
-            Rect[] numberRect = calcPointTextRect(temp, false, strPercent, strPercent, 12, 12f);
-            textPaint.setTextSize(DensityUtil.dp2px(12));
-            textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-            canvas.drawText(strPercent, numberRect[0].left, numberRect[0].top + numberRect[2].height(), textPaint);
-        }
-
-
+        /************************************中间文字**************************************/
         int offset = DensityUtil.dp2px(5);
 
         String numberStr = String.valueOf((int) (percent * number));
@@ -368,7 +196,119 @@ public class SimpleHalfRingView extends View {
         textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
         int[] taskSize = DrawViewUtils.getTextWH(textPaint, taskStr);
         canvas.drawText(taskStr, centerPoint.x - ((taskSize[1] + offset) >> 1), centerPoint.y + (numberSize[1] >> 1) + taskSize[1], textPaint);
+        /************************************左半球指示文字**************************************/
+        String strLeftNumber = getProgressStr(true) + "";
+        textPaint.setColor(forceColor);
+        textPaint.setTextSize(DensityUtil.sp2px(22f));
+        textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        int[] strLeftNumberSize = DrawViewUtils.getTextWH(textPaint, strLeftNumber);
 
+        String strLeftPercent = "%";
+        textPaint.setColor(forceColor);
+        textPaint.setTextSize(DensityUtil.sp2px(12f));
+        textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
+        int[] strLeftPercentSize = DrawViewUtils.getTextWH(textPaint, strLeftPercent);
+
+        String strLeftDown = "已完成";
+        textPaint.setColor(forceColor);
+        textPaint.setTextSize(DensityUtil.sp2px(12f));
+        textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
+        int[] strLeftDownSize = DrawViewUtils.getTextWH(textPaint, strLeftDown);
+
+
+        rect.left = getPaddingStart();
+        rect.top = centerPoint.y - distanceBetweenTextAndLine - strLeftNumberSize[1];
+        rect.right = rect.left + strLeftNumberSize[0] + strLeftPercentSize[0] + distanceBetweenNumberAndPercent;
+        rect.bottom = centerPoint.y + distanceBetweenTextAndLine + strLeftDownSize[1];
+
+        textPaint.setTextSize(DensityUtil.sp2px(22f));
+        textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        canvas.drawText(strLeftNumber, rect.left, ((rect.bottom + rect.top) >> 1) - distanceBetweenTextAndLine, textPaint);
+        textPaint.setTextSize(DensityUtil.sp2px(12f));
+        textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
+        canvas.drawText(strLeftPercent, rect.right - strLeftPercentSize[0], ((rect.bottom + rect.top) >> 1) - distanceBetweenTextAndLine, textPaint);
+        textPaint.setTextSize(DensityUtil.sp2px(12f));
+        textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
+        canvas.drawText(strLeftDown, rect.left + (rect.width() >> 1) - (strLeftDownSize[0] >> 1), ((rect.bottom + rect.top) >> 1) + distanceBetweenTextAndLine, textPaint);
+
+        /************************************右半球指示文字**************************************/
+        String strRightPercent = "%";
+        textPaint.setColor(forceColor);
+        textPaint.setTextSize(DensityUtil.sp2px(12f));
+        textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
+        int[] strRightPercentSize = DrawViewUtils.getTextWH(textPaint, strRightPercent);
+
+
+        String strRightNumber = getProgressStr(false) + "";
+        textPaint.setColor(forceColor);
+        textPaint.setTextSize(DensityUtil.sp2px(22f));
+        textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        int[] strRightNumberSize = DrawViewUtils.getTextWH(textPaint, strRightNumber);
+
+
+        String strRightDown = "未完成";
+        textPaint.setColor(forceColor);
+        textPaint.setTextSize(DensityUtil.sp2px(12f));
+        textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
+        int[] strRightDownSize = DrawViewUtils.getTextWH(textPaint, strRightDown);
+
+        rect.right = getWidth() - getPaddingEnd();
+        rect.left = rect.right - strRightPercentSize[0] - distanceBetweenNumberAndPercent - strRightNumberSize[0];
+        rect.top = centerPoint.y - distanceBetweenTextAndLine - strRightNumberSize[1];
+        rect.bottom = centerPoint.y + distanceBetweenTextAndLine + strRightDownSize[1];
+
+        textPaint.setTextSize(DensityUtil.sp2px(12f));
+        textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
+        canvas.drawText(strRightPercent, rect.right - strRightPercentSize[0], ((rect.bottom + rect.top) >> 1) - distanceBetweenTextAndLine, textPaint);
+        textPaint.setTextSize(DensityUtil.sp2px(22f));
+        textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        canvas.drawText(strRightNumber, rect.right - strRightPercentSize[0] - strRightNumberSize[0] - distanceBetweenNumberAndPercent, ((rect.bottom + rect.top) >> 1) - distanceBetweenTextAndLine, textPaint);
+        textPaint.setTextSize(DensityUtil.sp2px(12f));
+        textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
+        canvas.drawText(strRightDown, rect.left + (rect.width() >> 1) - (strLeftDownSize[0] >> 1), ((rect.bottom + rect.top) >> 1) + distanceBetweenTextAndLine, textPaint);
+
+        /************************************指示点**************************************/
+
+
+        //左半圆
+        float leftAngle;
+
+        if (pointAnimation) {
+            float progress = (float) (percent * total);
+            leftAngle = startAngle + getSweepAngle(Math.min(progress, 0.5f)) * 0.5f;
+        } else {
+            leftAngle = startAngle + getSweepAngle((float) (total >= 0.5f ? 0.5 : total)) * 0.5f;
+        }
+        Point leftPoint = DrawViewUtils.calculatePoint(centerPoint.x, centerPoint.y, (int) (radius + strokeWidth + pointRadius + betweenPointAndArc), leftAngle);
+        drawPaint.setColor(forceColor);
+        drawPaint.setStyle(Paint.Style.STROKE);
+        drawPaint.setStrokeWidth(DensityUtil.dp2px(2));
+        canvas.drawCircle(leftPoint.x, leftPoint.y, pointRadius, drawPaint);
+        //右半圆
+//        float rightAngle = 0;
+//        if (pointAnimation) {
+//            float progress = (float) (percent * total) * 0.5f;
+//            rightAngle = startAngle + endAngle - getSweepAngle(progress);
+//        } else {
+//            float progress = (float) (total >= 0.5f ? 0.5 : total) * 0.5f;
+//            rightAngle = startAngle + endAngle - getSweepAngle(progress);
+//        }
+
+        float rightAngle = 0;
+        if (pointAnimation) {
+            float progress = 1 - (float) (percent * total);
+            rightAngle = startAngle + endAngle - (endAngle - getSweepAngle(progress));
+        } else {
+            float progress = (float) (total >= 0.5f ? 0.5 : total) * 0.5f;
+            rightAngle = startAngle + endAngle - getSweepAngle(progress);
+        }
+
+
+        Point point = DrawViewUtils.calculatePoint(centerPoint.x, centerPoint.y, (int) (radius + strokeWidth + pointRadius + betweenPointAndArc), rightAngle);
+        drawPaint.setColor(forceColor);
+        drawPaint.setStyle(Paint.Style.STROKE);
+        drawPaint.setStrokeWidth(DensityUtil.dp2px(2));
+        canvas.drawCircle(point.x, point.y, pointRadius, drawPaint);
     }
 
     /**
@@ -391,88 +331,6 @@ public class SimpleHalfRingView extends View {
         return isLeft ? (int) (1f * total * 100) : (int) (1f * (1f - total) * 100);
     }
 
-
-    /**
-     * 计算指示点文字
-     *
-     * @param point       延长线重点坐标
-     * @param isLeft      是否是左边
-     * @param upStr       上部分文字
-     * @param downStr     下部文字
-     * @param topStrSize  上部分文字大小
-     * @param downStrSize 下部分文字大小
-     * @return 返回4个元素的矩阵，第一个是上部文字的尺寸，第二个是下部文字的尺寸，第三个是上部文字宽高，第四个是下部文字的宽高
-     */
-    private Rect[] calcPointTextRect(Point point, boolean isLeft, String upStr, String downStr, float topStrSize, float downStrSize) {
-        Rect[] rects = new Rect[4];
-        textPaint.setTextAlign(Paint.Align.LEFT);
-
-        if (isLeft) {
-            //计算上部文字位置
-            Rect rectTopLeft = new Rect();
-            textPaint.setColor(forceColor);
-            textPaint.setTextSize(DensityUtil.sp2px(topStrSize));
-            textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-            int[] textSizeUpLeft = DrawViewUtils.getTextWH(textPaint, upStr);
-            rectTopLeft.right = point.x - distanceBetweenTextAndLine;
-            rectTopLeft.left = rectTopLeft.right - textSizeUpLeft[0];
-            rectTopLeft.top = point.y - textSizeUpLeft[1] - distanceBetweenText / 2;
-            rectTopLeft.bottom = rectTopLeft.top + textSizeUpLeft[1];
-            rects[0] = rectTopLeft;
-            //计算下部文字位置
-            Rect rectDownLeft = new Rect();
-            textPaint.setColor(forceColor);
-            textPaint.setTextSize(DensityUtil.sp2px(downStrSize));
-            textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
-            int[] textSizeDownLeft = DrawViewUtils.getTextWH(textPaint, downStr);
-            rectDownLeft.right = point.x - distanceBetweenTextAndLine;
-            rectDownLeft.left = rectDownLeft.right - textSizeDownLeft[0];
-            rectDownLeft.top = point.y + distanceBetweenText / 2;
-            rectDownLeft.bottom = rectDownLeft.top + textSizeDownLeft[1];
-            rects[1] = rectDownLeft;
-
-            Rect textSizeUpLeftRect = new Rect();
-            textSizeUpLeftRect.set(0, 0, textSizeUpLeft[0], textSizeUpLeft[1]);
-            rects[2] = textSizeUpLeftRect;
-
-            Rect textSizeDownLeftRect = new Rect();
-            textSizeDownLeftRect.set(0, 0, textSizeDownLeft[0], textSizeDownLeft[1]);
-            rects[3] = textSizeDownLeftRect;
-        } else {
-            //计算上部文字位置
-            Rect rectTopRight = new Rect();
-            textPaint.setColor(forceColor);
-            textPaint.setTextSize(DensityUtil.sp2px(topStrSize));
-            textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-            int[] textSizeUpRight = DrawViewUtils.getTextWH(textPaint, upStr);
-            rectTopRight.left = point.x + distanceBetweenTextAndLine;
-            rectTopRight.right = rectTopRight.left + textSizeUpRight[0];
-            rectTopRight.top = point.y - textSizeUpRight[1] - distanceBetweenText / 2;
-            rectTopRight.bottom = rectTopRight.top + textSizeUpRight[1];
-            rects[0] = rectTopRight;
-            //计算下部文字位置
-            Rect rectDownRight = new Rect();
-            textPaint.setColor(forceColor);
-            textPaint.setTextSize(DensityUtil.sp2px(downStrSize));
-            textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
-            int[] textSizeDownRight = DrawViewUtils.getTextWH(textPaint, downStr);
-            rectDownRight.left = point.x + distanceBetweenTextAndLine;
-            rectDownRight.right = rectDownRight.left + textSizeDownRight[0];
-            rectDownRight.top = point.y + distanceBetweenText / 2;
-            rectDownRight.bottom = rectDownRight.top + textSizeDownRight[1];
-            rects[1] = rectDownRight;
-
-            Rect textSizeUpRightRect = new Rect();
-            textSizeUpRightRect.set(0, 0, textSizeUpRight[0], textSizeUpRight[1]);
-            rects[2] = textSizeUpRightRect;
-
-            Rect textSizeDownRightRect = new Rect();
-            textSizeDownRightRect.set(0, 0, textSizeDownRight[0], textSizeDownRight[1]);
-            rects[3] = textSizeDownRightRect;
-
-        }
-        return rects;
-    }
 
     /**
      * 开始动画
@@ -504,9 +362,19 @@ public class SimpleHalfRingView extends View {
         }
     };
 
-    public void setData(int number, float total) {
+    public void setData(int number, float total, boolean animation) {
+//        if (pointAnimation) {
+//            percent = 0.5f;
+//        } else {
+//            percent = 1f;
+//        }
+        percent = 1f;
         this.number = number;
         this.total = total;
-        startAnimation();
+        if (animation) {
+            startAnimation();
+        } else {
+            requestLayout();
+        }
     }
 }
