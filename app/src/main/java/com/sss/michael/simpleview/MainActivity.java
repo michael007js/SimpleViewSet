@@ -31,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
     private SimpleDoubleSeekBar simpleDoubleSeekBar;
     private SimpleDoubleSeekBar2 simpleDoubleSeekBar2;
     private SimpleHalfRingView simpleHalfRingView;
+    private SeekBar simpleHalfRingViewSeekBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,11 +124,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        simpleHalfRingView=findViewById(R.id.simple_half_ring_view);
-        ((SeekBar) findViewById(R.id.seek_bar)).setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        simpleHalfRingView = findViewById(R.id.simple_half_ring_view);
+        simpleHalfRingViewSeekBar = findViewById(R.id.simple_half_ring_view_seek_bar);
+        simpleHalfRingViewSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                simpleHalfRingView.setData(888, progress * 1.0f / 100,false);
+                if (fromUser) {
+                    simpleHalfRingView.setData(888, progress * 1.0f / 100, false);
+                }
             }
 
             @Override
@@ -140,6 +144,13 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+        simpleHalfRingView.setOnSimpleHalfRingViewCallBack(new SimpleHalfRingView.OnSimpleHalfRingViewCallBack() {
+            @Override
+            public void onProgressChanged(float percent, int total, boolean fromAnimation) {
+                simpleHalfRingViewSeekBar.setProgress((int) (percent * 100));
+            }
+        });
+        simpleHalfRingView.setData(888, simpleHalfRingViewSeekBar.getProgress() * 1.0f / 100, true);
 
     }
 

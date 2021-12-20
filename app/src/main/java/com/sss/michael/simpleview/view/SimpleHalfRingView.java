@@ -19,12 +19,20 @@ import com.sss.michael.simpleview.utils.DrawViewUtils;
 
 import androidx.annotation.Nullable;
 
+/**
+ * @author Michael by Administrator
+ * @date 2021/12/16 09:33
+ * @Description 一个简单的半圆环指示器（xml中支持paddingStart和paddingEnd）
+ */
 public class SimpleHalfRingView extends View {
-    private boolean pointAnimation = true;
     /**
      * 动画持续时间
      */
     private static final int ANIMATION_DURATION = 1000;
+    /**
+     * 是否绘制指示线动画
+     */
+    private boolean pointAnimation = false;
     /**
      * 中心点
      */
@@ -33,6 +41,9 @@ public class SimpleHalfRingView extends View {
      * 宽高比例
      */
     private float whPercent = 0.5f;
+    /**
+     * 圆环大小比例
+     */
     private float ringPercent = 0.4f;
     /**
      * 宽度
@@ -42,8 +53,79 @@ public class SimpleHalfRingView extends View {
      * 高度
      */
     private int height;
+    /**
+     * 圆环半径
+     */
     private float radius;
-    private int strokeWidth = DensityUtil.dp2px(18);
+    /**
+     * 圆环线宽
+     */
+    private int ringStrokeWidth = DensityUtil.dp2px(18);
+    /**
+     * 指示点半径
+     */
+    int pointRadius = DensityUtil.dp2px(3);
+    /**
+     * 指示点与圆环的距离
+     */
+    int betweenPointAndArc = DensityUtil.dp2px(2);
+    /**
+     * 指示文字与指示文字之间的距离
+     */
+    private int distanceBetweenTextAndMidLine = DensityUtil.dp2px(5);
+    /**
+     * 文字绘制区域与指示线之间的距离
+     */
+    private int distanceBetweenTextRectAndLine = DensityUtil.dp2px(10);
+    /**
+     * 文字与指示线之间的距离
+     */
+    private int distanceBetweenLineAndPoint = DensityUtil.dp2px(2);
+    /**
+     * 数字与百分号之间的距离
+     */
+    private int distanceBetweenNumberAndPercent = DensityUtil.dp2px(3);
+    /**
+     * 任务数字与单位之间的距离
+     */
+    private int distanceBetweenTaskNumberAndSuffix = DensityUtil.dp2px(3);
+    /**
+     * 与指示点连接的横线长度
+     */
+    private int lineLength = DensityUtil.dp2px(30);
+    /**
+     * 圆环背景前景矩阵
+     */
+    private RectF ringBackgroundRect = new RectF(), ringForegroundRect = new RectF();
+    /**
+     * 中心虚线小圆环矩阵
+     */
+    private RectF pointRect = new RectF();
+    /**
+     * 圆环绘制开始、结束角度
+     */
+    private int startAngle = 120, endAngle = 300;
+    /**
+     * 圆环前景色
+     */
+    private int forceColor = 0xffffffff;
+    /**
+     * 圆环背景色
+     */
+    private int ringBackColor = 0x4dffffff;
+
+    /**
+     * 动画实时进度百分比
+     */
+    private float currentPercent = 0f;
+    /**
+     * 总百分比，由外部传入，与{@link #total} 相除所得的百分比
+     */
+    private float totalPercent = 0.9f;
+    /**
+     * 中心数字，此数字为总数
+     */
+    private int total = 888;
     /**
      * 画笔
      */
@@ -71,7 +153,6 @@ public class SimpleHalfRingView extends View {
                 setData(888, 0.5f, true);
             }
         });
-        setData(888, 0.2f, true);
     }
 
     public SimpleHalfRingView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
@@ -102,53 +183,19 @@ public class SimpleHalfRingView extends View {
                 centerPoint.y + radius
         );
         pointRect.set(
-                centerPoint.x - radius + (strokeWidth >> 1) + DensityUtil.dp2px(5),
-                centerPoint.y - radius + (strokeWidth >> 1) + DensityUtil.dp2px(5),
-                centerPoint.x + radius - (strokeWidth >> 1) - DensityUtil.dp2px(5),
-                centerPoint.y + radius - (strokeWidth >> 1) - DensityUtil.dp2px(5)
+                centerPoint.x - radius + (ringStrokeWidth >> 1) + DensityUtil.dp2px(5),
+                centerPoint.y - radius + (ringStrokeWidth >> 1) + DensityUtil.dp2px(5),
+                centerPoint.x + radius - (ringStrokeWidth >> 1) - DensityUtil.dp2px(5),
+                centerPoint.y + radius - (ringStrokeWidth >> 1) - DensityUtil.dp2px(5)
         );
     }
 
-    RectF ringBackgroundRect = new RectF();
-    RectF ringForegroundRect = new RectF();
-    RectF pointRect = new RectF();
-    int startAngle = 120, endAngle = 300;
+
     DashPathEffect pointDashPathEffect = new DashPathEffect(new float[]{DensityUtil.dp2px(2), 10}, 0);
     DashPathEffect lineDashPathEffect = new DashPathEffect(new float[]{3, 5}, 0);
-    int forceColor = 0xffffffff;
-    int backColor = 0x4dffffff;
 
-    private float percent = 0f;
 
-    /**
-     * 指示点半径
-     */
-    int pointRadius = DensityUtil.dp2px(3);
-    /**
-     * 指示点与圆环的距离
-     */
-    int betweenPointAndArc = DensityUtil.dp2px(2);
-    /**
-     * 文字与指示线之间的距离
-     */
-    private int distanceBetweenTextAndLine = DensityUtil.dp2px(5);
-    /**
-     * 上下文字之间的距离
-     */
-    private int distanceBetweenText = DensityUtil.dp2px(6);
-    /**
-     * 数字与百分号之间的距离
-     */
-    private int distanceBetweenNumberAndPercent = DensityUtil.dp2px(3);
-    /**
-     * 任务数字与单位之间的距离
-     */
-    private int distanceBetweenTaskNumberAndSuffix = DensityUtil.dp2px(3);
-    private float total = 0.9f;
-    private int number = 888;
-
-    private Point temp = new Point();
-    Rect rect = new Rect();
+    private Rect rect = new Rect();
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -156,14 +203,14 @@ public class SimpleHalfRingView extends View {
         /************************************背景透明**************************************/
         setBackgroundColor(Color.TRANSPARENT);
         /************************************圆环背景**************************************/
-        drawPaint.setColor(backColor);
+        drawPaint.setColor(ringBackColor);
         drawPaint.setStyle(Paint.Style.STROKE);
-        drawPaint.setStrokeWidth(strokeWidth);
+        drawPaint.setStrokeWidth(ringStrokeWidth);
         drawPaint.setStrokeCap(Paint.Cap.ROUND);
         canvas.drawArc(ringBackgroundRect, startAngle, endAngle, false, drawPaint);
         drawPaint.setStrokeCap(Paint.Cap.BUTT);
         /************************************内圈圆点**************************************/
-        drawPaint.setColor(backColor);
+        drawPaint.setColor(ringBackColor);
         drawPaint.setStyle(Paint.Style.STROKE);
         drawPaint.setStrokeWidth(DensityUtil.dp2px(1));
         drawPaint.setPathEffect(pointDashPathEffect);
@@ -172,14 +219,14 @@ public class SimpleHalfRingView extends View {
         /************************************圆环前景**************************************/
         drawPaint.setColor(forceColor);
         drawPaint.setStyle(Paint.Style.STROKE);
-        drawPaint.setStrokeWidth(strokeWidth);
+        drawPaint.setStrokeWidth(ringStrokeWidth);
         drawPaint.setStrokeCap(Paint.Cap.ROUND);
-        canvas.drawArc(ringBackgroundRect, startAngle, getSweepAngle(percent * total), false, drawPaint);
+        canvas.drawArc(ringBackgroundRect, startAngle, getSweepAngle(getProgress()), false, drawPaint);
         drawPaint.setStrokeCap(Paint.Cap.BUTT);
         /************************************中间文字**************************************/
         int offset = DensityUtil.dp2px(5);
 
-        String numberStr = String.valueOf((int) (percent * number));
+        String numberStr = String.valueOf((int) (currentPercent * total));
         textPaint.setTextSize(DensityUtil.dp2px(36));
         textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
         int[] numberSize = DrawViewUtils.getTextWH(textPaint, numberStr);
@@ -196,6 +243,8 @@ public class SimpleHalfRingView extends View {
         textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
         int[] taskSize = DrawViewUtils.getTextWH(textPaint, taskStr);
         canvas.drawText(taskStr, centerPoint.x - ((taskSize[1] + offset) >> 1), centerPoint.y + (numberSize[1] >> 1) + taskSize[1], textPaint);
+        /**************************************************************************指示区域****************************************************************************/
+
         /************************************左半球指示文字**************************************/
         String strLeftNumber = getProgressStr(true) + "";
         textPaint.setColor(forceColor);
@@ -217,20 +266,46 @@ public class SimpleHalfRingView extends View {
 
 
         rect.left = getPaddingStart();
-        rect.top = centerPoint.y - distanceBetweenTextAndLine - strLeftNumberSize[1];
+        rect.top = centerPoint.y - distanceBetweenTextAndMidLine - strLeftNumberSize[1];
         rect.right = rect.left + strLeftNumberSize[0] + strLeftPercentSize[0] + distanceBetweenNumberAndPercent;
-        rect.bottom = centerPoint.y + distanceBetweenTextAndLine + strLeftDownSize[1];
+        rect.bottom = centerPoint.y + distanceBetweenTextAndMidLine + strLeftDownSize[1];
 
         textPaint.setTextSize(DensityUtil.sp2px(22f));
         textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-        canvas.drawText(strLeftNumber, rect.left, ((rect.bottom + rect.top) >> 1) - distanceBetweenTextAndLine, textPaint);
+        canvas.drawText(strLeftNumber, rect.left, ((rect.bottom + rect.top) >> 1) - distanceBetweenTextAndMidLine, textPaint);
         textPaint.setTextSize(DensityUtil.sp2px(12f));
         textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
-        canvas.drawText(strLeftPercent, rect.right - strLeftPercentSize[0], ((rect.bottom + rect.top) >> 1) - distanceBetweenTextAndLine, textPaint);
+        canvas.drawText(strLeftPercent, rect.right - strLeftPercentSize[0], ((rect.bottom + rect.top) >> 1) - distanceBetweenTextAndMidLine, textPaint);
         textPaint.setTextSize(DensityUtil.sp2px(12f));
         textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
-        canvas.drawText(strLeftDown, rect.left + (rect.width() >> 1) - (strLeftDownSize[0] >> 1), ((rect.bottom + rect.top) >> 1) + distanceBetweenTextAndLine, textPaint);
+        canvas.drawText(strLeftDown, rect.left + (rect.width() >> 1) - (strLeftDownSize[0] >> 1), ((rect.bottom + rect.top) >> 1) + distanceBetweenTextAndMidLine, textPaint);
+        /************************************左半球指示点**************************************/
 
+        float leftAngle;
+
+        if (pointAnimation) {
+            leftAngle = startAngle + getSweepAngle(Math.min(getProgress(), 0.5f)) * 0.5f;
+        } else {
+            leftAngle = startAngle + getSweepAngle((float) (totalPercent >= 0.5f ? 0.5 : totalPercent)) * 0.5f;
+        }
+        Point leftPoint = DrawViewUtils.calculatePoint(centerPoint.x, centerPoint.y, (int) (radius + ringStrokeWidth + pointRadius + betweenPointAndArc), leftAngle);
+        drawPaint.setColor(forceColor);
+        drawPaint.setStyle(Paint.Style.STROKE);
+        drawPaint.setStrokeWidth(DensityUtil.dp2px(2));
+        canvas.drawCircle(leftPoint.x, leftPoint.y, pointRadius, drawPaint);
+        /************************************左半球指示线**************************************/
+        drawPaint.setColor(forceColor);
+        drawPaint.setStyle(Paint.Style.FILL);
+        drawPaint.setStrokeWidth(DensityUtil.dp2px(2));
+        drawPaint.setPathEffect(lineDashPathEffect);
+        int startLeftX = leftPoint.x - pointRadius - distanceBetweenLineAndPoint;
+        int startY = leftPoint.y;
+        int endLeftX = leftPoint.x - pointRadius - distanceBetweenLineAndPoint - lineLength;
+        int endLeftY = leftPoint.y;
+        canvas.drawLine(startLeftX, startY, endLeftX, endLeftY, drawPaint);
+        canvas.drawLine(endLeftX, endLeftY, rect.right + distanceBetweenTextRectAndLine, rect.top + (rect.height() >> 1), drawPaint);
+        drawPaint.setPathEffect(null);
+        /**************************************************************************右半球****************************************************************************/
         /************************************右半球指示文字**************************************/
         String strRightPercent = "%";
         textPaint.setColor(forceColor);
@@ -254,61 +329,49 @@ public class SimpleHalfRingView extends View {
 
         rect.right = getWidth() - getPaddingEnd();
         rect.left = rect.right - strRightPercentSize[0] - distanceBetweenNumberAndPercent - strRightNumberSize[0];
-        rect.top = centerPoint.y - distanceBetweenTextAndLine - strRightNumberSize[1];
-        rect.bottom = centerPoint.y + distanceBetweenTextAndLine + strRightDownSize[1];
+        rect.top = centerPoint.y - distanceBetweenTextAndMidLine - strRightNumberSize[1];
+        rect.bottom = centerPoint.y + distanceBetweenTextAndMidLine + strRightDownSize[1];
 
         textPaint.setTextSize(DensityUtil.sp2px(12f));
         textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
-        canvas.drawText(strRightPercent, rect.right - strRightPercentSize[0], ((rect.bottom + rect.top) >> 1) - distanceBetweenTextAndLine, textPaint);
+        canvas.drawText(strRightPercent, rect.right - strRightPercentSize[0], ((rect.bottom + rect.top) >> 1) - distanceBetweenTextAndMidLine, textPaint);
         textPaint.setTextSize(DensityUtil.sp2px(22f));
         textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-        canvas.drawText(strRightNumber, rect.right - strRightPercentSize[0] - strRightNumberSize[0] - distanceBetweenNumberAndPercent, ((rect.bottom + rect.top) >> 1) - distanceBetweenTextAndLine, textPaint);
+        canvas.drawText(strRightNumber, rect.right - strRightPercentSize[0] - strRightNumberSize[0] - distanceBetweenNumberAndPercent, ((rect.bottom + rect.top) >> 1) - distanceBetweenTextAndMidLine, textPaint);
         textPaint.setTextSize(DensityUtil.sp2px(12f));
         textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
-        canvas.drawText(strRightDown, rect.left + (rect.width() >> 1) - (strLeftDownSize[0] >> 1), ((rect.bottom + rect.top) >> 1) + distanceBetweenTextAndLine, textPaint);
-
-        /************************************指示点**************************************/
+        canvas.drawText(strRightDown, rect.left + (rect.width() >> 1) - (strLeftDownSize[0] >> 1), ((rect.bottom + rect.top) >> 1) + distanceBetweenTextAndMidLine, textPaint);
 
 
-        //左半圆
-        float leftAngle;
+        /************************************右半球指示点**************************************/
 
+        Point rightPoint;
         if (pointAnimation) {
-            float progress = (float) (percent * total);
-            leftAngle = startAngle + getSweepAngle(Math.min(progress, 0.5f)) * 0.5f;
+            float progress = (float) (Math.min(currentPercent, 0.5f) * totalPercent);
+            float angle = getSweepAngle(progress) * 0.5f;
+            rightPoint = DrawViewUtils.calculatePoint(centerPoint.x, centerPoint.y, (int) (radius + ringStrokeWidth + pointRadius + betweenPointAndArc), startAngle + 180 + 45 + angle);
         } else {
-            leftAngle = startAngle + getSweepAngle((float) (total >= 0.5f ? 0.5 : total)) * 0.5f;
+            float progress = (float) (Math.min(totalPercent, 0.5f) * totalPercent);
+            float angle = getSweepAngle(progress) * 0.5f;
+            rightPoint = DrawViewUtils.calculatePoint(centerPoint.x, centerPoint.y, (int) (radius + ringStrokeWidth + pointRadius + betweenPointAndArc), startAngle + 180 + 45 + angle);
         }
-        Point leftPoint = DrawViewUtils.calculatePoint(centerPoint.x, centerPoint.y, (int) (radius + strokeWidth + pointRadius + betweenPointAndArc), leftAngle);
+//        rightPoint = DrawViewUtils.calculatePoint(centerPoint.x, centerPoint.y, (int) (radius + ringStrokeWidth + pointRadius + betweenPointAndArc), leftAngle + 180);
         drawPaint.setColor(forceColor);
         drawPaint.setStyle(Paint.Style.STROKE);
         drawPaint.setStrokeWidth(DensityUtil.dp2px(2));
-        canvas.drawCircle(leftPoint.x, leftPoint.y, pointRadius, drawPaint);
-        //右半圆
-//        float rightAngle = 0;
-//        if (pointAnimation) {
-//            float progress = (float) (percent * total) * 0.5f;
-//            rightAngle = startAngle + endAngle - getSweepAngle(progress);
-//        } else {
-//            float progress = (float) (total >= 0.5f ? 0.5 : total) * 0.5f;
-//            rightAngle = startAngle + endAngle - getSweepAngle(progress);
-//        }
-
-        float rightAngle = 0;
-        if (pointAnimation) {
-            float progress = 1 - (float) (percent * total);
-            rightAngle = startAngle + endAngle - (endAngle - getSweepAngle(progress));
-        } else {
-            float progress = (float) (total >= 0.5f ? 0.5 : total) * 0.5f;
-            rightAngle = startAngle + endAngle - getSweepAngle(progress);
-        }
-
-
-        Point point = DrawViewUtils.calculatePoint(centerPoint.x, centerPoint.y, (int) (radius + strokeWidth + pointRadius + betweenPointAndArc), rightAngle);
+        canvas.drawCircle(rightPoint.x, rightPoint.y, pointRadius, drawPaint);
+        /************************************左半球指示线**************************************/
         drawPaint.setColor(forceColor);
-        drawPaint.setStyle(Paint.Style.STROKE);
+        drawPaint.setStyle(Paint.Style.FILL);
         drawPaint.setStrokeWidth(DensityUtil.dp2px(2));
-        canvas.drawCircle(point.x, point.y, pointRadius, drawPaint);
+        drawPaint.setPathEffect(lineDashPathEffect);
+        int startRightLeftX = rightPoint.x + pointRadius + distanceBetweenLineAndPoint;
+        int startRightY = rightPoint.y;
+        int endRightX = rightPoint.x + pointRadius + distanceBetweenLineAndPoint + lineLength;
+        int endRightY = rightPoint.y;
+        canvas.drawLine(startRightLeftX, startRightY, endRightX, endRightY, drawPaint);
+        canvas.drawLine(endRightX, endRightY, rect.left - distanceBetweenTextRectAndLine, rect.top + (rect.height() >> 1), drawPaint);
+        drawPaint.setPathEffect(null);
     }
 
     /**
@@ -328,7 +391,16 @@ public class SimpleHalfRingView extends View {
      * @return 0-100
      */
     private int getProgressStr(boolean isLeft) {
-        return isLeft ? (int) (1f * total * 100) : (int) (1f * (1f - total) * 100);
+        return isLeft ? (int) (1f * totalPercent * 100) : (int) (1f * (1f - totalPercent) * 100);
+    }
+
+    /**
+     * 获取实时进度
+     *
+     * @return 0f-1f
+     */
+    private float getProgress() {
+        return (float) (currentPercent * totalPercent);
     }
 
 
@@ -336,15 +408,24 @@ public class SimpleHalfRingView extends View {
      * 开始动画
      */
     public void startAnimation() {
-        if (valueAnimator != null) {
-            valueAnimator.cancel();
-        }
+        clear();
         valueAnimator = ValueAnimator.ofFloat(0, 1f);
         valueAnimator.setRepeatMode(ValueAnimator.RESTART);
         valueAnimator.setDuration(ANIMATION_DURATION);
         valueAnimator.setInterpolator(new LinearInterpolator());
         valueAnimator.addUpdateListener(listener);
         valueAnimator.start();
+    }
+
+    /**
+     * 打扫卫生
+     */
+    public void clear() {
+        if (valueAnimator != null) {
+            valueAnimator.cancel();
+            valueAnimator.removeAllListeners();
+            valueAnimator.removeAllUpdateListeners();
+        }
     }
 
     /**
@@ -357,24 +438,41 @@ public class SimpleHalfRingView extends View {
     private ValueAnimator.AnimatorUpdateListener listener = new ValueAnimator.AnimatorUpdateListener() {
         @Override
         public void onAnimationUpdate(ValueAnimator animation) {
-            percent = (float) animation.getAnimatedValue();
+            currentPercent = (float) animation.getAnimatedValue();
+            if (onSimpleHalfRingViewCallBack != null) {
+                onSimpleHalfRingViewCallBack.onProgressChanged(getProgress(), total, true);
+            }
             invalidate();
         }
     };
 
-    public void setData(int number, float total, boolean animation) {
-//        if (pointAnimation) {
-//            percent = 0.5f;
-//        } else {
-//            percent = 1f;
-//        }
-        percent = 1f;
-        this.number = number;
+    public void setData(int total, float totalPercent, boolean animation) {
+        pointAnimation = animation;
+        currentPercent = 1f;
         this.total = total;
+        this.totalPercent = totalPercent;
         if (animation) {
             startAnimation();
         } else {
             requestLayout();
+            if (onSimpleHalfRingViewCallBack != null) {
+                onSimpleHalfRingViewCallBack.onProgressChanged(getProgress(), total, false);
+            }
         }
+    }
+
+    private OnSimpleHalfRingViewCallBack onSimpleHalfRingViewCallBack;
+
+    public void setOnSimpleHalfRingViewCallBack(OnSimpleHalfRingViewCallBack onSimpleHalfRingViewCallBack) {
+        this.onSimpleHalfRingViewCallBack = onSimpleHalfRingViewCallBack;
+    }
+
+    public interface OnSimpleHalfRingViewCallBack {
+        /**
+         * @param percent       当前进度（百分比）
+         * @param total         总数
+         * @param fromAnimation 该变化是否来自动画触发
+         */
+        void onProgressChanged(float percent, int total, boolean fromAnimation);
     }
 }

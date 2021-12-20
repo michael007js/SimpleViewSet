@@ -31,7 +31,8 @@
                     android:layout_height="200dp"/>
 
                 <SeekBar
-                    android:id="@+id/seek_bar"
+                    android:progress="50"
+                    android:id="@+id/simple_half_ring_view_seek_bar"
                     android:max="100"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
