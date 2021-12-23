@@ -22,6 +22,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical">
+                
+                <com.sss.michael.simpleview.view.SimpleMusicJumpRectView
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"/>
 
                 <com.sss.michael.simpleview.view.SimpleHalfRingView
                     android:id="@+id/simple_half_ring_view"
