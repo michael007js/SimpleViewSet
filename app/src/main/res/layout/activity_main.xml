@@ -18,10 +18,14 @@
             android:layout_height="match_parent">
 
             <LinearLayout
-                android:background="@color/colorPrimaryDark"
+                android:background="@color/colorAccent"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical">
+
+                <com.sss.michael.simpleview.view.SimpleColumnarView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
                 
                 <com.sss.michael.simpleview.view.SimpleMusicJumpRectView
                     android:layout_width="match_parent"
