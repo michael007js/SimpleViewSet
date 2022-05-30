@@ -29,7 +29,7 @@ public class SimpleColumnarView extends View {
         paint.setAntiAlias(true);
     }
 
-    private boolean isDebug = false;
+    private boolean isDebug = true;
     /**
      * 顶部预留区域、图表区域与文字区域比例
      */
@@ -53,7 +53,7 @@ public class SimpleColumnarView extends View {
     /**
      * 背景虚线颜色
      */
-    private int dashLineColor = isDebug ? Color.BLACK : Color.parseColor("#eeeeee");
+    private int dashLineColor = isDebug ? Color.BLACK : Color.parseColor("#cccccc");
     /**
      * 宽高比例
      */
@@ -88,11 +88,11 @@ public class SimpleColumnarView extends View {
         super(context, attrs, defStyleAttr);
         if (isDebug) {
             List<SimpleColumnParameter> data = new ArrayList<>();
-            data.add(new SimpleColumnParameter(100, "100", "2022"));
-            data.add(new SimpleColumnParameter(80, "80", "2022"));
-            data.add(new SimpleColumnParameter(90, "90", "2022"));
-            data.add(new SimpleColumnParameter(22, "22", "2022"));
-            data.add(new SimpleColumnParameter(88, "88", "2022"));
+            data.add(new SimpleColumnParameter(100, "100", "2022", true, 14));
+            data.add(new SimpleColumnParameter(80, "80", "2022", true, 14));
+            data.add(new SimpleColumnParameter(90, "90", "2022", true, 14));
+            data.add(new SimpleColumnParameter(22, "22", "2022", true, 14));
+            data.add(new SimpleColumnParameter(88, "88", "2022", true, 14));
             setData(data);
             setOnClickListener(new OnClickListener() {
                 @Override
@@ -169,7 +169,7 @@ public class SimpleColumnarView extends View {
             canvas.drawRect(rectF, paint);
             paint.setColor(list.get(i).columnTextColor);
             paint.setTextSize(list.get(i).columnTextSize);
-            paint.setFakeBoldText(true);
+            paint.setFakeBoldText(list.get(i).columnTextBold);
             canvas.drawText(list.get(i).columnText, list.get(i).drawRectF.left + list.get(i).drawRectF.width() / 2, list.get(i).drawRectF.top - list.get(i).distanceBetweenRemarkWithColumn, paint);
         }
 
@@ -189,13 +189,12 @@ public class SimpleColumnarView extends View {
         post(new Runnable() {
             @Override
             public void run() {
-                float max = 0, min = Float.MAX_VALUE;
+                float max = 0;
                 for (int i = 0; i < data.size(); i++) {
                     max = Math.max(max, data.get(i).yAxisValue);
-                    min = Math.min(min, data.get(i).yAxisValue);
                 }
                 //数据与有效区高度百分比
-                float percent = effectiveChartArea.height() / max;
+                float percent = max==0?0:effectiveChartArea.height() / max;
                 //每个柱状图宽度=(图表有效区宽度-图表左右边距-每个柱状间的间隔)/柱条数量
                 float effectiveWidth = (effectiveChartArea.width() - paddingLeft - paddingRight - (data.size() - 1) * distance) / data.size();
                 for (int i = 0; i < data.size(); i++) {
@@ -210,6 +209,7 @@ public class SimpleColumnarView extends View {
                 }
                 list.clear();
                 list.addAll(data);
+                invalidate();
                 start();
             }
         });
@@ -218,7 +218,10 @@ public class SimpleColumnarView extends View {
 
 
     private void start() {
-        stop();
+        if (valueAnimator != null && valueAnimator.isRunning()) {
+            return;
+        }
+//        stop();
         if (list != null && list.size() > 0) {
             valueAnimator = ValueAnimator.ofFloat(0f, 1f);
             valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -295,11 +298,15 @@ public class SimpleColumnarView extends View {
         /**
          * 柱状图表文字备注字体大小
          */
-        private float columnTextSize = DensityUtil.sp2px(14);
+        private float columnTextSize;
         /**
          * 柱状图表文字备注色号
          */
         private int columnTextColor = Color.parseColor("#212121");
+        /**
+         * 柱状图表文字是否是粗体
+         */
+        private boolean columnTextBold;
         /**
          * 每个柱状图的理论最佳绘制区域
          */
@@ -309,10 +316,12 @@ public class SimpleColumnarView extends View {
          */
         private RectF drawRectF = new RectF();
 
-        public SimpleColumnParameter(float yAxisValue, String columnText, String xAxisText) {
+        public SimpleColumnParameter(float yAxisValue, String columnText, String xAxisText, boolean columnTextBold, float columnTextSize) {
             this.yAxisValue = yAxisValue;
             this.columnText = columnText;
             this.xAxisText = xAxisText;
+            this.columnTextBold = columnTextBold;
+            this.columnTextSize =DensityUtil.sp2px(columnTextSize > 0 ? columnTextSize : 14);
         }
     }
 }
