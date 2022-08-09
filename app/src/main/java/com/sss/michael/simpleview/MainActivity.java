@@ -16,6 +16,7 @@ import com.sss.michael.simpleview.view.SimpleLinearChart;
 import com.sss.michael.simpleview.view.SimpleProgressBar;
 import com.sss.michael.simpleview.view.SimpleRotatingView;
 import com.sss.michael.simpleview.view.SimpleSpiderView;
+import com.sss.michael.simpleview.view.SimpleWrapOffsetWidthView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private SimpleDoubleSeekBar simpleDoubleSeekBar;
     private SimpleDoubleSeekBar2 simpleDoubleSeekBar2;
     private SimpleHalfRingView simpleHalfRingView;
+    private SimpleWrapOffsetWidthView simpleWrapOffsetWidthView;
     private SeekBar simpleHalfRingViewSeekBar;
 
     @Override
@@ -152,6 +154,20 @@ public class MainActivity extends AppCompatActivity {
         });
         simpleHalfRingView.setData(888, simpleHalfRingViewSeekBar.getProgress() * 1.0f / 100, true);
 
+
+        simpleWrapOffsetWidthView = findViewById(R.id.simpleWrapOffsetWidthView);
+        findViewById(R.id.simpleWrapOffsetWidthViewAction).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (v.getTag() == null){
+                    simpleWrapOffsetWidthView.start(true);
+                    v.setTag("");
+                }else {
+                    simpleWrapOffsetWidthView.start(false);
+                    v.setTag(null);
+                }
+            }
+        });
     }
 
 }
