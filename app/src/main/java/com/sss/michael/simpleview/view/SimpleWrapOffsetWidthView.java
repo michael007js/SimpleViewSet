@@ -11,20 +11,27 @@ import android.widget.FrameLayout;
 import com.sss.michael.simpleview.utils.DensityUtil;
 
 public class SimpleWrapOffsetWidthView extends FrameLayout {
-
+    /**
+     * 溃缩
+     */
+    public static final int STATE_COLLAPSED = 1;
+    /**
+     * 扩张
+     */
+    public static final int STATE_EXPANDED = 0;
+    /**
+     * 当前状态
+     */
+    private int currentState = STATE_EXPANDED;
     /**
      * 动画
      */
     private ValueAnimator valueAnimator;
     /**
-     * 宽度
-     */
-    private int width;
-
-    /**
      * 阈值
      */
     private int threshold = DensityUtil.dp2px(200);
+
     private OnSimpleWrapOffsetWidthViewCallBack onSimpleWrapOffsetWidthViewCallBack;
 
     public void setOnSimpleWrapOffsetWidthViewCallBack(OnSimpleWrapOffsetWidthViewCallBack onSimpleWrapOffsetWidthViewCallBack) {
@@ -45,13 +52,11 @@ public class SimpleWrapOffsetWidthView extends FrameLayout {
 
     public SimpleWrapOffsetWidthView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
-
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        width = MeasureSpec.getSize(widthMeasureSpec) - getPaddingStart() - getPaddingEnd();
         if (getChildCount() != 1) {
             throw new RuntimeException("you must add one child view!");
         }
@@ -63,47 +68,53 @@ public class SimpleWrapOffsetWidthView extends FrameLayout {
         clear();
     }
 
-    int left;
-
-    public void start(final boolean isClose) {
-        start(isClose, threshold);
+    /**
+     * 开始动画
+     *
+     * @param state 状态 {@link #STATE_COLLAPSED} 或 {@link #STATE_EXPANDED}
+     */
+    public void start(int state) {
+        start(state, threshold);
     }
 
-    public void start(final boolean isClose, int threshold) {
+    public void start(final int state, int threshold) {
+        if (currentState == state){
+            return;
+        }
+        if (valueAnimator != null && valueAnimator.isRunning()) {
+            return;
+        }
         this.threshold = threshold;
         clear();
-        valueAnimator = ValueAnimator.ofFloat(0f, 1f);
+        if (state == STATE_COLLAPSED) {
+            valueAnimator = ValueAnimator.ofInt(0, threshold);
+        } else {
+            valueAnimator = ValueAnimator.ofInt(threshold, 0);
+        }
+
         valueAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationStart(Animator animation) {
                 super.onAnimationStart(animation);
-                left = getChildAt(0).getLeft();
                 if (onSimpleWrapOffsetWidthViewCallBack != null) {
-                    onSimpleWrapOffsetWidthViewCallBack.onBeforeStatusChange(isClose);
+                    onSimpleWrapOffsetWidthViewCallBack.onStatusChangeStart(currentState);
                 }
             }
 
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
+                currentState = state;
                 if (onSimpleWrapOffsetWidthViewCallBack != null) {
-                    onSimpleWrapOffsetWidthViewCallBack.onAfterStatusChanged(isClose);
+                    onSimpleWrapOffsetWidthViewCallBack.onStatusChangedComplete(currentState);
                 }
             }
         });
         valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                float value = (float) animation.getAnimatedValue();
-                int prepareLeft;
-                if (isClose) {
-                    prepareLeft = getChildAt(0).getLeft() + (int) (value * width);
-                    left = Math.min(prepareLeft, width - SimpleWrapOffsetWidthView.this.threshold);
-                } else {
-                    prepareLeft = getChildAt(0).getLeft() - (int) (value * width);
-                    left = Math.max(prepareLeft, 0);
-                }
-                getChildAt(0).layout(left, getChildAt(0).getTop(), getChildAt(0).getRight(), getChildAt(0).getBottom());
+                int value = (int) animation.getAnimatedValue();
+                getChildAt(0).layout(value, getChildAt(0).getTop(), getChildAt(0).getRight(), getChildAt(0).getBottom());
 
             }
         });
@@ -123,17 +134,17 @@ public class SimpleWrapOffsetWidthView extends FrameLayout {
 
     public interface OnSimpleWrapOffsetWidthViewCallBack {
         /**
-         * 状态更改前回调
+         * 状态更改准备开始更改回调
          *
-         * @param isClose 是否是关闭状态
+         * @param state 状态 {@link #STATE_COLLAPSED} 或 {@link #STATE_EXPANDED}
          */
-        void onBeforeStatusChange(boolean isClose);
+        void onStatusChangeStart(int state);
 
         /**
-         * 状态更改后回调
+         * 状态更改完成后回调
          *
-         * @param isClose 是否是关闭状态
+         * @param state 状态 {@link #STATE_COLLAPSED} 或 {@link #STATE_EXPANDED}
          */
-        void onAfterStatusChanged(boolean isClose);
+        void onStatusChangedComplete(int state);
     }
 }

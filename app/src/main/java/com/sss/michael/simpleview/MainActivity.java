@@ -160,10 +160,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (v.getTag() == null){
-                    simpleWrapOffsetWidthView.start(true);
+                    simpleWrapOffsetWidthView.start(SimpleWrapOffsetWidthView.STATE_COLLAPSED);
                     v.setTag("");
                 }else {
-                    simpleWrapOffsetWidthView.start(false);
+                    simpleWrapOffsetWidthView.start(SimpleWrapOffsetWidthView.STATE_EXPANDED);
                     v.setTag(null);
                 }
             }
