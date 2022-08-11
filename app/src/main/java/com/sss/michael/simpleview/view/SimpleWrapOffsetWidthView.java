@@ -11,6 +11,7 @@ import android.widget.FrameLayout;
 import com.sss.michael.simpleview.utils.DensityUtil;
 
 public class SimpleWrapOffsetWidthView extends FrameLayout {
+    private int width = 0;
     /**
      * 溃缩
      */
@@ -60,6 +61,9 @@ public class SimpleWrapOffsetWidthView extends FrameLayout {
         if (getChildCount() != 1) {
             throw new RuntimeException("you must add one child view!");
         }
+        if (width == 0) {
+            width = getChildAt(0).getMeasuredWidth();
+        }
     }
 
     @Override
@@ -78,7 +82,7 @@ public class SimpleWrapOffsetWidthView extends FrameLayout {
     }
 
     public void start(final int state, int threshold) {
-        if (currentState == state){
+        if (currentState == state) {
             return;
         }
         if (valueAnimator != null && valueAnimator.isRunning()) {
@@ -87,9 +91,9 @@ public class SimpleWrapOffsetWidthView extends FrameLayout {
         this.threshold = threshold;
         clear();
         if (state == STATE_COLLAPSED) {
-            valueAnimator = ValueAnimator.ofInt(0, threshold);
+            valueAnimator = ValueAnimator.ofInt(width, threshold);
         } else {
-            valueAnimator = ValueAnimator.ofInt(threshold, 0);
+            valueAnimator = ValueAnimator.ofInt(threshold, width);
         }
 
         valueAnimator.addListener(new AnimatorListenerAdapter() {
@@ -97,7 +101,7 @@ public class SimpleWrapOffsetWidthView extends FrameLayout {
             public void onAnimationStart(Animator animation) {
                 super.onAnimationStart(animation);
                 if (onSimpleWrapOffsetWidthViewCallBack != null) {
-                    onSimpleWrapOffsetWidthViewCallBack.onStatusChangeStart(currentState);
+                    onSimpleWrapOffsetWidthViewCallBack.onStatusChangeStart(currentState, getChildAt(0).getLeft(), getChildAt(0).getTop(), getChildAt(0).getRight(), getChildAt(0).getBottom());
                 }
             }
 
@@ -106,7 +110,7 @@ public class SimpleWrapOffsetWidthView extends FrameLayout {
                 super.onAnimationEnd(animation);
                 currentState = state;
                 if (onSimpleWrapOffsetWidthViewCallBack != null) {
-                    onSimpleWrapOffsetWidthViewCallBack.onStatusChangedComplete(currentState);
+                    onSimpleWrapOffsetWidthViewCallBack.onStatusChangedComplete(currentState, getChildAt(0).getLeft(), getChildAt(0).getTop(), getChildAt(0).getRight(), getChildAt(0).getBottom());
                 }
             }
         });
@@ -114,11 +118,17 @@ public class SimpleWrapOffsetWidthView extends FrameLayout {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 int value = (int) animation.getAnimatedValue();
-                getChildAt(0).layout(value, getChildAt(0).getTop(), getChildAt(0).getRight(), getChildAt(0).getBottom());
+                LayoutParams layoutParams = (LayoutParams) getChildAt(0).getLayoutParams();
+                layoutParams.width = value;
+                getChildAt(0).setLayoutParams(layoutParams);
+//                getChildAt(0).layout(value, getChildAt(0).getTop(), getChildAt(0).getRight(), getChildAt(0).getBottom());
+                if (onSimpleWrapOffsetWidthViewCallBack != null) {
+                    onSimpleWrapOffsetWidthViewCallBack.onStatusChanging(currentState, getChildAt(0).getLeft(), getChildAt(0).getTop(), getChildAt(0).getRight(), getChildAt(0).getBottom());
+                }
 
             }
         });
-        valueAnimator.setDuration(300);
+        valueAnimator.setDuration(150);
         valueAnimator.setInterpolator(new LinearInterpolator());
         valueAnimator.setRepeatMode(ValueAnimator.RESTART);
         valueAnimator.start();
@@ -136,15 +146,34 @@ public class SimpleWrapOffsetWidthView extends FrameLayout {
         /**
          * 状态更改准备开始更改回调
          *
-         * @param state 状态 {@link #STATE_COLLAPSED} 或 {@link #STATE_EXPANDED}
+         * @param state       状态 {@link #STATE_COLLAPSED} 或 {@link #STATE_EXPANDED}
+         * @param childLeft   子布局左边
+         * @param childTop    子布局顶边
+         * @param childRight  子布局右边
+         * @param childBottom 子布局底边
          */
-        void onStatusChangeStart(int state);
+        void onStatusChangeStart(int state, int childLeft, int childTop, int childRight, int childBottom);
+
+        /**
+         * 状态更改准备开始更改回调
+         *
+         * @param state       状态 {@link #STATE_COLLAPSED} 或 {@link #STATE_EXPANDED}
+         * @param childLeft   子布局左边
+         * @param childTop    子布局顶边
+         * @param childRight  子布局右边
+         * @param childBottom 子布局底边
+         */
+        void onStatusChanging(int state, int childLeft, int childTop, int childRight, int childBottom);
 
         /**
          * 状态更改完成后回调
          *
-         * @param state 状态 {@link #STATE_COLLAPSED} 或 {@link #STATE_EXPANDED}
+         * @param state       状态 {@link #STATE_COLLAPSED} 或 {@link #STATE_EXPANDED}
+         * @param childLeft   子布局左边
+         * @param childTop    子布局顶边
+         * @param childRight  子布局右边
+         * @param childBottom 子布局底边
          */
-        void onStatusChangedComplete(int state);
+        void onStatusChangedComplete(int state, int childLeft, int childTop, int childRight, int childBottom);
     }
 }
