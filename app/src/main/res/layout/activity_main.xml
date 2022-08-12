@@ -18,6 +18,7 @@
             android:layout_height="match_parent">
 
             <LinearLayout
+                android:gravity="center"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@color/colorPrimaryDark"
@@ -31,11 +32,12 @@
                     android:layout_width="match_parent"
                     android:layout_height="200dp"/>
 
-                <Button
-                    android:id="@+id/simpleWrapOffsetWidthViewAction"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="折叠" />
+                <com.sss.michael.simpleview.view.SimpleDeformationBackgroundView
+                    android:id="@+id/simpleDeformationBackgroundView"
+                    android:layout_width="wrap_content"
+                    android:paddingHorizontal="100dp"
+                    android:paddingVertical="40dp"
+                    android:layout_height="wrap_content"/>
 
                 <com.sss.michael.simpleview.view.SimpleWrapOffsetWidthView
                     android:id="@+id/simpleWrapOffsetWidthView"
@@ -46,6 +48,7 @@
                         android:id="@+id/simple_half_ring_view"
                         android:layout_width="match_parent"
                         android:layout_height="200dp"
+                        app:dbv_oblique_left="true"
                         android:paddingStart="10dp"
                         android:paddingEnd="10dp" />
 

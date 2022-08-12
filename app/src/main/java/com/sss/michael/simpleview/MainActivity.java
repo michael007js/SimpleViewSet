@@ -156,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         simpleWrapOffsetWidthView = findViewById(R.id.simpleWrapOffsetWidthView);
-        findViewById(R.id.simpleWrapOffsetWidthViewAction).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.simpleDeformationBackgroundView).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (v.getTag() == null){

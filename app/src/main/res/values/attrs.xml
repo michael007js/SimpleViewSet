@@ -28,4 +28,38 @@
         <!--背景色-->
         <attr name="simple_progressbar_backgroundColor" format="color" />
     </declare-styleable>
+
+
+    <declare-styleable name="SimpleDeformationBackgroundView">
+        <!--文字大小-->
+        <attr name="dbv_text_size" format="float" />
+        <!--文字-->
+        <attr name="dbv_text" format="string" />
+        <!--文字色-->
+        <attr name="dbv_textColor" format="color" />
+        <!--背景色-->
+        <attr name="dbv_background_color" format="color" />
+        <!--文字字体-->
+        <attr name="dbv_text_style" format="integer">
+            <enum name="bold_typeface" value="0" />
+            <enum name="default_typeface" value="1" />
+
+        </attr>
+
+        <!--左侧边是否斜置 为true时radiusLeftTop不可用，默认为0-->
+        <attr name="dbv_oblique_left" format="boolean" />
+        <!--右侧边是否斜置 为true时radiusRightBottom不可用，默认为0-->
+        <attr name="dbv_oblique_right" format="boolean" />
+        <!--斜边往内部溃缩量-->
+        <attr name="dbv_oblique_offset" format="dimension" />
+
+        <!--右上角圆角-->
+        <attr name="dbv_radius_right_top" format="dimension" />
+        <!--右下角圆角-->
+        <attr name="dbv_radius_right_bottom" format="dimension" />
+        <!--左下角圆角-->
+        <attr name="dbv_radius_left_bottom" format="dimension" />
+        <!--左上角圆角-->
+        <attr name="dbv_radius_left_top" format="dimension" />
+    </declare-styleable>
 </resources>
