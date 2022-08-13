@@ -324,13 +324,13 @@ public class SimplePentagonView extends android.view.View {
         canvas.drawText(String.valueOf(number), center.x, center.y - DrawViewUtils.getTextWH(paint, String.valueOf(number))[1], textCenterPaint);
 
         textCenterPaint.setTextSize(DensityUtil.sp2px(12));
-        textCenterPaint.setColor(Color.argb(Math.min(1f * progress * 5, 1f), 1f, 1f, 1f));
+//        textCenterPaint.setColor(Color.argb(Math.min(1f * progress * 5, 1f), 1f, 1f, 1f));
         textCenterPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
         textCenterPaint.setTextAlign(Paint.Align.CENTER);
         canvas.drawText(title, center.x, center.y + DensityUtil.dp2px(20), textCenterPaint);
 
         textCenterPaint.setTextSize(DensityUtil.sp2px(12));
-        textCenterPaint.setColor(Color.argb(1f * progress, 1f, 1f, 1f));
+//        textCenterPaint.setColor(Color.argb(1f * progress, 1f, 1f, 1f));
         textCenterPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
         textCenterPaint.setTextAlign(Paint.Align.CENTER);
         canvas.drawText(desc, center.x, center.y + DensityUtil.dp2px(40), textCenterPaint);

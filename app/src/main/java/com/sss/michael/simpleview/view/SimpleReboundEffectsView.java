@@ -85,7 +85,6 @@ public class SimpleReboundEffectsView extends FrameLayout {
      * 布局跟随手指的最大滑动量
      */
     private int valveOfMax = 600;
-
     private OnSimpleReboundEffectsViewCallBack onSimpleReboundEffectsViewCallBack;
 
     public void setOnSimpleReboundEffectsViewCallBack(OnSimpleReboundEffectsViewCallBack onSimpleReboundEffectsViewCallBack) {
@@ -141,7 +140,6 @@ public class SimpleReboundEffectsView extends FrameLayout {
                         diffY = 0;
                     }
                     diff_y = diffY;
-
                     if (interceptSlideScope > 0 && Math.abs(diffY) > interceptSlideScope) {
                         return super.dispatchTouchEvent(event);
                     }
@@ -342,10 +340,6 @@ public class SimpleReboundEffectsView extends FrameLayout {
         float y = event.getY();
         float result = y - this.y;
 
-        if (onSimpleReboundEffectsViewCallBack != null) {
-            boolean isTouch = (event.getAction() != MotionEvent.ACTION_UP && event.getAction() != MotionEvent.ACTION_CANCEL);
-            onSimpleReboundEffectsViewCallBack.onSingleTouchY(result, isTouch, getRealTimeSlideDirection(event) != direction);
-        }
         if (result < 0) {
             return SlideDirection.SLIDE_UP;
         } else if (result == 0) {
@@ -444,6 +438,4 @@ public class SimpleReboundEffectsView extends FrameLayout {
     public interface OnSimpleReboundEffectsViewCallBack {
         void onSingleTouchY(float singleDy, boolean isTouch, boolean reverseDirection);
     }
-
-
 }

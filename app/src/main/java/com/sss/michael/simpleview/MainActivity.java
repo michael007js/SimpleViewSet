@@ -2,6 +2,7 @@ package com.sss.michael.simpleview;
 
 import android.animation.ValueAnimator;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
@@ -14,7 +15,9 @@ import com.sss.michael.simpleview.view.SimpleHalfPieChart;
 import com.sss.michael.simpleview.view.SimpleHalfRingView;
 import com.sss.michael.simpleview.view.SimpleLinearChart;
 import com.sss.michael.simpleview.view.SimpleProgressBar;
+import com.sss.michael.simpleview.view.SimpleReboundEffectsView;
 import com.sss.michael.simpleview.view.SimpleRotatingView;
+import com.sss.michael.simpleview.view.SimpleSlideBesselView;
 import com.sss.michael.simpleview.view.SimpleSpiderView;
 import com.sss.michael.simpleview.view.SimpleWrapOffsetWidthView;
 
@@ -22,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.widget.NestedScrollView;
 
 public class MainActivity extends AppCompatActivity {
     private SimpleHalfPieChart simpleHalfPieChart;
@@ -33,12 +37,24 @@ public class MainActivity extends AppCompatActivity {
     private SimpleDoubleSeekBar2 simpleDoubleSeekBar2;
     private SimpleHalfRingView simpleHalfRingView;
     private SimpleWrapOffsetWidthView simpleWrapOffsetWidthView;
+    private SimpleSlideBesselView simpleSlideBesselView;
+    private NestedScrollView nestedScrollView;
     private SeekBar simpleHalfRingViewSeekBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        simpleSlideBesselView = findViewById(R.id.simpleSlideBesselView);
+        nestedScrollView = findViewById(R.id.nestedScrollView);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            nestedScrollView.setOnScrollChangeListener(new View.OnScrollChangeListener() {
+                @Override
+                public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+                    simpleSlideBesselView.setOffset(scrollY);
+                }
+            });
+        }
         simpleHalfPieChart = findViewById(R.id.simpleHalfPieChart);
         simpleHalfPieChart.setOnClickListener(new View.OnClickListener() {
             @Override

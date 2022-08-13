@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:keepScreenOn="true"
     android:orientation="vertical"
     tools:context=".MainActivity">
 
@@ -14,30 +15,37 @@
         app:sre_interceptSlideScope="0dp">
 
         <androidx.core.widget.NestedScrollView
+            android:id="@+id/nestedScrollView"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
             <LinearLayout
-                android:gravity="center"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@color/colorPrimaryDark"
+                android:gravity="center"
                 android:orientation="vertical">
 
                 <com.sss.michael.simpleview.view.SimpleColumnarView
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content" />
+
+                <com.sss.michael.simpleview.view.SimpleSlideBesselView
+                    android:id="@+id/simpleSlideBesselView"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp" />
+
 
                 <com.sss.michael.simpleview.view.SimpleMusicJumpRectView
                     android:layout_width="match_parent"
-                    android:layout_height="200dp"/>
+                    android:layout_height="200dp" />
 
                 <com.sss.michael.simpleview.view.SimpleDeformationBackgroundView
                     android:id="@+id/simpleDeformationBackgroundView"
                     android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:paddingHorizontal="100dp"
-                    android:paddingVertical="40dp"
-                    android:layout_height="wrap_content"/>
+                    android:paddingVertical="40dp" />
 
                 <com.sss.michael.simpleview.view.SimpleWrapOffsetWidthView
                     android:id="@+id/simpleWrapOffsetWidthView"
@@ -48,9 +56,9 @@
                         android:id="@+id/simple_half_ring_view"
                         android:layout_width="match_parent"
                         android:layout_height="200dp"
-                        app:dbv_oblique_left="true"
                         android:paddingStart="10dp"
-                        android:paddingEnd="10dp" />
+                        android:paddingEnd="10dp"
+                        app:dbv_oblique_left="true" />
 
                 </com.sss.michael.simpleview.view.SimpleWrapOffsetWidthView>
 
