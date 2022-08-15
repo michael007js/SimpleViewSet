@@ -157,6 +157,16 @@ public class DrawViewUtils {
         return point;
     }
 
+    /**
+     * 获取文字高度
+     *
+     * @param paint 画笔
+     * @param str   文字
+     * @return 文字高度
+     */
+    public static int getTextHeight(Paint paint, String str) {
+        return str.matches("^[\u4e00-\u9fa5]*") ? -DensityUtil.dp2px(1.2f) /*纯中文偏移量1.2*/ : -DensityUtil.dp2px(3);
+    }
 
     /**
      * 获取文字宽高

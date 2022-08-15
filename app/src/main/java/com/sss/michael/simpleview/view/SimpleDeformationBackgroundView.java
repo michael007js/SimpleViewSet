@@ -89,11 +89,11 @@ public class SimpleDeformationBackgroundView extends View {
     /**
      * 左侧边是否斜置 为true时radiusLeftTop不可用，默认为0
      */
-    private boolean obliqueLeft;
+    private boolean obliqueLeft = true;
     /**
      * 右侧边是否斜置 为true时radiusRightBottom不可用，默认为0
      */
-    private boolean obliqueRight;
+    private boolean obliqueRight=true;
 
 
     public SimpleDeformationBackgroundView(Context context) {
@@ -111,28 +111,28 @@ public class SimpleDeformationBackgroundView extends View {
     public SimpleDeformationBackgroundView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.SimpleDeformationBackgroundView);
-        textSize = ta.getFloat(R.styleable.SimpleDeformationBackgroundView_dbv_text_size, textSize);
-        text= ta.getString(R.styleable.SimpleDeformationBackgroundView_dbv_text);
-        if (text != null || !"".equals(text)) {
-            text = "label";
-        }
-        int style = ta.getInt(R.styleable.SimpleDeformationBackgroundView_dbv_text_style, 0);
-        if (style == 0) {
-            textStyle = Typeface.DEFAULT_BOLD;
-        } else {
-            textStyle = Typeface.DEFAULT;
-        }
-
-        textColor = ta.getColor(R.styleable.SimpleDeformationBackgroundView_dbv_textColor, textColor);
-        backgroundColor = ta.getColor(R.styleable.SimpleDeformationBackgroundView_dbv_background_color, backgroundColor);
-        obliqueOffset = ta.getDimension(R.styleable.SimpleDeformationBackgroundView_dbv_oblique_offset, 13);
-        radiusRightTop = ta.getDimension(R.styleable.SimpleDeformationBackgroundView_dbv_radius_right_top, 10);
-        radiusRightBottom = ta.getDimension(R.styleable.SimpleDeformationBackgroundView_dbv_radius_right_bottom, 10);
-        radiusLeftBottom = ta.getDimension(R.styleable.SimpleDeformationBackgroundView_dbv_radius_left_bottom, 10);
-        radiusLeftTop = ta.getDimension(R.styleable.SimpleDeformationBackgroundView_dbv_radius_left_top, 10);
-
-        obliqueLeft = ta.getBoolean(R.styleable.SimpleDeformationBackgroundView_dbv_oblique_left, obliqueLeft);
-        obliqueRight = ta.getBoolean(R.styleable.SimpleDeformationBackgroundView_dbv_oblique_right, obliqueRight);
+//        textSize = ta.getFloat(R.styleable.SimpleDeformationBackgroundView_dbv_text_size, textSize);
+//        text= ta.getString(R.styleable.SimpleDeformationBackgroundView_dbv_text);
+//        if (text != null || !"".equals(text)) {
+//            text = "label";
+//        }
+//        int style = ta.getInt(R.styleable.SimpleDeformationBackgroundView_dbv_text_style, 0);
+//        if (style == 0) {
+//            textStyle = Typeface.DEFAULT_BOLD;
+//        } else {
+//            textStyle = Typeface.DEFAULT;
+//        }
+//
+//        textColor = ta.getColor(R.styleable.SimpleDeformationBackgroundView_dbv_textColor, textColor);
+//        backgroundColor = ta.getColor(R.styleable.SimpleDeformationBackgroundView_dbv_background_color, backgroundColor);
+//        obliqueOffset = ta.getDimension(R.styleable.SimpleDeformationBackgroundView_dbv_oblique_offset, 13);
+//        radiusRightTop = ta.getDimension(R.styleable.SimpleDeformationBackgroundView_dbv_radius_right_top, 10);
+//        radiusRightBottom = ta.getDimension(R.styleable.SimpleDeformationBackgroundView_dbv_radius_right_bottom, 10);
+//        radiusLeftBottom = ta.getDimension(R.styleable.SimpleDeformationBackgroundView_dbv_radius_left_bottom, 10);
+//        radiusLeftTop = ta.getDimension(R.styleable.SimpleDeformationBackgroundView_dbv_radius_left_top, 10);
+//
+//        obliqueLeft = ta.getBoolean(R.styleable.SimpleDeformationBackgroundView_dbv_oblique_left, obliqueLeft);
+//        obliqueRight = ta.getBoolean(R.styleable.SimpleDeformationBackgroundView_dbv_oblique_right, obliqueRight);
 
 
         ta.recycle();

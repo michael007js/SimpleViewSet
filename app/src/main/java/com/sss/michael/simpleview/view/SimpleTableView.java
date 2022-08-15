@@ -6,7 +6,9 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,7 +31,7 @@ public class SimpleTableView<T> extends View {
     /**
      * 是否消费滑动事件
      */
-    private boolean handleDistributionEvent = true;
+    private boolean handleDistributionEvent = false;
     /**
      * 如果最后一行不满的话是否补满一行
      */
@@ -53,7 +55,7 @@ public class SimpleTableView<T> extends View {
     /**
      * 内边距
      */
-    private float paddingLeft = DensityUtil.dp2px(10), paddingTop = DensityUtil.dp2px(5), paddingRight = DensityUtil.dp2px(10), paddingBottom = DensityUtil.dp2px(5);
+    private float paddingLeft = DensityUtil.dp2px(10), paddingTop = DensityUtil.dp2px(12), paddingRight = DensityUtil.dp2px(10), paddingBottom = DensityUtil.dp2px(12);
     /**
      * 行/列数
      */
@@ -130,19 +132,32 @@ public class SimpleTableView<T> extends View {
 
                 @Override
                 public void onClickItem(String s, int[] position) {
+                    Log.e("SSSSS",s);
+                }
+
+                @Override
+                public void onMeasureSize(int width, int height) {
+
                 }
             });
             List<SimpleTableViewBean> content = new ArrayList<>();
             for (int i = 0; i < 50; i++) {
+                Suffix suffix = new Suffix("征");
+                suffix.textSize = DensityUtil.dp2px(10);
+                suffix.textColor = Color.BLACK;
+                suffix.backgroundColor = Color.RED;
+                suffix.radius = DensityUtil.dp2px(2);
+                suffix.typeface = Typeface.DEFAULT;
                 content.add(new SimpleTableViewBean(200 + ""));
                 content.add(new SimpleTableViewBean(201 + ""));
                 content.add(new SimpleTableViewBean(202 + "-/202/202"));
                 content.add(new SimpleTableViewBean(203 + ""));
-                content.add(new SimpleTableViewBean(204 + ""));
-                content.add(new SimpleTableViewBean(205 + "/-/205"));
-                content.add(new SimpleTableViewBean(206 + ""));
-                content.add(new SimpleTableViewBean(207 + ""));
-                content.add(new SimpleTableViewBean(208 + ""));
+                content.add(new SimpleTableViewBean(204 + "", suffix));
+
+                content.add(new SimpleTableViewBean(205 + "/-/205", suffix));
+                content.add(new SimpleTableViewBean(206 + "456155455456", suffix));
+                content.add(new SimpleTableViewBean(207 + "", suffix));
+                content.add(new SimpleTableViewBean(208 + "", suffix));
             }
             setData(title, content);
         }
@@ -157,8 +172,18 @@ public class SimpleTableView<T> extends View {
             return;
         }
         for (int i = 0; i < list.size(); i++) {
+            Suffix suffix = list.get(i).suffix;
+            float[] suffixSize = {0, 0};
+            if (suffix != null) {
+                suffixSize = suffix.getTextSize(true);
+            }
+
+
             paint.setTextSize(list.get(i).textSize);
             float[] size = DrawViewUtils.getTextWHF(paint, getValueByPosition(i));
+            size[0] = size[0] + suffixSize[0];
+            size[1] = Math.max(size[1], suffixSize[1]);
+
             list.get(i).size = size;
             int[] position = getPosition(i);
             list.get(i).position = position;
@@ -168,11 +193,13 @@ public class SimpleTableView<T> extends View {
         List<Float> sizes = new ArrayList<>();
         for (int i = 0; i < columnCount; i++) {
             paint.setTextSize(list.get(i).textSize);
-            sizes.add(DrawViewUtils.getTextWHF(paint, getValueByPosition(i))[0]);
+            sizes.add(DrawViewUtils.getTextWHF(paint, getValueByPosition(i))[0] + paddingLeft + paddingRight);
         }
         for (int i = 0; i < list.size(); i++) {
             paint.setTextSize(list.get(i).textSize);
-            float maxWidth = Math.max(sizes.get(list.get(i).position[0]), DrawViewUtils.getTextWHF(paint, getValueByPosition(i))[0]);
+            float suffixSize = list.get(i).suffix != null ? list.get(i).suffix.getTextSize(true)[0] + paddingLeft + paddingRight : 0;
+
+            float maxWidth = Math.max(sizes.get(list.get(i).position[0]), DrawViewUtils.getTextWHF(paint, getValueByPosition(i))[0] + suffixSize);
             sizes.set(list.get(i).position[0], maxWidth);
         }
 
@@ -186,11 +213,11 @@ public class SimpleTableView<T> extends View {
             list.get(i).yCanSlide = list.get(i).position[1] != 0;
 
             if (list.get(i).position[0] % columnCount == 0) {
-                list.get(i).realTimeRectF.left = 0 + getPaddingStart();
+                list.get(i).realTimeRectF.left = 0;
             } else {
-                list.get(i).realTimeRectF.left = list.get(i - 1).realTimeRectF.left + sizes.get(list.get(i-1).position[0])/*getMaxTextWidthForColumn(i - 1)*/ + paddingLeft + paddingRight;
+                list.get(i).realTimeRectF.left = list.get(i - 1).realTimeRectF.left + sizes.get(list.get(i - 1).position[0])/*getMaxTextWidthForColumn(i - 1)*/ + paddingLeft + paddingRight;
             }
-            list.get(i).realTimeRectF.right = list.get(i).realTimeRectF.left + sizes.get(list.get(i).position[0])/*getMaxTextWidthForColumn(i)*/ + paddingLeft + paddingRight;
+            list.get(i).realTimeRectF.right = list.get(i).realTimeRectF.left + sizes.get(list.get(i).position[0])/*getMaxTextWidthForColumn(i)*/ + (list.get(i).suffix != null ? list.get(i).suffix.getTextSize(true)[0] : 0) + paddingLeft + paddingRight;
             //统计第一行宽度
             if (i < columnCount) {
                 measureWidth = (int) (measureWidth + list.get(i).realTimeRectF.width());
@@ -224,6 +251,9 @@ public class SimpleTableView<T> extends View {
 
         }
         setMeasuredDimension(measureWidth, measureHeight);
+        if (onSimpleTableViewCallBack != null) {
+            onSimpleTableViewCallBack.onMeasureSize(measureWidth, measureHeight);
+        }
     }
 
     @Override
@@ -473,12 +503,7 @@ public class SimpleTableView<T> extends View {
                 paint.setStyle(Paint.Style.FILL);
                 paint.setTextSize(list.get(i).textSize);
                 paint.setColor(list.get(i).textColor);
-
-                canvas.drawText(
-                        getValueByPosition(i),
-                        list.get(i).realTimeRectF.left + list.get(i).realTimeRectF.width() / 2 - list.get(i).size[0] / 2,
-                        list.get(i).realTimeRectF.top + list.get(i).realTimeRectF.height() / 2 + list.get(i).size[1] / 2 - textYOffset,
-                        paint);
+                drawText(canvas, i);
             }
         }
 
@@ -498,11 +523,7 @@ public class SimpleTableView<T> extends View {
                 paint.setStyle(Paint.Style.FILL);
                 paint.setTextSize(list.get(i).textSize);
                 paint.setColor(list.get(i).textColor);
-                canvas.drawText(
-                        getValueByPosition(i),
-                        list.get(i).realTimeRectF.left + list.get(i).realTimeRectF.width() / 2 - list.get(i).size[0] / 2,
-                        list.get(i).realTimeRectF.top + list.get(i).realTimeRectF.height() / 2 + list.get(i).size[1] / 2 - textYOffset,
-                        paint);
+                drawText(canvas, i);
             }
 
         }
@@ -522,11 +543,7 @@ public class SimpleTableView<T> extends View {
                 paint.setStyle(Paint.Style.FILL);
                 paint.setTextSize(list.get(i).textSize);
                 paint.setColor(list.get(i).textColor);
-                canvas.drawText(
-                        getValueByPosition(i),
-                        list.get(i).realTimeRectF.left + list.get(i).realTimeRectF.width() / 2 - list.get(i).size[0] / 2,
-                        list.get(i).realTimeRectF.top + list.get(i).realTimeRectF.height() / 2 + list.get(i).size[1] / 2 - textYOffset,
-                        paint);
+                drawText(canvas, i);
 
             }
         }
@@ -546,13 +563,45 @@ public class SimpleTableView<T> extends View {
                 paint.setStyle(Paint.Style.FILL);
                 paint.setTextSize(list.get(i).textSize);
                 paint.setColor(list.get(i).textColor);
-                canvas.drawText(
-                        getValueByPosition(i),
-                        list.get(i).realTimeRectF.left + list.get(i).realTimeRectF.width() / 2 - list.get(i).size[0] / 2,
-                        list.get(i).realTimeRectF.top + list.get(i).realTimeRectF.height() / 2 + list.get(i).size[1] / 2 - textYOffset,
-                        paint);
+                drawText(canvas, i);
 
             }
+        }
+    }
+
+    private void drawText(Canvas canvas, int i) {
+
+        if (list.get(i).suffix != null) {
+            Suffix suffix = list.get(i).suffix;
+
+            float fullWidth = DrawViewUtils.getTextWHF(paint, getValueByPosition(i))[0] + suffix.getTextSize(true)[0] + suffix.padding * 2;
+
+            //绘制cell文字
+            float x = list.get(i).realTimeRectF.left + list.get(i).realTimeRectF.width() / 2 - fullWidth / 2;
+            float y = list.get(i).realTimeRectF.top + list.get(i).realTimeRectF.height() / 2 + list.get(i).size[1] / 2 - textYOffset;
+            canvas.drawText(getValueByPosition(i), x, y, paint);
+
+
+            suffix.rectF.left = x + DrawViewUtils.getTextWHF(paint, getValueByPosition(i))[0] + suffix.distance + suffix.padding;
+            suffix.rectF.right = suffix.rectF.left + suffix.getTextSize(true)[0];
+            suffix.rectF.top = y - DrawViewUtils.getTextWHF(paint, getValueByPosition(i))[1] / 2 - textYOffset;
+            suffix.rectF.bottom = suffix.rectF.top + suffix.getTextSize(true)[1];
+
+
+            //绘制后缀背景
+            suffix.paint.setColor(suffix.backgroundColor);
+            canvas.drawRect(suffix.rectF, suffix.paint);
+            //绘制后缀文字
+            suffix.paint.setTextSize(suffix.textSize);
+            suffix.paint.setTypeface(suffix.typeface);
+            suffix.paint.setColor(suffix.textColor);
+
+            canvas.drawText(suffix.text, suffix.rectF.left + suffix.rectF.width() / 2 - suffix.rectF.width() / 2+ suffix.padding/2, suffix.rectF.top + suffix.rectF.height() - textYOffset + suffix.padding / 2, suffix.paint);
+        } else {
+            //绘制cell文字
+            float x = list.get(i).realTimeRectF.left + list.get(i).realTimeRectF.width() / 2 - list.get(i).size[0] / 2;
+            float y = list.get(i).realTimeRectF.top + list.get(i).realTimeRectF.height() / 2 + list.get(i).size[1] / 2 - textYOffset;
+            canvas.drawText(getValueByPosition(i), x, y, paint);
         }
     }
 
@@ -660,6 +709,7 @@ public class SimpleTableView<T> extends View {
         if (onSimpleTableViewCallBack == null) {
             return maxWidth;
         }
+        //获取同列文字最大宽度
         for (int i = 0; i < lineCount; i++) {
             if (position[0] * i < list.size()) {
                 paint.setTextSize(list.get(i).textSize);
@@ -693,28 +743,24 @@ public class SimpleTableView<T> extends View {
         MAIN_LEFT_RIGHT
     }
 
-    private class SimpleTableViewBean<T> {
+    public static class SimpleTableViewBean<T> {
         private List<Integer> sameValuePosition = new ArrayList<>();
-        /**
-         * 线条颜色
-         */
-        private int lineColor = Color.parseColor("#cccccc");
-        /**
-         * 线条宽度
-         */
-        private int lineWidth = DensityUtil.dp2px(1);
         /**
          * 文字
          */
         private T t;
         /**
+         * 后缀
+         */
+        private Suffix suffix;
+        /**
          * 坐标
          */
-        private int[] position;
+        private int[] position = new int[2];
         /**
          * 字体大小
          */
-        private float[] size;
+        private float[] size = new float[2];
         /**
          * X轴方向是否可拖动
          */
@@ -734,11 +780,19 @@ public class SimpleTableView<T> extends View {
         /**
          * 文字尺寸
          */
-        private float textSize = DensityUtil.sp2px(16);
+        private float textSize = DensityUtil.sp2px(10);
         /**
          * 背景
          */
         private int backgroundColor = Color.WHITE;
+        /**
+         * 线条颜色
+         */
+        private int lineColor = Color.parseColor("#eeeeee");
+        /**
+         * 线条宽度
+         */
+        private int lineWidth = DensityUtil.dp2px(1);
         /**
          * 实时矩阵范围
          */
@@ -765,6 +819,11 @@ public class SimpleTableView<T> extends View {
             this.t = t;
         }
 
+        public SimpleTableViewBean(T t, Suffix suffix) {
+            this.t = t;
+            this.suffix = suffix;
+        }
+
         public SimpleTableViewBean() {
         }
 
@@ -789,6 +848,81 @@ public class SimpleTableView<T> extends View {
         }
     }
 
+    /**
+     * 后缀
+     */
+    public static class Suffix {
+        private Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private RectF rectF = new RectF();
+        /**
+         * 文字颜色
+         */
+        private String text = "";
+        /**
+         * 文字颜色
+         */
+        private int textColor = Color.BLACK;
+        /**
+         * 文字尺寸
+         */
+        private float textSize = DensityUtil.sp2px(12);
+        /**
+         * 背景
+         */
+        private int backgroundColor = Color.WHITE;
+        /**
+         * 字体
+         */
+        private Typeface typeface = Typeface.DEFAULT;
+        /**
+         * 圆角背景
+         */
+        private float radius = DensityUtil.dp2px(2);
+        /**
+         * 文字颜色
+         */
+        private int distance = DensityUtil.dp2px(2);
+        /**
+         * 文字颜色
+         */
+        private int padding = DensityUtil.dp2px(2);
+
+        public void setTextColor(int textColor) {
+            this.textColor = textColor;
+        }
+
+        public void setTextSize(float textSize) {
+            this.textSize = textSize;
+        }
+
+        public void setBackgroundColor(int backgroundColor) {
+            this.backgroundColor = backgroundColor;
+        }
+
+        public void setRadius(float radius) {
+            this.radius = radius;
+        }
+
+        public void setTypeface(Typeface typeface) {
+            this.typeface = typeface;
+        }
+
+        public Suffix(String text) {
+            this.text = text;
+        }
+
+        public void setDistance(int distance) {
+            this.distance = distance;
+        }
+
+        public float[] getTextSize(boolean withDistance) {
+            paint.setTextSize(textSize);
+            paint.setTypeface(typeface);
+            float[] size = DrawViewUtils.getTextWHF(paint, text);
+            size[0] = size[0] + (text != null && text.length() > 0 && withDistance ? distance : 0);
+            return size;
+        }
+    }
 
     public interface OnSimpleTableViewCallBack<T> {
         /**
@@ -806,5 +940,13 @@ public class SimpleTableView<T> extends View {
          * @param position 坐标（从0开始计数，真实坐标请+1）
          */
         void onClickItem(T t, int[] position);
+
+        /**
+         * 开始测量尺寸
+         *
+         * @param width  宽度
+         * @param height 高度
+         */
+        void onMeasureSize(int width, int height);
     }
 }
