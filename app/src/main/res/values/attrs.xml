@@ -32,7 +32,7 @@
 
     <declare-styleable name="SimpleDeformationBackgroundView">
         <!--文字大小-->
-        <attr name="dbv_text_size" format="float" />
+        <attr name="dbv_text_size" format="dimension" />
         <!--文字-->
         <attr name="dbv_text" format="string" />
         <!--文字色-->

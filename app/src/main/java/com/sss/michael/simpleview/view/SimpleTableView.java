@@ -582,21 +582,21 @@ public class SimpleTableView<T> extends View {
             canvas.drawText(getValueByPosition(i), x, y, paint);
 
 
-            suffix.rectF.left = x + DrawViewUtils.getTextWHF(paint, getValueByPosition(i))[0] + suffix.distance + suffix.padding;
-            suffix.rectF.right = suffix.rectF.left + suffix.getTextSize(true)[0];
-            suffix.rectF.top = y - DrawViewUtils.getTextWHF(paint, getValueByPosition(i))[1] / 2 - textYOffset;
-            suffix.rectF.bottom = suffix.rectF.top + suffix.getTextSize(true)[1];
+            suffix.rectF.left = x + DrawViewUtils.getTextWHF(paint, getValueByPosition(i))[0] + suffix.distance + suffix.padding - suffix.radius / 2;
+            suffix.rectF.right = suffix.rectF.left + suffix.getTextSize(true)[0] + suffix.radius / 2;
+            suffix.rectF.top = y - DrawViewUtils.getTextWHF(paint, getValueByPosition(i))[1] / 2 - textYOffset - suffix.radius / 2;
+            suffix.rectF.bottom = suffix.rectF.top + suffix.getTextSize(true)[1] + suffix.radius / 2;
 
 
             //绘制后缀背景
             suffix.paint.setColor(suffix.backgroundColor);
-            canvas.drawRect(suffix.rectF, suffix.paint);
+            canvas.drawRoundRect(suffix.rectF, suffix.radius, suffix.radius, suffix.paint);
             //绘制后缀文字
             suffix.paint.setTextSize(suffix.textSize);
             suffix.paint.setTypeface(suffix.typeface);
             suffix.paint.setColor(suffix.textColor);
 
-            canvas.drawText(suffix.text, suffix.rectF.left + suffix.rectF.width() / 2 - suffix.rectF.width() / 2+ suffix.padding/2, suffix.rectF.top + suffix.rectF.height() - textYOffset + suffix.padding / 2, suffix.paint);
+            canvas.drawText(suffix.text, suffix.rectF.left + suffix.rectF.width() / 2 - suffix.rectF.width() / 2 + suffix.padding / 2, suffix.rectF.top + suffix.rectF.height() - textYOffset + suffix.padding / 2 - suffix.radius / 2, suffix.paint);
         } else {
             //绘制cell文字
             float x = list.get(i).realTimeRectF.left + list.get(i).realTimeRectF.width() / 2 - list.get(i).size[0] / 2;
@@ -827,24 +827,29 @@ public class SimpleTableView<T> extends View {
         public SimpleTableViewBean() {
         }
 
-        public T getT() {
-            return t;
+        public SimpleTableViewBean setTextColor(int textColor) {
+            this.textColor = textColor;
+            return this;
         }
 
-        public int[] getPosition() {
-            return position;
+        public SimpleTableViewBean setTextSize(float textSize) {
+            this.textSize = textSize;
+            return this;
         }
 
-        public boolean isxCanSlide() {
-            return xCanSlide;
+        public SimpleTableViewBean setBackgroundColor(int backgroundColor) {
+            this.backgroundColor = backgroundColor;
+            return this;
         }
 
-        public boolean isyCanSlide() {
-            return yCanSlide;
+        public SimpleTableViewBean setLineColor(int lineColor) {
+            this.lineColor = lineColor;
+            return this;
         }
 
-        public boolean isHeaderTitle() {
-            return isHeaderTitle;
+        public SimpleTableViewBean setLineWidth(int lineWidth) {
+            this.lineWidth = lineWidth;
+            return this;
         }
     }
 

@@ -65,11 +65,11 @@ public class SimpleDeformationBackgroundView extends View {
     /**
      * 斜边往内部溃缩量
      */
-    private float obliqueOffset = DensityUtil.dp2px(13);
+    private float obliqueOffset = DensityUtil.dp2px(17);
     /**
      * 右上角圆角
      */
-    private float radiusRightTop = DensityUtil.dp2px(10);
+    private float radiusRightTop = DensityUtil.dp2px(13);
 
     /**
      * 右下角圆角
@@ -93,7 +93,7 @@ public class SimpleDeformationBackgroundView extends View {
     /**
      * 右侧边是否斜置 为true时radiusRightBottom不可用，默认为0
      */
-    private boolean obliqueRight=true;
+    private boolean obliqueRight = true;
 
 
     public SimpleDeformationBackgroundView(Context context) {
@@ -111,28 +111,28 @@ public class SimpleDeformationBackgroundView extends View {
     public SimpleDeformationBackgroundView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.SimpleDeformationBackgroundView);
-//        textSize = ta.getFloat(R.styleable.SimpleDeformationBackgroundView_dbv_text_size, textSize);
-//        text= ta.getString(R.styleable.SimpleDeformationBackgroundView_dbv_text);
-//        if (text != null || !"".equals(text)) {
-//            text = "label";
-//        }
-//        int style = ta.getInt(R.styleable.SimpleDeformationBackgroundView_dbv_text_style, 0);
-//        if (style == 0) {
-//            textStyle = Typeface.DEFAULT_BOLD;
-//        } else {
-//            textStyle = Typeface.DEFAULT;
-//        }
-//
-//        textColor = ta.getColor(R.styleable.SimpleDeformationBackgroundView_dbv_textColor, textColor);
-//        backgroundColor = ta.getColor(R.styleable.SimpleDeformationBackgroundView_dbv_background_color, backgroundColor);
-//        obliqueOffset = ta.getDimension(R.styleable.SimpleDeformationBackgroundView_dbv_oblique_offset, 13);
-//        radiusRightTop = ta.getDimension(R.styleable.SimpleDeformationBackgroundView_dbv_radius_right_top, 10);
-//        radiusRightBottom = ta.getDimension(R.styleable.SimpleDeformationBackgroundView_dbv_radius_right_bottom, 10);
-//        radiusLeftBottom = ta.getDimension(R.styleable.SimpleDeformationBackgroundView_dbv_radius_left_bottom, 10);
-//        radiusLeftTop = ta.getDimension(R.styleable.SimpleDeformationBackgroundView_dbv_radius_left_top, 10);
-//
-//        obliqueLeft = ta.getBoolean(R.styleable.SimpleDeformationBackgroundView_dbv_oblique_left, obliqueLeft);
-//        obliqueRight = ta.getBoolean(R.styleable.SimpleDeformationBackgroundView_dbv_oblique_right, obliqueRight);
+        textSize = ta.getDimension(R.styleable.SimpleDeformationBackgroundView_dbv_text_size, textSize);
+        text = ta.getString(R.styleable.SimpleDeformationBackgroundView_dbv_text);
+        if (text == null || "".equals(text)) {
+            text = "label";
+        }
+        int style = ta.getInt(R.styleable.SimpleDeformationBackgroundView_dbv_text_style, 0);
+        if (style == 0) {
+            textStyle = Typeface.DEFAULT_BOLD;
+        } else {
+            textStyle = Typeface.DEFAULT;
+        }
+
+        textColor = ta.getColor(R.styleable.SimpleDeformationBackgroundView_dbv_textColor, textColor);
+        backgroundColor = ta.getColor(R.styleable.SimpleDeformationBackgroundView_dbv_background_color, backgroundColor);
+        obliqueOffset = ta.getDimension(R.styleable.SimpleDeformationBackgroundView_dbv_oblique_offset, obliqueOffset);
+        radiusRightTop = ta.getDimension(R.styleable.SimpleDeformationBackgroundView_dbv_radius_right_top, radiusRightTop);
+        radiusRightBottom = ta.getDimension(R.styleable.SimpleDeformationBackgroundView_dbv_radius_right_bottom, radiusRightBottom);
+        radiusLeftBottom = ta.getDimension(R.styleable.SimpleDeformationBackgroundView_dbv_radius_left_bottom, radiusLeftBottom);
+        radiusLeftTop = ta.getDimension(R.styleable.SimpleDeformationBackgroundView_dbv_radius_left_top, radiusLeftTop);
+
+        obliqueLeft = ta.getBoolean(R.styleable.SimpleDeformationBackgroundView_dbv_oblique_left, obliqueLeft);
+        obliqueRight = ta.getBoolean(R.styleable.SimpleDeformationBackgroundView_dbv_oblique_right, obliqueRight);
 
 
         ta.recycle();
@@ -285,6 +285,108 @@ public class SimpleDeformationBackgroundView extends View {
         path.close();
     }
 
+    /**
+     * 设置文字
+     */
+    public SimpleDeformationBackgroundView setText(String text) {
+        this.text = text;
+        return this;
+    }
+
+    /**
+     * 设置文字颜色
+     */
+    public SimpleDeformationBackgroundView setTextColor(int textColor) {
+        this.textColor = textColor;
+        return this;
+    }
+
+    /**
+     * 设置文字大小
+     */
+    public SimpleDeformationBackgroundView setTextSize(float textSize) {
+        this.textSize = textSize;
+        return this;
+    }
+
+    /**
+     * 设置文字字体
+     */
+    public SimpleDeformationBackgroundView setTextStyle(Typeface textStyle) {
+        this.textStyle = textStyle;
+        return this;
+    }
+
+    /**
+     * 设置背景
+     */
+    public SimpleDeformationBackgroundView setBgColor(int backgroundColor) {
+        this.backgroundColor = backgroundColor;
+        return this;
+    }
+
+    /**
+     * 设置倾斜溃缩量
+     */
+    public SimpleDeformationBackgroundView setObliqueOffset(float obliqueOffset) {
+        this.obliqueOffset = obliqueOffset;
+        return this;
+    }
+
+    /**
+     * 设置右上角圆角
+     */
+    public SimpleDeformationBackgroundView setRadiusRightTop(float radiusRightTop) {
+        this.radiusRightTop = radiusRightTop;
+        return this;
+    }
+
+    /**
+     * 设置右下角圆角
+     */
+    public SimpleDeformationBackgroundView setRadiusRightBottom(float radiusRightBottom) {
+        this.radiusRightBottom = radiusRightBottom;
+        return this;
+    }
+
+    /**
+     * 设置左下角圆角
+     */
+    public SimpleDeformationBackgroundView setRadiusLeftBottom(float radiusLeftBottom) {
+        this.radiusLeftBottom = radiusLeftBottom;
+        return this;
+    }
+
+    /**
+     * 设置左上角圆角
+     */
+    public SimpleDeformationBackgroundView setRadiusLeftTop(float radiusLeftTop) {
+        this.radiusLeftTop = radiusLeftTop;
+        return this;
+    }
+
+    /**
+     * 左侧边是否斜置 为true时radiusLeftTop不可用，默认为0
+     */
+    public SimpleDeformationBackgroundView setObliqueLeft(boolean obliqueLeft) {
+        this.obliqueLeft = obliqueLeft;
+        return this;
+    }
+
+    /**
+     * 右侧边是否斜置 为true时radiusRightBottom不可用，默认为0
+     */
+    public SimpleDeformationBackgroundView setObliqueRight(boolean obliqueRight) {
+        this.obliqueRight = obliqueRight;
+        return this;
+    }
+
+    /**
+     * 召唤神龙
+     */
+    public void load() {
+        invalidate();
+    }
 
     @Override
     protected void onDraw(Canvas canvas) {

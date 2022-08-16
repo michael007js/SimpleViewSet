@@ -44,6 +44,13 @@
                     android:id="@+id/simpleDeformationBackgroundView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    app:dbv_background_color="#e9302d"
+                    app:dbv_text_size="20sp"
+                    app:dbv_text="点我收缩"
+                    app:dbv_text_style="bold_typeface"
+                    app:dbv_oblique_left="false"
+                    app:dbv_oblique_right="true"
+                    app:dbv_textColor="@color/colorPrimaryDark"
                     android:paddingHorizontal="100dp"
                     android:paddingVertical="40dp" />
 
