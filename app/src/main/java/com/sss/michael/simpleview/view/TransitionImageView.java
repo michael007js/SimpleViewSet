@@ -1,57 +1,61 @@
 package com.sss.michael.simpleview.view;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.util.AttributeSet;
+import android.widget.ImageView;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.AppCompatImageView;
 
 /**
  * @author Michael by Administrator
  * @date 2022/8/17 17:45
  * @Description 转场ImageView
  */
-public class TransitionImageView extends androidx.appcompat.widget.AppCompatImageView {
+public class TransitionImageView extends AppCompatImageView {
     /**
      * 模型队列
      */
     private List<TransitionImageViewBean> drawables = new ArrayList<>();
+    /**
+     * 上一次的开始结束下标
+     */
+    private int lastPosition;
 
     public TransitionImageView(@NonNull Context context) {
-        super(context);
+        this(context, null);
     }
 
     public TransitionImageView(@NonNull Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
+        this(context, attrs, 0);
     }
 
     public TransitionImageView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        setMeasuredDimension(getDefaultSize(0, widthMeasureSpec), getDefaultSize(0, heightMeasureSpec));
+    }
 
     /**
      * 占位
      * 一般用于网络图片的加载，预先在队列中指定一个位置，等到图片下载完成后再调用{@link #updateBean(int, TransitionImageViewBean)}来更新队列
-     *
-     * @param targetPosition 占位索引
      */
-    public void prepareBean(int targetPosition) {
+    public void prepareBean() {
         TransitionImageView.TransitionImageViewBean transitionImageViewBean = new TransitionImageView.TransitionImageViewBean();
-        transitionImageViewBean.setPosition(targetPosition);
-        insertBean(transitionImageViewBean);
-    }
-
-    /**
-     * 新增
-     * 在队列尾开辟一个新的位置
-     */
-    public void insertBean(TransitionImageView.TransitionImageViewBean transitionImageViewBean) {
         drawables.add(transitionImageViewBean);
     }
 
@@ -59,13 +63,18 @@ public class TransitionImageView extends androidx.appcompat.widget.AppCompatImag
      * 更新队列中指定位置的模型
      */
     public void updateBean(int targetPosition, TransitionImageViewBean transitionImageViewBean) {
-        for (int i = 0; i < drawables.size(); i++) {
-            if (drawables.get(i).position == targetPosition) {
-                drawables.get(i).drawable = transitionImageViewBean.drawable;
-                drawables.get(i).url = transitionImageViewBean.url;
-                break;
-            }
+        if (targetPosition >= 0 && targetPosition <= drawables.size() - 1) {
+            drawables.get(targetPosition).drawable = transitionImageViewBean.drawable;
+            drawables.get(targetPosition).url = transitionImageViewBean.url;
         }
+        lastPosition = 0;
+    }
+
+    /**
+     * 获取队列
+     */
+    public List<TransitionImageViewBean> getDrawables() {
+        return new ArrayList<>(drawables);
     }
 
     /**
@@ -78,22 +87,58 @@ public class TransitionImageView extends androidx.appcompat.widget.AppCompatImag
     /**
      * 开始过渡转场
      */
-    public void start(int fromPosition, int toPosition) {
-        Drawable[] drawable = new Drawable[2];
-        for (int i = 0; i < drawables.size(); i++) {
-            if (drawables.get(i).position == fromPosition) {
-                drawable[0] = drawables.get(i).drawable;
-            }
-            if (drawables.get(i).position == toPosition) {
-                drawable[1] = drawables.get(i).drawable;
-            }
+    public void start() {
+        int position = lastPosition + 1;
+        start(position);
+    }
+
+    /**
+     * 开始过渡转场
+     */
+    public void start(int position) {
+        int fromPosition = lastPosition;
+        int nextPosition = position;
+
+        if (nextPosition > drawables.size() - 1) {
+            nextPosition = 0;
+        }
+        if (nextPosition < 0) {
+            nextPosition = 0;
         }
 
+
+//        Log.e("SSSSS", fromPosition + "---"+nextPosition);
+        Drawable[] drawable = new Drawable[2];
+
+        drawable[0] = drawables.get(fromPosition).drawable;
+        drawable[1] = drawables.get(nextPosition).drawable;
+        lastPosition = nextPosition;
+
         if (drawable[0] != null && drawable[1] != null) {
-            TransitionDrawable transitionDrawable = new TransitionDrawable(drawable);
-            setImageDrawable(transitionDrawable);
-            transitionDrawable.startTransition(300);
+            setScaleType(ImageView.ScaleType.CENTER_CROP);
+            setImageDrawable(createDrawable(drawable[1]));
         }
+    }
+
+    /**
+     * 复用drawable,防止内存泄漏
+     */
+    private TransitionDrawable createDrawable(Drawable drawable) {
+        Drawable oldDrawable = getDrawable();
+        Drawable oldTd = null;
+        if (oldDrawable == null) {
+            oldTd = new ColorDrawable(Color.TRANSPARENT);
+        } else if (oldDrawable instanceof TransitionDrawable) {
+            oldTd = ((TransitionDrawable) oldDrawable).getDrawable(1);
+        } else {
+            oldTd = oldDrawable;
+        }
+        TransitionDrawable td = new TransitionDrawable(new Drawable[]{
+                oldTd,
+                drawable
+        });
+        td.startTransition(1000);
+        return td;
     }
 
     public static class TransitionImageViewBean {
@@ -102,14 +147,17 @@ public class TransitionImageView extends androidx.appcompat.widget.AppCompatImag
          */
         private Drawable drawable;
         /**
-         * 唯一索引，一般由调用者指定
-         */
-        private int position;
-        /**
          * 网络图片链接
          */
         private String url;
 
+        public TransitionImageViewBean() {
+        }
+
+        public TransitionImageViewBean(String url, Drawable drawable) {
+            this.url = url;
+            this.drawable = drawable;
+        }
 
         public String getUrl() {
             return url;
@@ -127,19 +175,10 @@ public class TransitionImageView extends androidx.appcompat.widget.AppCompatImag
             this.drawable = drawable;
         }
 
-        public int getPosition() {
-            return position;
-        }
-
-        public void setPosition(int position) {
-            this.position = position;
-        }
-
         @Override
         public String toString() {
             return "TransitionImageViewBean{" +
                     "drawable=" + drawable +
-                    ", position=" + position +
                     ", url='" + url + '\'' +
                     '}';
         }

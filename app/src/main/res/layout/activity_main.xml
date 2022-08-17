@@ -26,10 +26,31 @@
                 android:gravity="center"
                 android:orientation="vertical">
 
-                <com.sss.michael.simpleview.view.MyViewPager
-                    android:layout_width="match_parent"
-                    android:id="@+id/myBanner"
-                    android:layout_height="200dp"/>
+
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="200dp">
+
+                    <com.sss.michael.simpleview.view.TransitionImageView
+                        android:id="@+id/transitionImageView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop" />
+
+                    <cn.bingoogolapple.bgabanner.BGABanner
+                        android:id="@+id/banner"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        app:banner_pageChangeDuration="1000"
+                        android:layout_margin="30dp"
+                        app:banner_pointAutoPlayAble="true"
+                        app:banner_pointContainerBackground="@android:color/transparent"
+                        app:banner_pointDrawable="@drawable/bga_banner_selector_point_hollow"
+                        app:banner_pointTopBottomMargin="5dp"
+                        app:banner_transitionEffect="alpha"
+                        app:layout_constraintDimensionRatio="W,3.4:1"/>
+
+                </FrameLayout>
 
                 <com.sss.michael.simpleview.view.SimpleColumnarView
                     android:layout_width="wrap_content"
@@ -49,15 +70,15 @@
                     android:id="@+id/simpleDeformationBackgroundView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:paddingHorizontal="100dp"
+                    android:paddingVertical="40dp"
                     app:dbv_background_color="#e9302d"
-                    app:dbv_text_size="20sp"
-                    app:dbv_text="点我收缩"
-                    app:dbv_text_style="bold_typeface"
                     app:dbv_oblique_left="false"
                     app:dbv_oblique_right="true"
+                    app:dbv_text="点我收缩"
                     app:dbv_textColor="@color/colorPrimaryDark"
-                    android:paddingHorizontal="100dp"
-                    android:paddingVertical="40dp" />
+                    app:dbv_text_size="20sp"
+                    app:dbv_text_style="bold_typeface" />
 
                 <com.sss.michael.simpleview.view.SimpleWrapOffsetWidthView
                     android:id="@+id/simpleWrapOffsetWidthView"
