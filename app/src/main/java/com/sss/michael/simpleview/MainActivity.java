@@ -4,18 +4,21 @@ import android.animation.ValueAnimator;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
-import android.widget.ProgressBar;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 
+import com.sss.michael.simpleview.view.MyViewPager;
 import com.sss.michael.simpleview.view.SimpleDoubleSeekBar;
 import com.sss.michael.simpleview.view.SimpleDoubleSeekBar2;
 import com.sss.michael.simpleview.view.SimpleHalfPieChart;
 import com.sss.michael.simpleview.view.SimpleHalfRingView;
 import com.sss.michael.simpleview.view.SimpleLinearChart;
 import com.sss.michael.simpleview.view.SimpleProgressBar;
-import com.sss.michael.simpleview.view.SimpleReboundEffectsView;
 import com.sss.michael.simpleview.view.SimpleRotatingView;
 import com.sss.michael.simpleview.view.SimpleSlideBesselView;
 import com.sss.michael.simpleview.view.SimpleSpiderView;
@@ -184,6 +187,10 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+        MyViewPager myBanner = findViewById(R.id.myBanner);
+
+
     }
 
 }
