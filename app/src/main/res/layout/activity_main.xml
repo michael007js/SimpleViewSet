@@ -8,6 +8,38 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="200dp">
+
+        <com.sss.michael.simpleview.view.TransitionImageView
+            android:id="@+id/transitionImageView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop" />
+
+        <!--                    <cn.bingoogolapple.bgabanner.BGABanner-->
+        <!--                        android:id="@+id/banner"-->
+        <!--                        android:layout_width="match_parent"-->
+        <!--                        android:layout_height="match_parent"-->
+        <!--                        app:banner_pageChangeDuration="1000"-->
+        <!--                        android:layout_margin="30dp"-->
+        <!--                        app:banner_pointAutoPlayAble="true"-->
+        <!--                        app:banner_pointContainerBackground="@android:color/transparent"-->
+        <!--                        app:banner_pointDrawable="@drawable/bga_banner_selector_point_hollow"-->
+        <!--                        app:banner_pointTopBottomMargin="5dp"-->
+        <!--                        app:banner_transitionEffect="alpha"-->
+        <!--                        app:layout_constraintDimensionRatio="W,3.4:1"/>-->
+
+        <com.sss.michael.simpleview.view.MyViewPager
+            android:id="@+id/myViewPager"
+            android:layout_margin="30dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+    </FrameLayout>
+
+
     <com.sss.michael.simpleview.view.SimpleReboundEffectsView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -27,30 +59,6 @@
                 android:orientation="vertical">
 
 
-                <FrameLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="200dp">
-
-                    <com.sss.michael.simpleview.view.TransitionImageView
-                        android:id="@+id/transitionImageView"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:scaleType="centerCrop" />
-
-                    <cn.bingoogolapple.bgabanner.BGABanner
-                        android:id="@+id/banner"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        app:banner_pageChangeDuration="1000"
-                        android:layout_margin="30dp"
-                        app:banner_pointAutoPlayAble="true"
-                        app:banner_pointContainerBackground="@android:color/transparent"
-                        app:banner_pointDrawable="@drawable/bga_banner_selector_point_hollow"
-                        app:banner_pointTopBottomMargin="5dp"
-                        app:banner_transitionEffect="alpha"
-                        app:layout_constraintDimensionRatio="W,3.4:1"/>
-
-                </FrameLayout>
 
                 <com.sss.michael.simpleview.view.SimpleColumnarView
                     android:layout_width="wrap_content"

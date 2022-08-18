@@ -7,6 +7,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
@@ -14,6 +15,11 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.sss.michael.simpleview.view.MyViewPager;
 import com.sss.michael.simpleview.view.SimpleDoubleSeekBar;
 import com.sss.michael.simpleview.view.SimpleDoubleSeekBar2;
@@ -195,46 +201,106 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-        final TransitionImageView transitionImageView = findViewById(R.id.transitionImageView);
-        List<String> tips = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            tips.add("");
-            //预加载  模拟网络延迟
-            transitionImageView.prepareBean();
+         final TransitionImageView transitionImageView = findViewById(R.id.transitionImageView);
+
+
+//        BGABanner bgaBanner = findViewById(R.id.banner);
+//        bgaBanner.setAdapter(new BGABanner.Adapter<ImageView, TransitionImageView.TransitionImageViewBean>() {
+//            @Override
+//            public void fillBannerItem(BGABanner banner, ImageView itemView, @Nullable TransitionImageView.TransitionImageViewBean model, int position) {
+//                transitionImageView.start(position);
+//                if (model != null && model.getDrawable() != null) {
+//                    transitionImageView.setDrawingCacheEnabled(true);
+//                    transitionImageView.buildDrawingCache();
+//
+//                    Bitmap createBitmap = Bitmap.createBitmap(transitionImageView.getDrawingCache(true));
+//
+//                    itemView.setImageBitmap(createBitmap);
+//                    transitionImageView.destroyDrawingCache();
+//                    transitionImageView.setDrawingCacheEnabled(false);
+////                    itemView.setImageDrawable(model.getDrawable());
+//                } else {
+//                    itemView.setImageDrawable(new ColorDrawable(Color.TRANSPARENT));
+//                }
+//            }
+//        });
+//        bgaBanner.setDelegate(new BGABanner.Delegate() {
+//            @Override
+//            public void onBannerItemClick(BGABanner banner, View itemView, @Nullable Object model, int position) {
+//
+//            }
+//        });
+//        bgaBanner.setData(R.layout.layout_bga_banner_item_image, transitionImageView.getDrawables(), tips);
+
+        final MyViewPager<String>myViewPager = findViewById(R.id.myViewPager);
+        myViewPager.setOnMyViewPagerCallBack(new MyViewPager.OnMyViewPagerCallBack<String>() {
+
+            @Override
+            public void onDataChange(String s, int position) {
+
+            }
+
+            @Override
+            public void setImage(String s, final TransitionImageView imageView) {
+                Glide.with(MainActivity.this).asBitmap().load(s).addListener(new RequestListener<Bitmap>() {
+
+                    @Override
+                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
+                        Log.e("SSSSS","-----");
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
+                        Log.e("SSSSS","-----");
+                        transitionImageView.setImageBitmap(resource);
+                        transitionImageView.setDrawingCacheEnabled(true);
+                        Bitmap bmp = Bitmap.createBitmap(transitionImageView.getDrawingCache());
+                        transitionImageView.setDrawingCacheEnabled(false);
+                        bmp = imageCrop(bmp, myViewPager.getLeft(), myViewPager.getTop(), myViewPager.getWidth(), myViewPager.getHeight());
+                        if (bmp != null) {
+                            imageView.setImageBitmap(bmp);
+                        }
+                        return false;
+                    }
+                }).into(imageView);
+            }
+        });
+    }
+
+    /**
+     * 根据控件比例剪裁bitmap成一个固定大小的图片
+     *
+     * @param resource 需要裁剪的图片的bitmap值
+     * @param x        从图片的x轴的x处开始裁剪
+     * @param y        从图片的y轴的y处开始裁剪
+     * @param width    裁剪生成新图皮的宽
+     * @param height   裁剪生成新图皮的高
+     * @return 裁剪之后的bitmap
+     */
+    public static Bitmap imageCrop(Bitmap resource, int x, int y, int width, int height) {
+        if (resource == null) {
+            return null;
         }
-        transitionImageView.updateBean(0, new TransitionImageView.TransitionImageViewBean("0", ContextCompat.getDrawable(this, R.mipmap.xhr1)));
-        transitionImageView.updateBean(1, new TransitionImageView.TransitionImageViewBean("1", ContextCompat.getDrawable(this, R.mipmap.xhr2)));
-        transitionImageView.updateBean(2, new TransitionImageView.TransitionImageViewBean("2", ContextCompat.getDrawable(this, R.mipmap.xhr3)));
-        transitionImageView.updateBean(3, new TransitionImageView.TransitionImageViewBean("3", ContextCompat.getDrawable(this, R.mipmap.xhr4)));
-        transitionImageView.updateBean(4, new TransitionImageView.TransitionImageViewBean("4", ContextCompat.getDrawable(this, R.mipmap.xhr5)));
+        if (resource.getWidth() == 0 || resource.getHeight() == 0) {
+            return null;
+        }
+        if (x > resource.getWidth() || x < 0) {
+            x = 0;
+        }
 
-        BGABanner bgaBanner = findViewById(R.id.banner);
-        bgaBanner.setAdapter(new BGABanner.Adapter<ImageView, TransitionImageView.TransitionImageViewBean>() {
-            @Override
-            public void fillBannerItem(BGABanner banner, ImageView itemView, @Nullable TransitionImageView.TransitionImageViewBean model, int position) {
-                transitionImageView.start(position);
-                if (model != null && model.getDrawable() != null) {
-                    transitionImageView.setDrawingCacheEnabled(true);
-                    transitionImageView.buildDrawingCache();
-
-                    Bitmap createBitmap = Bitmap.createBitmap(transitionImageView.getDrawingCache(true));
-
-                    itemView.setImageBitmap(createBitmap);
-                    transitionImageView.destroyDrawingCache();
-                    transitionImageView.setDrawingCacheEnabled(false);
-//                    itemView.setImageDrawable(model.getDrawable());
-                } else {
-                    itemView.setImageDrawable(new ColorDrawable(Color.TRANSPARENT));
-                }
-            }
-        });
-        bgaBanner.setDelegate(new BGABanner.Delegate() {
-            @Override
-            public void onBannerItemClick(BGABanner banner, View itemView, @Nullable Object model, int position) {
-
-            }
-        });
-        bgaBanner.setData(R.layout.layout_bga_banner_item_image, transitionImageView.getDrawables(), tips);
+        if (y > resource.getHeight() || y < 0) {
+            y = 0;
+        }
+        if (x + width > resource.getWidth()) {
+            return null;
+        }
+        if (y + height > resource.getHeight()) {
+            return null;
+        }
+        width = Math.min(width, resource.getWidth());
+        height = Math.min(height, resource.getHeight());
+        return Bitmap.createBitmap(resource, x, y, width, height);
     }
 
 }
