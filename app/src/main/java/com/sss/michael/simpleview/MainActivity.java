@@ -3,15 +3,10 @@ package com.sss.michael.simpleview;
 import android.animation.ValueAnimator;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
-import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 
@@ -20,6 +15,7 @@ import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.sss.michael.simpleview.utils.Log;
 import com.sss.michael.simpleview.view.MyViewPager;
 import com.sss.michael.simpleview.view.SimpleDoubleSeekBar;
 import com.sss.michael.simpleview.view.SimpleDoubleSeekBar2;
@@ -38,9 +34,7 @@ import java.util.List;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 import androidx.core.widget.NestedScrollView;
-import cn.bingoogolapple.bgabanner.BGABanner;
 
 public class MainActivity extends AppCompatActivity {
     private SimpleHalfPieChart simpleHalfPieChart;
@@ -201,38 +195,10 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-         final TransitionImageView transitionImageView = findViewById(R.id.transitionImageView);
-
-
-//        BGABanner bgaBanner = findViewById(R.id.banner);
-//        bgaBanner.setAdapter(new BGABanner.Adapter<ImageView, TransitionImageView.TransitionImageViewBean>() {
-//            @Override
-//            public void fillBannerItem(BGABanner banner, ImageView itemView, @Nullable TransitionImageView.TransitionImageViewBean model, int position) {
-//                transitionImageView.start(position);
-//                if (model != null && model.getDrawable() != null) {
-//                    transitionImageView.setDrawingCacheEnabled(true);
-//                    transitionImageView.buildDrawingCache();
-//
-//                    Bitmap createBitmap = Bitmap.createBitmap(transitionImageView.getDrawingCache(true));
-//
-//                    itemView.setImageBitmap(createBitmap);
-//                    transitionImageView.destroyDrawingCache();
-//                    transitionImageView.setDrawingCacheEnabled(false);
-////                    itemView.setImageDrawable(model.getDrawable());
-//                } else {
-//                    itemView.setImageDrawable(new ColorDrawable(Color.TRANSPARENT));
-//                }
-//            }
-//        });
-//        bgaBanner.setDelegate(new BGABanner.Delegate() {
-//            @Override
-//            public void onBannerItemClick(BGABanner banner, View itemView, @Nullable Object model, int position) {
-//
-//            }
-//        });
-//        bgaBanner.setData(R.layout.layout_bga_banner_item_image, transitionImageView.getDrawables(), tips);
-
-        final MyViewPager<String>myViewPager = findViewById(R.id.myViewPager);
+        final ImageView last = findViewById(R.id.last);
+        final ImageView next = findViewById(R.id.next);
+        final ImageView image = findViewById(R.id.image);
+        final MyViewPager<String> myViewPager = findViewById(R.id.myViewPager);
         myViewPager.setOnMyViewPagerCallBack(new MyViewPager.OnMyViewPagerCallBack<String>() {
 
             @Override
@@ -241,31 +207,68 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void setImage(String s, final TransitionImageView imageView) {
-                Glide.with(MainActivity.this).asBitmap().load(s).addListener(new RequestListener<Bitmap>() {
+            public void setImage(MyViewPager.Direction direction, List<String> models, final TransitionImageView imageView, int lastPosition, int currentPosition, int nextPosition) {
+                Log.log(models.get(currentPosition), models.get(nextPosition));
 
-                    @Override
-                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
-                        Log.e("SSSSS","-----");
-                        return false;
-                    }
+                if (direction == MyViewPager.Direction.LEFT_TO_RIGHT) {
+                    Glide.with(MainActivity.this).asBitmap().load(models.get(lastPosition)).into(last);
+                } else if (direction == MyViewPager.Direction.RIGHT_TO_LEFT) {
+                    Glide.with(MainActivity.this).asBitmap().load(models.get(nextPosition)).addListener(new RequestListener<Bitmap>() {
 
-                    @Override
-                    public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
-                        Log.e("SSSSS","-----");
-                        transitionImageView.setImageBitmap(resource);
-                        transitionImageView.setDrawingCacheEnabled(true);
-                        Bitmap bmp = Bitmap.createBitmap(transitionImageView.getDrawingCache());
-                        transitionImageView.setDrawingCacheEnabled(false);
-                        bmp = imageCrop(bmp, myViewPager.getLeft(), myViewPager.getTop(), myViewPager.getWidth(), myViewPager.getHeight());
-                        if (bmp != null) {
-                            imageView.setImageBitmap(bmp);
+                        @Override
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
+                            return false;
                         }
-                        return false;
-                    }
-                }).into(imageView);
+
+                        @Override
+                        public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
+                            next.setImageBitmap(resource);
+                            next.setDrawingCacheEnabled(true);
+                            Bitmap bmp = Bitmap.createBitmap(next.getDrawingCache());
+                            next.setDrawingCacheEnabled(false);
+//                        Log.log("SSSSS",myViewPager.getLeft(), myViewPager.getTop(), myViewPager.getWidth(), myViewPager.getHeight());
+                            bmp = imageCrop(bmp, myViewPager.getLeft(), myViewPager.getTop(), myViewPager.getWidth(), myViewPager.getHeight());
+                            if (bmp != null) {
+                                imageView.setImageBitmap(resource);
+                            }
+                            return false;
+                        }
+                    }).into(next);
+
+                } else {
+                    Glide.with(MainActivity.this).asBitmap().load(models.get(currentPosition)).into(image);
+                    Glide.with(MainActivity.this).asBitmap().load(models.get(nextPosition)).into(next);
+                    Glide.with(MainActivity.this).asBitmap().load(models.get(currentPosition)).addListener(new RequestListener<Bitmap>() {
+
+                        @Override
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
+                            image.setImageBitmap(resource);
+                            image.setDrawingCacheEnabled(true);
+                            Bitmap bmp = Bitmap.createBitmap(image.getDrawingCache());
+                            image.setDrawingCacheEnabled(false);
+//                        Log.log("SSSSS",myViewPager.getLeft(), myViewPager.getTop(), myViewPager.getWidth(), myViewPager.getHeight());
+                            bmp = imageCrop(bmp, myViewPager.getLeft(), myViewPager.getTop(), myViewPager.getWidth(), myViewPager.getHeight());
+                            if (bmp != null) {
+                                imageView.setImageBitmap(resource);
+                            }
+                            return false;
+                        }
+                    }).into(image);
+                }
+
+
             }
         });
+        List<String> list = new ArrayList<>();
+        list.add("https://alifei05.cfp.cn/creative/vcg/veer/1600water/veer-161885124.jpg");
+        list.add("https://alifei04.cfp.cn/creative/vcg/veer/1600water/veer-303764513.jpg");
+        list.add("https://tenfei04.cfp.cn/creative/vcg/veer/1600water/veer-142190838.jpg");
+        myViewPager.setData(list);
     }
 
     /**

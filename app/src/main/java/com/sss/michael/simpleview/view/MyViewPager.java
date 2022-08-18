@@ -4,14 +4,13 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.service.autofill.ImageTransformation;
+import android.graphics.Point;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.sss.michael.simpleview.R;
+import com.sss.michael.simpleview.utils.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +24,9 @@ public class MyViewPager<T> extends ViewGroup {
     /**
      * 上一次的开始结束下标
      */
+    private int lastPosition;
     private int currentPosition;
+    private Point center = new Point();
     private OnMyViewPagerCallBack onMyViewPagerCallBack;
 
     public void setOnMyViewPagerCallBack(OnMyViewPagerCallBack onMyViewPagerCallBack) {
@@ -63,15 +64,21 @@ public class MyViewPager<T> extends ViewGroup {
         addView(right);
 
 
-//        models.add(R.mipmap.xhr1);
-//        models.add(R.mipmap.xhr2);
-//        models.add(R.mipmap.xhr3);
-//        models.add(R.mipmap.xhr4);
-//        models.add(R.mipmap.xhr5);
-//        int[] position = getPosition(currentPosition);
-//        left.setImageResource(models.get(position[0]));
-//        middle.setImageResource(models.get(position[1]));
-//        right.setImageResource(models.get(position[2]));
+    }
+
+    public void setData(List<T> models) {
+        this.models = models;
+        preview();
+    }
+
+    void preview() {
+        int[] position = getPosition(currentPosition);
+        if (onMyViewPagerCallBack != null) {
+            onMyViewPagerCallBack.setImage(direction, models, left, position[0], position[1], position[2]);
+            onMyViewPagerCallBack.setImage(direction, models, middle, position[0], position[1], position[2]);
+            onMyViewPagerCallBack.setImage(direction, models, right, position[0], position[1], position[2]);
+//            Log.log( position[0], position[1], position[2]);
+        }
     }
 
     int[] getPosition(int position) {
@@ -107,6 +114,8 @@ public class MyViewPager<T> extends ViewGroup {
             positions[2] = nextPosition;
         }
 
+//        Log.log(positions[0],positions[1],positions[2]);
+
         return positions;
     }
 
@@ -123,6 +132,7 @@ public class MyViewPager<T> extends ViewGroup {
 
         width = originRight - originLeft;
         height = originBottom - originTop;
+        center.set(width / 2, height / 2);
         middle.layout(0, 0, width, height);
         layoutChild(0);
     }
@@ -142,6 +152,7 @@ public class MyViewPager<T> extends ViewGroup {
         if (!touchLock) {
             return;
         }
+        preReleaseLock = true;
         if (valueAnimator != null) {
             valueAnimator.cancel();
             valueAnimator.removeAllUpdateListeners();
@@ -162,29 +173,13 @@ public class MyViewPager<T> extends ViewGroup {
                 if (direction == Direction.LEFT_TO_RIGHT) {
                     if (update) {
                         currentPosition--;
-                        int[] position = getPosition(currentPosition);
-                        if (onMyViewPagerCallBack != null) {
-                            onMyViewPagerCallBack.setImage(models.get(position[0]), left);
-                            onMyViewPagerCallBack.setImage(models.get(position[1]), middle);
-                            onMyViewPagerCallBack.setImage(models.get(position[2]), right);
-                        }
-//                        left.setImageResource(models.get(position[0]));
-//                        middle.setImageResource(models.get(position[1]));
-//                        right.setImageResource(models.get(position[2]));
+                        preview();
                         layoutChild(-width);
                     }
                 } else if (direction == Direction.RIGHT_TO_LEFT) {
                     if (update) {
                         currentPosition++;
-                        int[] position = getPosition(currentPosition);
-                        if (onMyViewPagerCallBack != null) {
-                            onMyViewPagerCallBack.setImage(models.get(position[0]), left);
-                            onMyViewPagerCallBack.setImage(models.get(position[1]), middle);
-                            onMyViewPagerCallBack.setImage(models.get(position[2]), right);
-                        }
-//                        left.setImageResource(models.get(position[0]));
-//                        middle.setImageResource(models.get(position[1]));
-//                        right.setImageResource(models.get(position[2]));
+                        preview();
                         layoutChild(width);
                     }
                 }
@@ -227,22 +222,20 @@ public class MyViewPager<T> extends ViewGroup {
      */
     private float lastX;
     private boolean touchLock;
+    private boolean preReleaseLock;
     private boolean releaseLock;
-
-    @Override
-    public boolean onInterceptTouchEvent(MotionEvent ev) {
-        return true;
-    }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-
                 downX = event.getX();
                 lastX = event.getX();
                 break;
             case MotionEvent.ACTION_MOVE:
+                if (preReleaseLock) {
+                    return false;
+                }
                 offsetX = event.getX() - downX;
                 if (offsetX < 0) {
                     direction = Direction.RIGHT_TO_LEFT;
@@ -254,26 +247,46 @@ public class MyViewPager<T> extends ViewGroup {
                 if (Math.abs(offsetByLastX) > 10) {
                     touchLock = true;
                 }
+
+                if (direction == Direction.LEFT_TO_RIGHT) {
+                    if (offsetByLastX > 0 && middle.getLeft() > width / 2) {
+                        //过了中心点，还在向右滑动，表示有切换下一张的意图
+                        releaseToOriginal(true, Direction.LEFT_TO_RIGHT, middle.getLeft(), width);
+                        return false;
+                    }
+                } else if (direction == Direction.RIGHT_TO_LEFT) {
+                    if (offsetByLastX < 0 && middle.getLeft() < -width / 2) {
+                        //过了中心点，还在向左滑动，表示有切换上一张的意图
+                        releaseToOriginal(true, Direction.RIGHT_TO_LEFT, middle.getLeft(), -width);
+                        return false;
+                    }
+                }
+
                 layoutChild(offsetByLastX);
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
-                if (offsetX < 0) {
-                    if (Math.abs(offsetX) > width / 2) {
-                        releaseToOriginal(true, Direction.RIGHT_TO_LEFT, middle.getLeft(), -width);
+                if (!preReleaseLock) {
+                    if (offsetX < 0) {
+                        if (Math.abs(offsetX) > center.x / 2) {
+                            //从右向左滑动过了一半
+                            releaseToOriginal(true, Direction.RIGHT_TO_LEFT, middle.getLeft(), -width);
+                        } else {
+                            //从右向左没有滑动到一半，回到原始位置
+                            releaseToOriginal(false, Direction.RIGHT_TO_LEFT, offsetX, 0);
+                        }
                     } else {
-                        //没有滑动到一半，回到原始位置
-                        releaseToOriginal(false, Direction.RIGHT_TO_LEFT, offsetX, 0);
-                    }
-                } else {
-                    if (Math.abs(offsetX) > width / 2) {
-                        releaseToOriginal(true, Direction.LEFT_TO_RIGHT, middle.getLeft(), width);
-                    } else {
-                        //没有滑动到一半，回到原始位置
-                        releaseToOriginal(false, Direction.LEFT_TO_RIGHT, offsetX, 0);
+                        if (Math.abs(offsetX) > center.x / 2) {
+                            //从左向右滑动过了一半
+                            releaseToOriginal(true, Direction.LEFT_TO_RIGHT, middle.getLeft(), width);
+                        } else {
+                            //从左向右没有滑动到一半，回到原始位置
+                            releaseToOriginal(false, Direction.LEFT_TO_RIGHT, offsetX, 0);
+                        }
                     }
                 }
                 touchLock = false;
+                preReleaseLock = false;
                 break;
         }
 
@@ -291,6 +304,6 @@ public class MyViewPager<T> extends ViewGroup {
     public interface OnMyViewPagerCallBack<T> {
         void onDataChange(T t, int position);
 
-        void setImage(T t, TransitionImageView imageView);
+        void setImage(Direction direction, List<T> models, TransitionImageView imageView, int lastPosition, int currentPosition, int nextPosition);
     }
 }
