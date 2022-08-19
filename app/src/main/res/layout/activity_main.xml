@@ -10,46 +10,53 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="260dp">
-        <com.sss.michael.simpleview.view.TransitionImageView
-            android:id="@+id/last"
-            android:visibility="invisible"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:scaleType="centerCrop" />
+        android:layout_height="150dp">
+
         <com.sss.michael.simpleview.view.TransitionImageView
             android:id="@+id/next"
-            android:visibility="invisible"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:scaleType="centerCrop"/>
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
         <com.sss.michael.simpleview.view.TransitionImageView
-            android:id="@+id/image"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:id="@+id/current"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:scaleType="centerCrop" />
-
-
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+        <com.sss.michael.simpleview.view.TransitionImageView
+            android:id="@+id/last"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+        <com.sss.michael.simpleview.view.TransitionImageView
+            android:id="@+id/bg"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
         <com.sss.michael.simpleview.view.MyViewPager
+            android:id="@+id/myViewPager"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginHorizontal="16dp"
-            android:layout_marginVertical="30dp"
-            android:id="@+id/myViewPager"/>
+            android:layout_marginVertical="30dp" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
 
 
     <com.sss.michael.simpleview.view.SimpleReboundEffectsView
@@ -69,7 +76,6 @@
                 android:background="@color/colorPrimaryDark"
                 android:gravity="center"
                 android:orientation="vertical">
-
 
 
                 <com.sss.michael.simpleview.view.SimpleColumnarView

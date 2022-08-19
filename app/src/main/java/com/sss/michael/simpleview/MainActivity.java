@@ -2,6 +2,8 @@ package com.sss.michael.simpleview;
 
 import android.animation.ValueAnimator;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.TransitionDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -189,7 +191,8 @@ public class MainActivity extends AppCompatActivity {
 
         final TransitionImageView last = findViewById(R.id.last);
         final TransitionImageView next = findViewById(R.id.next);
-        final TransitionImageView image = findViewById(R.id.image);
+        final TransitionImageView current = findViewById(R.id.current);
+        final TransitionImageView bg = findViewById(R.id.bg);
         final MyViewPager<String> myViewPager = findViewById(R.id.myViewPager);
         myViewPager.post(new Runnable() {
             @Override
@@ -198,13 +201,50 @@ public class MainActivity extends AppCompatActivity {
 
 
                     @Override
-                    public void setImage(MyViewPager.Direction direction, List<String> models, ImageView leftBanner, final ImageView middleBanner, ImageView rightBanner, int[] position) {
+                    public void onImageChange(boolean byUser, MyViewPager.Direction direction, List<String> models, ImageView left, ImageView middle, ImageView right, int[] position) {
                         int lastPosition = position[0];
                         int currentPosition = position[1];
                         int nextPosition = position[2];
-                        last.setImgUrl(models.get(currentPosition),models.get(lastPosition), leftBanner, myViewPager.getLeft(), myViewPager.getTop(), myViewPager.getWidth(), myViewPager.getHeight());
-                        image.setImgUrl(models.get(currentPosition),models.get(currentPosition), middleBanner, myViewPager.getLeft(), myViewPager.getTop(), myViewPager.getWidth(), myViewPager.getHeight());
-                        next.setImgUrl(models.get(currentPosition),models.get(nextPosition), rightBanner, myViewPager.getLeft(), myViewPager.getTop(), myViewPager.getWidth(), myViewPager.getHeight());
+
+                        if (direction == MyViewPager.Direction.RIGHT_TO_LEFT) {
+                            TransitionDrawable td = new TransitionDrawable(new Drawable[]{
+                                    current.getDrawable(),
+                                    next.getDrawable()
+                            });
+                            td.startTransition(150);
+                            bg.setImageDrawable(td);
+//                            bg.setImgUrl(models.get(currentPosition), models.get(nextPosition), null, myViewPager.getLeft(), myViewPager.getTop(), myViewPager.getWidth(), myViewPager.getHeight());
+//
+//                            bg.setTransitionDrawable(next.getDrawable());
+                        } else if (direction == MyViewPager.Direction.LEFT_TO_RIGHT) {
+                            TransitionDrawable td = new TransitionDrawable(new Drawable[]{
+                                    current.getDrawable(),
+                                    last.getDrawable()
+                            });
+                            bg.setImageDrawable(td);
+                            td.startTransition(150);
+//                            bg.setImgUrl(models.get(currentPosition), models.get(lastPosition), null, myViewPager.getLeft(), myViewPager.getTop(), myViewPager.getWidth(), myViewPager.getHeight());
+//
+//                            bg.setTransitionDrawable(last.getDrawable());
+                        }
+                    }
+
+                    @Override
+                    public void onTouchScroll(MyViewPager.Direction direction, float offsetPercent, List<String> models, ImageView left, ImageView middle, ImageView right, int[] position) {
+                    }
+
+                    @Override
+                    public void setBannerImage(MyViewPager.Direction direction, List<String> models, ImageView leftBanner, final ImageView middleBanner, ImageView rightBanner, int[] position) {
+                        int lastPosition = position[0];
+                        int currentPosition = position[1];
+                        int nextPosition = position[2];
+                        last.setImgUrl(models.get(currentPosition), models.get(lastPosition), leftBanner, myViewPager.getLeft(), myViewPager.getTop(), myViewPager.getWidth(), myViewPager.getHeight());
+                        current.setImgUrl(models.get(currentPosition), models.get(currentPosition), middleBanner, myViewPager.getLeft(), myViewPager.getTop(), myViewPager.getWidth(), myViewPager.getHeight());
+                        next.setImgUrl(models.get(currentPosition), models.get(nextPosition), rightBanner, myViewPager.getLeft(), myViewPager.getTop(), myViewPager.getWidth(), myViewPager.getHeight());
+
+                        if (direction == MyViewPager.Direction.NORMAL) {
+                            bg.setImgUrl(models.get(currentPosition), models.get(currentPosition), null, myViewPager.getLeft(), myViewPager.getTop(), myViewPager.getWidth(), myViewPager.getHeight());
+                        }
 
 
                     }

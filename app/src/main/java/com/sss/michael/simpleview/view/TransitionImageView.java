@@ -1,5 +1,6 @@
 package com.sss.michael.simpleview.view;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -27,6 +28,7 @@ import androidx.appcompat.widget.AppCompatImageView;
 @SuppressWarnings("all")
 public class TransitionImageView extends AppCompatImageView {
     private OnTransitionImageViewCallBack onTransitionImageViewCallBack;
+    private ValueAnimator valueAnimator;
 
     public void setOnTransitionImageViewCallBack(OnTransitionImageViewCallBack onTransitionImageViewCallBack) {
         this.onTransitionImageViewCallBack = onTransitionImageViewCallBack;
@@ -61,12 +63,14 @@ public class TransitionImageView extends AppCompatImageView {
             @Override
             public boolean onResourceReady(final Bitmap bitmap, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
                 setImageBitmap(bitmap);
-                setDrawingCacheEnabled(true);
-                Bitmap bmp = Bitmap.createBitmap(getDrawingCache());
-                setDrawingCacheEnabled(false);
-                bmp = imageCrop(bmp, x, y, width, height);
-                if (bmp != null) {
-                    bannerImageView.setImageBitmap(bmp);
+                if (bannerImageView != null) {
+                    setDrawingCacheEnabled(true);
+                    Bitmap bmp = Bitmap.createBitmap(getDrawingCache());
+                    setDrawingCacheEnabled(false);
+                    bmp = imageCrop(bmp, x, y, width, height);
+                    if (bmp != null && bannerImageView != null) {
+                        bannerImageView.setImageBitmap(bmp);
+                    }
                 }
                 return false;
             }
@@ -76,6 +80,14 @@ public class TransitionImageView extends AppCompatImageView {
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
+    }
+
+
+    public void setTransitionDrawable(Drawable drawable) {
+        TransitionDrawable td = createDrawable(drawable);
+        td.startTransition(150);
+        setImageDrawable(td);
+        valueAnimator = ValueAnimator.ofFloat(1.0f,0.5f);
     }
 
     /**
@@ -91,12 +103,11 @@ public class TransitionImageView extends AppCompatImageView {
         } else {
             oldTd = oldDrawable;
         }
-        TransitionDrawable td = new TransitionDrawable(new Drawable[]{
+        return new TransitionDrawable(new Drawable[]{
                 oldTd,
                 drawable
         });
-        td.startTransition(150);
-        return td;
+
     }
 
     /**
