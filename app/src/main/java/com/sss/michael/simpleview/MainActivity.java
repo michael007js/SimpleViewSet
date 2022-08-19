@@ -1,7 +1,6 @@
 package com.sss.michael.simpleview;
 
 import android.animation.ValueAnimator;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -10,12 +9,6 @@ import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.DataSource;
-import com.bumptech.glide.load.engine.GlideException;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.Target;
-import com.sss.michael.simpleview.utils.Log;
 import com.sss.michael.simpleview.view.MyViewPager;
 import com.sss.michael.simpleview.view.SimpleDoubleSeekBar;
 import com.sss.michael.simpleview.view.SimpleDoubleSeekBar2;
@@ -32,7 +25,6 @@ import com.sss.michael.simpleview.view.TransitionImageView;
 import java.util.ArrayList;
 import java.util.List;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.widget.NestedScrollView;
 
@@ -195,115 +187,37 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-        final ImageView last = findViewById(R.id.last);
-        final ImageView next = findViewById(R.id.next);
-        final ImageView image = findViewById(R.id.image);
+        final TransitionImageView last = findViewById(R.id.last);
+        final TransitionImageView next = findViewById(R.id.next);
+        final TransitionImageView image = findViewById(R.id.image);
         final MyViewPager<String> myViewPager = findViewById(R.id.myViewPager);
-        myViewPager.setOnMyViewPagerCallBack(new MyViewPager.OnMyViewPagerCallBack<String>() {
-
+        myViewPager.post(new Runnable() {
             @Override
-            public void onDataChange(String s, int position) {
-
-            }
-
-            @Override
-            public void setImage(MyViewPager.Direction direction, List<String> models, final TransitionImageView imageView, int lastPosition, int currentPosition, int nextPosition) {
-                Log.log(models.get(currentPosition), models.get(nextPosition));
-
-                if (direction == MyViewPager.Direction.LEFT_TO_RIGHT) {
-                    Glide.with(MainActivity.this).asBitmap().load(models.get(lastPosition)).into(last);
-                } else if (direction == MyViewPager.Direction.RIGHT_TO_LEFT) {
-                    Glide.with(MainActivity.this).asBitmap().load(models.get(nextPosition)).addListener(new RequestListener<Bitmap>() {
-
-                        @Override
-                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
-                            return false;
-                        }
-
-                        @Override
-                        public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
-                            next.setImageBitmap(resource);
-                            next.setDrawingCacheEnabled(true);
-                            Bitmap bmp = Bitmap.createBitmap(next.getDrawingCache());
-                            next.setDrawingCacheEnabled(false);
-//                        Log.log("SSSSS",myViewPager.getLeft(), myViewPager.getTop(), myViewPager.getWidth(), myViewPager.getHeight());
-                            bmp = imageCrop(bmp, myViewPager.getLeft(), myViewPager.getTop(), myViewPager.getWidth(), myViewPager.getHeight());
-                            if (bmp != null) {
-                                imageView.setImageBitmap(resource);
-                            }
-                            return false;
-                        }
-                    }).into(next);
-
-                } else {
-                    Glide.with(MainActivity.this).asBitmap().load(models.get(currentPosition)).into(image);
-                    Glide.with(MainActivity.this).asBitmap().load(models.get(nextPosition)).into(next);
-                    Glide.with(MainActivity.this).asBitmap().load(models.get(currentPosition)).addListener(new RequestListener<Bitmap>() {
-
-                        @Override
-                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
-                            return false;
-                        }
-
-                        @Override
-                        public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
-                            image.setImageBitmap(resource);
-                            image.setDrawingCacheEnabled(true);
-                            Bitmap bmp = Bitmap.createBitmap(image.getDrawingCache());
-                            image.setDrawingCacheEnabled(false);
-//                        Log.log("SSSSS",myViewPager.getLeft(), myViewPager.getTop(), myViewPager.getWidth(), myViewPager.getHeight());
-                            bmp = imageCrop(bmp, myViewPager.getLeft(), myViewPager.getTop(), myViewPager.getWidth(), myViewPager.getHeight());
-                            if (bmp != null) {
-                                imageView.setImageBitmap(resource);
-                            }
-                            return false;
-                        }
-                    }).into(image);
-                }
+            public void run() {
+                myViewPager.setOnMyViewPagerCallBack(new MyViewPager.OnMyViewPagerCallBack<String>() {
 
 
+                    @Override
+                    public void setImage(MyViewPager.Direction direction, List<String> models, ImageView leftBanner, final ImageView middleBanner, ImageView rightBanner, int[] position) {
+                        int lastPosition = position[0];
+                        int currentPosition = position[1];
+                        int nextPosition = position[2];
+                        last.setImgUrl(models.get(currentPosition),models.get(lastPosition), leftBanner, myViewPager.getLeft(), myViewPager.getTop(), myViewPager.getWidth(), myViewPager.getHeight());
+                        image.setImgUrl(models.get(currentPosition),models.get(currentPosition), middleBanner, myViewPager.getLeft(), myViewPager.getTop(), myViewPager.getWidth(), myViewPager.getHeight());
+                        next.setImgUrl(models.get(currentPosition),models.get(nextPosition), rightBanner, myViewPager.getLeft(), myViewPager.getTop(), myViewPager.getWidth(), myViewPager.getHeight());
+
+
+                    }
+                });
+
+                List<String> list = new ArrayList<>();
+                list.add("https://alifei05.cfp.cn/creative/vcg/veer/1600water/veer-161885124.jpg");
+                list.add("https://alifei04.cfp.cn/creative/vcg/veer/1600water/veer-303764513.jpg");
+                list.add("https://tenfei04.cfp.cn/creative/vcg/veer/1600water/veer-142190838.jpg");
+                myViewPager.setData(list);
             }
         });
-        List<String> list = new ArrayList<>();
-        list.add("https://alifei05.cfp.cn/creative/vcg/veer/1600water/veer-161885124.jpg");
-        list.add("https://alifei04.cfp.cn/creative/vcg/veer/1600water/veer-303764513.jpg");
-        list.add("https://tenfei04.cfp.cn/creative/vcg/veer/1600water/veer-142190838.jpg");
-        myViewPager.setData(list);
-    }
 
-    /**
-     * 根据控件比例剪裁bitmap成一个固定大小的图片
-     *
-     * @param resource 需要裁剪的图片的bitmap值
-     * @param x        从图片的x轴的x处开始裁剪
-     * @param y        从图片的y轴的y处开始裁剪
-     * @param width    裁剪生成新图皮的宽
-     * @param height   裁剪生成新图皮的高
-     * @return 裁剪之后的bitmap
-     */
-    public static Bitmap imageCrop(Bitmap resource, int x, int y, int width, int height) {
-        if (resource == null) {
-            return null;
-        }
-        if (resource.getWidth() == 0 || resource.getHeight() == 0) {
-            return null;
-        }
-        if (x > resource.getWidth() || x < 0) {
-            x = 0;
-        }
-
-        if (y > resource.getHeight() || y < 0) {
-            y = 0;
-        }
-        if (x + width > resource.getWidth()) {
-            return null;
-        }
-        if (y + height > resource.getHeight()) {
-            return null;
-        }
-        width = Math.min(width, resource.getWidth());
-        height = Math.min(height, resource.getHeight());
-        return Bitmap.createBitmap(resource, x, y, width, height);
     }
 
 }

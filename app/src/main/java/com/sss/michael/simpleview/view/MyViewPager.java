@@ -18,7 +18,7 @@ import java.util.List;
 @SuppressWarnings("ALL")
 public class MyViewPager<T> extends ViewGroup {
     private List<T> models = new ArrayList<>();
-    private TransitionImageView left, middle, right;
+    private ImageView left, middle, right;
     private int width;
     private int height;
     /**
@@ -74,9 +74,10 @@ public class MyViewPager<T> extends ViewGroup {
     void preview() {
         int[] position = getPosition(currentPosition);
         if (onMyViewPagerCallBack != null) {
-            onMyViewPagerCallBack.setImage(direction, models, left, position[0], position[1], position[2]);
-            onMyViewPagerCallBack.setImage(direction, models, middle, position[0], position[1], position[2]);
-            onMyViewPagerCallBack.setImage(direction, models, right, position[0], position[1], position[2]);
+            onMyViewPagerCallBack.setImage(direction, models, left, middle, right, position);
+//            onMyViewPagerCallBack.setImage(direction, models, left, position[1], position[2], position[0]);
+//            onMyViewPagerCallBack.setImage(direction, models, middle, position[2], position[0], position[1]);
+//            onMyViewPagerCallBack.setImage(direction, models, right, position[0], position[1], position[2]);
 //            Log.log( position[0], position[1], position[2]);
         }
     }
@@ -302,8 +303,7 @@ public class MyViewPager<T> extends ViewGroup {
 
 
     public interface OnMyViewPagerCallBack<T> {
-        void onDataChange(T t, int position);
 
-        void setImage(Direction direction, List<T> models, TransitionImageView imageView, int lastPosition, int currentPosition, int nextPosition);
+        void setImage(Direction direction, List<T> models, ImageView left, ImageView middle, ImageView right,int[] position);
     }
 }
