@@ -13,15 +13,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("ALL")
-public class MyViewPager<T> extends ViewGroup {
+public class BannerViewPager<T> extends ViewGroup {
     private List<T> models = new ArrayList<>();
     private ImageView left, middle, right;
     private int width;
     private int height;
-    /**
-     * 上一次的开始结束下标
-     */
-    private int lastPosition;
     private int currentPosition;
     private OnMyViewPagerCallBack onMyViewPagerCallBack;
 
@@ -29,19 +25,19 @@ public class MyViewPager<T> extends ViewGroup {
         this.onMyViewPagerCallBack = onMyViewPagerCallBack;
     }
 
-    public MyViewPager(Context context) {
+    public BannerViewPager(Context context) {
         this(context, null);
     }
 
-    public MyViewPager(Context context, AttributeSet attrs) {
+    public BannerViewPager(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public MyViewPager(Context context, AttributeSet attrs, int defStyleAttr) {
+    public BannerViewPager(Context context, AttributeSet attrs, int defStyleAttr) {
         this(context, attrs, defStyleAttr, 0);
     }
 
-    public MyViewPager(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    public BannerViewPager(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         if (left == null) {
             left = new TransitionImageView(context);
@@ -69,7 +65,7 @@ public class MyViewPager<T> extends ViewGroup {
 
     void preview() {
         if (onMyViewPagerCallBack != null) {
-            onMyViewPagerCallBack.setBannerImage(direction, models, left, middle, right, getPosition(currentPosition));
+            onMyViewPagerCallBack.previewBannerImage(direction, models, left, middle, right, getPosition(currentPosition));
         }
     }
 
@@ -129,7 +125,7 @@ public class MyViewPager<T> extends ViewGroup {
     }
 
 
-    private void layoutChild(float x) {
+    void layoutChild(float x) {
         if (touchLock || releaseLock) {
             if (onMyViewPagerCallBack != null) {
                 float percent = (middle.getLeft() * 1.0f + offsetByLastX) / width;
@@ -139,6 +135,7 @@ public class MyViewPager<T> extends ViewGroup {
             middle.layout((int) (middle.getLeft() + x), 0, (int) (middle.getLeft() + width + x), height);
             left.layout(middle.getLeft() - width, 0, middle.getLeft(), height);
             right.layout(middle.getRight(), 0, middle.getRight() + width, height);
+
         }
     }
 
@@ -247,6 +244,7 @@ public class MyViewPager<T> extends ViewGroup {
                 if (direction == Direction.LEFT_TO_RIGHT) {
                     if (middle.getLeft() + offsetByLastX > width / 2) {
                         //过了中心点，还在向右滑动，表示有切换下一张的意图
+                        releaseToOriginal(true, Direction.LEFT_TO_RIGHT, middle.getLeft(), width);
                         if (onMyViewPagerCallBack != null) {
                             onMyViewPagerCallBack.onImageChange(true, direction, models, left, middle, right, getPosition(currentPosition));
                         }
@@ -295,6 +293,16 @@ public class MyViewPager<T> extends ViewGroup {
     }
 
 
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if (valueAnimator != null) {
+            valueAnimator.cancel();
+            valueAnimator.removeAllUpdateListeners();
+            valueAnimator.removeAllListeners();
+        }
+    }
+
     public enum Direction {
         RIGHT_TO_LEFT,
         LEFT_TO_RIGHT,
@@ -308,6 +316,6 @@ public class MyViewPager<T> extends ViewGroup {
 
         void onTouchScroll(Direction direction, float offsetPercent, List<T> models, ImageView left, ImageView middle, ImageView right, int[] position);
 
-        void setBannerImage(Direction direction, List<T> models, ImageView left, ImageView middle, ImageView right, int[] position);
+        void previewBannerImage(Direction direction, List<T> models, ImageView left, ImageView middle, ImageView right, int[] position);
     }
 }

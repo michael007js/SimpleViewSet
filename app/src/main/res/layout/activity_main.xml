@@ -13,33 +13,41 @@
         android:layout_height="150dp">
 
         <com.sss.michael.simpleview.view.TransitionImageView
-            android:id="@+id/next"
+            android:id="@+id/lastBuffer"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:scaleType="centerCrop"
+            android:visibility="invisible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
         <com.sss.michael.simpleview.view.TransitionImageView
-            android:id="@+id/current"
+            android:id="@+id/currentBuffer"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:scaleType="centerCrop"
+            android:visibility="invisible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
         <com.sss.michael.simpleview.view.TransitionImageView
-            android:id="@+id/last"
+            android:id="@+id/nextBuffer"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:scaleType="centerCrop"
+            android:visibility="invisible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
         <com.sss.michael.simpleview.view.TransitionImageView
+
+
             android:id="@+id/bg"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -48,7 +56,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
-        <com.sss.michael.simpleview.view.MyViewPager
+
+        <com.sss.michael.simpleview.view.BannerViewPager
             android:id="@+id/myViewPager"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -56,7 +65,6 @@
             android:layout_marginVertical="30dp" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 
 
     <com.sss.michael.simpleview.view.SimpleReboundEffectsView

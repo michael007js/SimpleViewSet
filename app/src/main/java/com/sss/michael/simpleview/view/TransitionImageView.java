@@ -1,12 +1,10 @@
 package com.sss.michael.simpleview.view;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.TransitionDrawable;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 
@@ -28,7 +26,7 @@ import androidx.appcompat.widget.AppCompatImageView;
 @SuppressWarnings("all")
 public class TransitionImageView extends AppCompatImageView {
     private OnTransitionImageViewCallBack onTransitionImageViewCallBack;
-    private ValueAnimator valueAnimator;
+
 
     public void setOnTransitionImageViewCallBack(OnTransitionImageViewCallBack onTransitionImageViewCallBack) {
         this.onTransitionImageViewCallBack = onTransitionImageViewCallBack;
@@ -52,6 +50,9 @@ public class TransitionImageView extends AppCompatImageView {
         setMeasuredDimension(getDefaultSize(0, widthMeasureSpec), getDefaultSize(0, heightMeasureSpec));
     }
 
+    /**
+     * 设置图片
+     */
     public void setImgUrl(final String from, final String to, final ImageView bannerImageView, final int x, final int y, final int width, final int height) {
         Glide.with(this).asBitmap().load(to).listener(new RequestListener<Bitmap>() {
             @Override
@@ -68,7 +69,7 @@ public class TransitionImageView extends AppCompatImageView {
                     Bitmap bmp = Bitmap.createBitmap(getDrawingCache());
                     setDrawingCacheEnabled(false);
                     bmp = imageCrop(bmp, x, y, width, height);
-                    if (bmp != null && bannerImageView != null) {
+                    if (bmp != null) {
                         bannerImageView.setImageBitmap(bmp);
                     }
                 }
@@ -77,38 +78,55 @@ public class TransitionImageView extends AppCompatImageView {
         }).preload();
     }
 
-    @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-    }
+    /**
+     * 透明度渐变
+     */
+    public void setTransitionAlpha(final String from, final String to) {
+        Glide.with(this).asBitmap().load(to).listener(new RequestListener<Bitmap>() {
+            @Override
+            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
+                return false;
+            }
 
-
-    public void setTransitionDrawable(Drawable drawable) {
-        TransitionDrawable td = createDrawable(drawable);
-        td.startTransition(150);
-        setImageDrawable(td);
-        valueAnimator = ValueAnimator.ofFloat(1.0f,0.5f);
+            @Override
+            public boolean onResourceReady(final Bitmap bitmap, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
+                changeAlpha(1.0f, 0.5f, bitmap);
+                return false;
+            }
+        }).preload();
     }
 
     /**
-     * 复用drawable,防止内存泄漏
+     * 改变背景透明度动画
      */
-    private TransitionDrawable createDrawable(Drawable drawable) {
-        Drawable oldDrawable = getDrawable();
-        Drawable oldTd = null;
-        if (oldDrawable == null) {
-            oldTd = new ColorDrawable(Color.TRANSPARENT);
-        } else if (oldDrawable instanceof TransitionDrawable) {
-            oldTd = ((TransitionDrawable) oldDrawable).getDrawable(1);
-        } else {
-            oldTd = oldDrawable;
+    void changeAlpha(final float from, float to, final Bitmap bitmap) {
+        if (valueAnimator != null) {
+            valueAnimator.cancel();
+            valueAnimator.setDuration(200);
+            valueAnimator.removeAllListeners();
+            valueAnimator.removeAllUpdateListeners();
         }
-        return new TransitionDrawable(new Drawable[]{
-                oldTd,
-                drawable
+        valueAnimator = ValueAnimator.ofFloat(from, to);
+        valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                setAlpha((Float) animation.getAnimatedValue());
+            }
         });
-
+        valueAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                if (from == 1.0f) {
+                    setImageBitmap(bitmap);
+                    changeAlpha(0.5f, 1.0f, bitmap);
+                }
+            }
+        });
+        valueAnimator.start();
     }
+
+    private ValueAnimator valueAnimator;
 
     /**
      * 根据控件比例剪裁bitmap成一个固定大小的图片

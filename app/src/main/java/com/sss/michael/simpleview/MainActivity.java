@@ -2,8 +2,6 @@ package com.sss.michael.simpleview;
 
 import android.animation.ValueAnimator;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.TransitionDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -11,7 +9,7 @@ import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 
-import com.sss.michael.simpleview.view.MyViewPager;
+import com.sss.michael.simpleview.view.BannerViewPager;
 import com.sss.michael.simpleview.view.SimpleDoubleSeekBar;
 import com.sss.michael.simpleview.view.SimpleDoubleSeekBar2;
 import com.sss.michael.simpleview.view.SimpleHalfPieChart;
@@ -29,6 +27,7 @@ import java.util.List;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.widget.NestedScrollView;
+
 
 public class MainActivity extends AppCompatActivity {
     private SimpleHalfPieChart simpleHalfPieChart;
@@ -189,52 +188,42 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-        final TransitionImageView last = findViewById(R.id.last);
-        final TransitionImageView next = findViewById(R.id.next);
-        final TransitionImageView current = findViewById(R.id.current);
+        final TransitionImageView last = findViewById(R.id.lastBuffer);
+        final TransitionImageView next = findViewById(R.id.nextBuffer);
+        final TransitionImageView current = findViewById(R.id.currentBuffer);
         final TransitionImageView bg = findViewById(R.id.bg);
-        final MyViewPager<String> myViewPager = findViewById(R.id.myViewPager);
+        final BannerViewPager<String> myViewPager = findViewById(R.id.myViewPager);
+        final List<String> list = new ArrayList<>();
+        list.add("https://alifei05.cfp.cn/creative/vcg/veer/1600water/veer-161885124.jpg");
+        list.add("https://alifei04.cfp.cn/creative/vcg/veer/1600water/veer-303764513.jpg");
+        list.add("https://tenfei04.cfp.cn/creative/vcg/veer/1600water/veer-142190838.jpg");
+        list.add("https://alifei05.cfp.cn/creative/vcg/800/version23/VCG41175510742.jpg");
+
         myViewPager.post(new Runnable() {
             @Override
             public void run() {
-                myViewPager.setOnMyViewPagerCallBack(new MyViewPager.OnMyViewPagerCallBack<String>() {
+                myViewPager.setOnMyViewPagerCallBack(new BannerViewPager.OnMyViewPagerCallBack<String>() {
 
 
                     @Override
-                    public void onImageChange(boolean byUser, MyViewPager.Direction direction, List<String> models, ImageView left, ImageView middle, ImageView right, int[] position) {
+                    public void onImageChange(boolean byUser, BannerViewPager.Direction direction, List<String> models, ImageView left, ImageView middle, ImageView right, int[] position) {
                         int lastPosition = position[0];
                         int currentPosition = position[1];
                         int nextPosition = position[2];
 
-                        if (direction == MyViewPager.Direction.RIGHT_TO_LEFT) {
-                            TransitionDrawable td = new TransitionDrawable(new Drawable[]{
-                                    current.getDrawable(),
-                                    next.getDrawable()
-                            });
-                            td.startTransition(150);
-                            bg.setImageDrawable(td);
-//                            bg.setImgUrl(models.get(currentPosition), models.get(nextPosition), null, myViewPager.getLeft(), myViewPager.getTop(), myViewPager.getWidth(), myViewPager.getHeight());
-//
-//                            bg.setTransitionDrawable(next.getDrawable());
-                        } else if (direction == MyViewPager.Direction.LEFT_TO_RIGHT) {
-                            TransitionDrawable td = new TransitionDrawable(new Drawable[]{
-                                    current.getDrawable(),
-                                    last.getDrawable()
-                            });
-                            bg.setImageDrawable(td);
-                            td.startTransition(150);
-//                            bg.setImgUrl(models.get(currentPosition), models.get(lastPosition), null, myViewPager.getLeft(), myViewPager.getTop(), myViewPager.getWidth(), myViewPager.getHeight());
-//
-//                            bg.setTransitionDrawable(last.getDrawable());
+                        if (direction == BannerViewPager.Direction.RIGHT_TO_LEFT) {
+                            bg.setTransitionAlpha(models.get(currentPosition), models.get(nextPosition));
+                        } else if (direction == BannerViewPager.Direction.LEFT_TO_RIGHT) {
+                            bg.setTransitionAlpha(models.get(currentPosition), models.get(lastPosition));
                         }
                     }
 
                     @Override
-                    public void onTouchScroll(MyViewPager.Direction direction, float offsetPercent, List<String> models, ImageView left, ImageView middle, ImageView right, int[] position) {
+                    public void onTouchScroll(BannerViewPager.Direction direction, float offsetPercent, List<String> models, ImageView left, ImageView middle, ImageView right, int[] position) {
                     }
 
                     @Override
-                    public void setBannerImage(MyViewPager.Direction direction, List<String> models, ImageView leftBanner, final ImageView middleBanner, ImageView rightBanner, int[] position) {
+                    public void previewBannerImage(BannerViewPager.Direction direction, List<String> models, ImageView leftBanner, final ImageView middleBanner, ImageView rightBanner, int[] position) {
                         int lastPosition = position[0];
                         int currentPosition = position[1];
                         int nextPosition = position[2];
@@ -242,22 +231,16 @@ public class MainActivity extends AppCompatActivity {
                         current.setImgUrl(models.get(currentPosition), models.get(currentPosition), middleBanner, myViewPager.getLeft(), myViewPager.getTop(), myViewPager.getWidth(), myViewPager.getHeight());
                         next.setImgUrl(models.get(currentPosition), models.get(nextPosition), rightBanner, myViewPager.getLeft(), myViewPager.getTop(), myViewPager.getWidth(), myViewPager.getHeight());
 
-                        if (direction == MyViewPager.Direction.NORMAL) {
+                        if (direction == BannerViewPager.Direction.NORMAL) {
                             bg.setImgUrl(models.get(currentPosition), models.get(currentPosition), null, myViewPager.getLeft(), myViewPager.getTop(), myViewPager.getWidth(), myViewPager.getHeight());
                         }
 
 
                     }
                 });
-
-                List<String> list = new ArrayList<>();
-                list.add("https://alifei05.cfp.cn/creative/vcg/veer/1600water/veer-161885124.jpg");
-                list.add("https://alifei04.cfp.cn/creative/vcg/veer/1600water/veer-303764513.jpg");
-                list.add("https://tenfei04.cfp.cn/creative/vcg/veer/1600water/veer-142190838.jpg");
                 myViewPager.setData(list);
             }
         });
-
     }
 
 }
