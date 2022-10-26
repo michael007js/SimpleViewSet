@@ -4,8 +4,10 @@ import android.animation.ValueAnimator;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 
@@ -21,6 +23,7 @@ import com.sss.michael.simpleview.view.SimpleSlideBesselView;
 import com.sss.michael.simpleview.view.SimpleSpiderView;
 import com.sss.michael.simpleview.view.SimpleWrapOffsetWidthView;
 import com.sss.michael.simpleview.view.TransitionImageView;
+import com.sss.michael.simpleview.view.toutiaoanimation.ArticleRl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +31,7 @@ import java.util.List;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.widget.NestedScrollView;
 
-
+@SuppressWarnings("all")
 public class MainActivity extends AppCompatActivity {
     private SimpleHalfPieChart simpleHalfPieChart;
     private SimpleLinearChart simpleLinearChart;
@@ -239,6 +242,43 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
                 myViewPager.setData(list);
+            }
+        });
+
+        final Button button = findViewById(R.id.jinritoutiao_animation);
+        final ArticleRl articleRl = findViewById(R.id.article_view);
+
+        button.setOnTouchListener(new View.OnTouchListener() {
+            int x;
+            int y;
+            long lastDownTime;
+            Runnable mLongPressed = new Runnable() {
+                @Override
+                public void run() {
+                    articleRl.setVisibility(View.VISIBLE);
+                    articleRl.setThumb(x, y);
+                    articleRl.postDelayed(this, 50);
+                }
+            };
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    lastDownTime = System.currentTimeMillis();
+                    x = (int) event.getRawX();
+                    y = (int) event.getRawY();
+                    articleRl.postDelayed(mLongPressed, 100);
+                }
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    if (System.currentTimeMillis() - lastDownTime < 100) {//判断为单击事件
+                        articleRl.setVisibility(View.VISIBLE);
+                        articleRl.setThumb(x, y);
+                        articleRl.removeCallbacks(mLongPressed);
+                    } else {//判断为长按事件后松开
+                        articleRl.removeCallbacks(mLongPressed);
+                    }
+                }
+                return true;
             }
         });
     }

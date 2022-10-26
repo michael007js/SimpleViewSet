@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -8,245 +8,262 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="150dp">
-
-        <com.sss.michael.simpleview.view.TransitionImageView
-            android:id="@+id/lastBuffer"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:scaleType="centerCrop"
-            android:visibility="invisible"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.sss.michael.simpleview.view.TransitionImageView
-            android:id="@+id/currentBuffer"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:scaleType="centerCrop"
-            android:visibility="invisible"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.sss.michael.simpleview.view.TransitionImageView
-            android:id="@+id/nextBuffer"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:scaleType="centerCrop"
-            android:visibility="invisible"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.sss.michael.simpleview.view.TransitionImageView
-
-
-            android:id="@+id/bg"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:scaleType="centerCrop"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.sss.michael.simpleview.view.BannerViewPager
-            android:id="@+id/myViewPager"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginHorizontal="16dp"
-            android:layout_marginVertical="30dp" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-    <com.sss.michael.simpleview.view.SimpleReboundEffectsView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:sre_attenuation="1"
-        app:sre_interceptSlideScope="0dp">
+        android:keepScreenOn="true"
+        android:orientation="vertical"
+        tools:context=".MainActivity">
 
-        <androidx.core.widget.NestedScrollView
-            android:id="@+id/nestedScrollView"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="150dp">
 
-            <LinearLayout
+            <com.sss.michael.simpleview.view.TransitionImageView
+                android:id="@+id/lastBuffer"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:scaleType="centerCrop"
+                android:visibility="invisible"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <com.sss.michael.simpleview.view.TransitionImageView
+                android:id="@+id/currentBuffer"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:scaleType="centerCrop"
+                android:visibility="invisible"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <com.sss.michael.simpleview.view.TransitionImageView
+                android:id="@+id/nextBuffer"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:scaleType="centerCrop"
+                android:visibility="invisible"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <com.sss.michael.simpleview.view.TransitionImageView
+
+
+                android:id="@+id/bg"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:scaleType="centerCrop"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <com.sss.michael.simpleview.view.BannerViewPager
+                android:id="@+id/myViewPager"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@color/colorPrimaryDark"
-                android:gravity="center"
-                android:orientation="vertical">
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginVertical="30dp" />
 
-                <com.sss.michael.simpleview.view.SimpleWaveView
-                    android:id="@+id/simpleWaveView"
-                    android:layout_width="match_parent"
-                    android:layout_height="200dp" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-                <com.sss.michael.simpleview.view.SimpleColumnarView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+        <com.sss.michael.simpleview.view.SimpleReboundEffectsView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:sre_attenuation="1"
+            app:sre_interceptSlideScope="0dp">
 
-                <com.sss.michael.simpleview.view.SimpleSlideBesselView
-                    android:id="@+id/simpleSlideBesselView"
-                    android:layout_width="match_parent"
-                    android:layout_height="200dp" />
-
-
-                <com.sss.michael.simpleview.view.SimpleMusicJumpRectView
-                    android:layout_width="match_parent"
-                    android:layout_height="200dp" />
-
-                <com.sss.michael.simpleview.view.SimpleDeformationBackgroundView
-                    android:id="@+id/simpleDeformationBackgroundView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingHorizontal="100dp"
-                    android:paddingVertical="40dp"
-                    app:dbv_background_color="#e9302d"
-                    app:dbv_oblique_left="false"
-                    app:dbv_oblique_right="true"
-                    app:dbv_text="点我收缩"
-                    app:dbv_textColor="@color/colorPrimaryDark"
-                    app:dbv_text_size="20sp"
-                    app:dbv_text_style="bold_typeface" />
-
-                <com.sss.michael.simpleview.view.SimpleWrapOffsetWidthView
-                    android:id="@+id/simpleWrapOffsetWidthView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <com.sss.michael.simpleview.view.SimpleHalfRingView
-                        android:id="@+id/simple_half_ring_view"
-                        android:layout_width="match_parent"
-                        android:layout_height="200dp"
-                        android:paddingStart="10dp"
-                        android:paddingEnd="10dp"
-                        app:dbv_oblique_left="true" />
-
-                </com.sss.michael.simpleview.view.SimpleWrapOffsetWidthView>
-
-
-                <SeekBar
-                    android:id="@+id/simple_half_ring_view_seek_bar"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:max="100"
-                    android:progress="50" />
-
-
-                <com.sss.michael.simpleview.view.SimplePentagonView
-                    android:layout_width="match_parent"
-                    android:layout_height="370dp" />
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/nestedScrollView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
+                    android:background="@color/colorPrimaryDark"
                     android:gravity="center"
-                    android:orientation="horizontal">
+                    android:orientation="vertical">
 
-                    <com.sss.michael.simpleview.view.SimpleArrowTagView
+                    <com.sss.michael.simpleview.view.SimpleWaveView
+                        android:id="@+id/simpleWaveView"
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp" />
 
-                        android:layout_width="30dp"
-                        android:layout_height="20dp" />
+                    <Button
+                        android:id="@+id/jinritoutiao_animation"
+                        android:text="点我"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"/>
+                    <com.sss.michael.simpleview.view.SimpleColumnarView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
 
-                    <com.sss.michael.simpleview.view.SimpleArrowTagView2
-
-                        android:layout_width="30dp"
-                        android:layout_height="20dp" />
-
-                </LinearLayout>
-
-
-                <com.sss.michael.simpleview.view.SimpleDoubleSeekBar2
-                    android:id="@+id/simpleDoubleSeekBar2"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    <com.sss.michael.simpleview.view.SimpleSlideBesselView
+                        android:id="@+id/simpleSlideBesselView"
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp" />
 
 
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                    <com.sss.michael.simpleview.view.SimpleMusicJumpRectView
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp" />
 
-                    <com.sss.michael.simpleview.view.SimpleTableView
+                    <com.sss.michael.simpleview.view.SimpleDeformationBackgroundView
+                        android:id="@+id/simpleDeformationBackgroundView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingHorizontal="100dp"
+                        android:paddingVertical="40dp"
+                        app:dbv_background_color="#e9302d"
+                        app:dbv_oblique_left="false"
+                        app:dbv_oblique_right="true"
+                        app:dbv_text="点我收缩"
+                        app:dbv_textColor="@color/colorPrimaryDark"
+                        app:dbv_text_size="20sp"
+                        app:dbv_text_style="bold_typeface" />
+
+                    <com.sss.michael.simpleview.view.SimpleWrapOffsetWidthView
+                        android:id="@+id/simpleWrapOffsetWidthView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <com.sss.michael.simpleview.view.SimpleHalfRingView
+                            android:id="@+id/simple_half_ring_view"
+                            android:layout_width="match_parent"
+                            android:layout_height="200dp"
+                            android:paddingStart="10dp"
+                            android:paddingEnd="10dp"
+                            app:dbv_oblique_left="true" />
+
+                    </com.sss.michael.simpleview.view.SimpleWrapOffsetWidthView>
+
+
+                    <SeekBar
+                        android:id="@+id/simple_half_ring_view_seek_bar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:max="100"
+                        android:progress="50" />
+
+
+                    <com.sss.michael.simpleview.view.SimplePentagonView
+                        android:layout_width="match_parent"
+                        android:layout_height="370dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="horizontal">
+
+                        <com.sss.michael.simpleview.view.SimpleArrowTagView
+
+                            android:layout_width="30dp"
+                            android:layout_height="20dp" />
+
+                        <com.sss.michael.simpleview.view.SimpleArrowTagView2
+
+                            android:layout_width="30dp"
+                            android:layout_height="20dp" />
+
+                    </LinearLayout>
+
+
+                    <com.sss.michael.simpleview.view.SimpleDoubleSeekBar2
+                        android:id="@+id/simpleDoubleSeekBar2"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
 
-                </FrameLayout>
 
-
-                <com.sss.michael.simpleview.view.SimpleAutoScrollInfiniteLoopView
-                    android:layout_width="match_parent"
-                    android:layout_height="250dp" />
-
-                <com.sss.michael.simpleview.view.SimpleDoubleSeekBar
-                    android:id="@+id/simpleDoubleSeekBar"
-                    android:layout_width="match_parent"
-                    android:layout_height="150dp" />
-
-                <com.sss.michael.simpleview.view.SimpleHalfPieChart
-                    android:id="@+id/simpleHalfPieChart"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-                <com.sss.michael.simpleview.view.SimpleLinearChart
-                    android:id="@+id/simpleLinearChart"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-                <com.sss.michael.simpleview.view.SimpleSpiderView
-                    android:id="@+id/simpleSpiderView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-                <com.sss.michael.simpleview.view.SimpleProgressBar
-                    android:id="@+id/simpleProgressBar"
-                    android:layout_width="match_parent"
-                    android:layout_height="20dp"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginEnd="16dp"
-                    app:simple_progressbar_attachToBackground="false"
-                    app:simple_progressbar_backgroundColor="#F2F2F2"
-                    app:simple_progressbar_currentProgress="66"
-                    app:simple_progressbar_distance="15dp"
-                    app:simple_progressbar_isPercent="true"
-                    app:simple_progressbar_progressHeight="10dp"
-                    app:simple_progressbar_text="66%"
-                    app:simple_progressbar_textColor="#4A4A4A"
-                    app:simple_progressbar_textMaxWidth="35dp"
-                    app:simple_progressbar_textSize="12sp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="110dp">
-
-                    <com.sss.michael.simpleview.view.SimpleRotatingView
-                        android:id="@+id/simpleRotatingView"
+                    <FrameLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@color/colorPrimary">
+                        android:layout_height="match_parent">
 
-                        <TextView
+                        <com.sss.michael.simpleview.view.SimpleTableView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+
+                    </FrameLayout>
+
+
+                    <com.sss.michael.simpleview.view.SimpleAutoScrollInfiniteLoopView
+                        android:layout_width="match_parent"
+                        android:layout_height="250dp" />
+
+                    <com.sss.michael.simpleview.view.SimpleDoubleSeekBar
+                        android:id="@+id/simpleDoubleSeekBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="150dp" />
+
+                    <com.sss.michael.simpleview.view.SimpleHalfPieChart
+                        android:id="@+id/simpleHalfPieChart"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <com.sss.michael.simpleview.view.SimpleLinearChart
+                        android:id="@+id/simpleLinearChart"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <com.sss.michael.simpleview.view.SimpleSpiderView
+                        android:id="@+id/simpleSpiderView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <com.sss.michael.simpleview.view.SimpleProgressBar
+                        android:id="@+id/simpleProgressBar"
+                        android:layout_width="match_parent"
+                        android:layout_height="20dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginEnd="16dp"
+                        app:simple_progressbar_attachToBackground="false"
+                        app:simple_progressbar_backgroundColor="#F2F2F2"
+                        app:simple_progressbar_currentProgress="66"
+                        app:simple_progressbar_distance="15dp"
+                        app:simple_progressbar_isPercent="true"
+                        app:simple_progressbar_progressHeight="10dp"
+                        app:simple_progressbar_text="66%"
+                        app:simple_progressbar_textColor="#4A4A4A"
+                        app:simple_progressbar_textMaxWidth="35dp"
+                        app:simple_progressbar_textSize="12sp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="110dp">
+
+                        <com.sss.michael.simpleview.view.SimpleRotatingView
+                            android:id="@+id/simpleRotatingView"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
+                            android:background="@color/colorPrimary">
 
-                            android:gravity="center"
-                            android:text="点我" />
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
 
-                    </com.sss.michael.simpleview.view.SimpleRotatingView>
+                                android:gravity="center"
+                                android:text="点我" />
+
+                        </com.sss.michael.simpleview.view.SimpleRotatingView>
+
+                    </LinearLayout>
 
                 </LinearLayout>
 
-            </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+        </com.sss.michael.simpleview.view.SimpleReboundEffectsView>
+    </LinearLayout>
 
-        </androidx.core.widget.NestedScrollView>
-    </com.sss.michael.simpleview.view.SimpleReboundEffectsView>
-</LinearLayout>
+    <com.sss.michael.simpleview.view.toutiaoanimation.ArticleRl
+        android:id="@+id/article_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+</FrameLayout>

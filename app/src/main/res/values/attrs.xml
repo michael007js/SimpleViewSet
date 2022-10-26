@@ -62,4 +62,15 @@
         <!--左上角圆角-->
         <attr name="dbv_radius_left_top" format="dimension" />
     </declare-styleable>
+
+    <declare-styleable name="SuperLikeLayout">
+        <!--一次喷射的element数量-->
+        <attr name="eruption_element_amount" format="integer" />
+        <!--最大同时喷射次数-->
+        <attr name="max_eruption_total" format="integer" />
+        <!--是否显示Emoji表情喷射动画-->
+        <attr name="show_emoji" format="boolean" />
+        <!--是否显示Combo文字-->
+        <attr name="show_text" format="boolean" />
+    </declare-styleable>
 </resources>
