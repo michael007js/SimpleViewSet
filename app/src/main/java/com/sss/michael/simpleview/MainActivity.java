@@ -9,9 +9,15 @@ import android.view.View;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
+import android.widget.Toast;
 
+import com.sss.michael.simpleview.bean.BottomBarModel;
+import com.sss.michael.simpleview.utils.DensityUtil;
+import com.sss.michael.simpleview.utils.JsonUtils;
 import com.sss.michael.simpleview.view.BannerViewPager;
+import com.sss.michael.simpleview.view.BottomNavigationBar;
 import com.sss.michael.simpleview.view.SimpleDoubleSeekBar;
 import com.sss.michael.simpleview.view.SimpleDoubleSeekBar2;
 import com.sss.michael.simpleview.view.SimpleHalfPieChart;
@@ -29,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.widget.NestedScrollView;
 
 @SuppressWarnings("all")
@@ -45,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     private SimpleSlideBesselView simpleSlideBesselView;
     private NestedScrollView nestedScrollView;
     private SeekBar simpleHalfRingViewSeekBar;
+    private BottomNavigationBar bottomNavigationBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -281,6 +289,57 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+
+
+        bottomNavigationBar = findViewById(R.id.navigation_bar);
+        bottomNavigationBar.setOnBottomNavigationBarCallBack(new BottomNavigationBar.OnBottomNavigationBarCallBack() {
+            @Override
+            public void onBottomNavigationBarItemClick(int position, boolean bigImage, BottomNavigationBar.Extra extra) {
+                Toast.makeText(MainActivity.this, position + "---" + bigImage, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+
+        BottomBarModel bottomBarModel = null;
+        bottomBarModel = bottomNavigationBar.initBottomBarConfig(bottomBarModel);
+        ConstraintLayout.LayoutParams layoutParamsNavigation = (ConstraintLayout.LayoutParams) bottomNavigationBar.getLayoutParams();
+        if (layoutParamsNavigation != null && bottomBarModel.getHeight() > 0) {
+            layoutParamsNavigation.height = DensityUtil.dp2px(bottomBarModel.getHeight());
+            bottomNavigationBar.setLayoutParams(layoutParamsNavigation);
+        }
+       View navigationHolderView = findViewById(R.id.navigation_holder_view);
+        ConstraintLayout.LayoutParams layoutParamsHolder = (ConstraintLayout.LayoutParams) navigationHolderView.getLayoutParams();
+        if (layoutParamsHolder != null ) {
+            layoutParamsHolder.topMargin = DensityUtil.dp2px(bottomBarModel.getReserveAreaHeight());
+            navigationHolderView.setLayoutParams(layoutParamsHolder);
+        }
+        List<BottomNavigationBar.BottomNavigationBarItem> items = new ArrayList<>();
+        for (int i = 0; i < bottomBarModel.getTabs().size(); i++) {
+            BottomNavigationBar.Builder builder = new BottomNavigationBar.Builder(bottomNavigationBar);
+            builder.setBetweenImageAndText(bottomBarModel.getTabs().get(i).getBetweenImageAndText());
+            builder.setBigImage(bottomBarModel.getTabs().get(i).isBigImage());
+            builder.setChecked(bottomBarModel.getTabs().get(i).isIsChecked());
+            builder.setCheckedUrl(bottomBarModel.getTabs().get(i).getCheckedUrl());
+            builder.setUnCheckedUrl(bottomBarModel.getTabs().get(i).getUnCheckedUrl());
+            builder.setFragmentIndex(bottomBarModel.getTabs().get(i).getFragmentIndex());
+            builder.setImageHeight(bottomBarModel.getTabs().get(i).getImageHeight());
+            builder.setImageWidth(bottomBarModel.getTabs().get(i).getImageWidth());
+            builder.setLabel(bottomBarModel.getTabs().get(i).getLabel());
+            builder.setPageUrl(bottomBarModel.getTabs().get(i).getPageUrl());
+            builder.setTextOffsetY(bottomBarModel.getTabs().get(i).getTextOffsetY());
+            builder.setTextSize(bottomBarModel.getTabs().get(i).getTextSize());
+            builder.setWeight(bottomBarModel.getTabs().get(i).getWeight());
+            try {
+                builder.setCheckTextColor(Color.parseColor(bottomBarModel.getTabs().get(i).getCheckTextColor()));
+                builder.setUnCheckTextColor(Color.parseColor(bottomBarModel.getTabs().get(i).getUnCheckTextColor()));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            BottomNavigationBar.BottomNavigationBarItem navigationBarItem = builder.build(MainActivity.this);
+            navigationBarItem.load(MainActivity.this, builder);
+            items.add(navigationBarItem);
+        }
+        bottomNavigationBar.setItems(items);
     }
 
 }

@@ -461,4 +461,17 @@ public class DrawViewUtils {
         return length * width;
     }
 
+
+    /**
+     * 任意三角形获取对边长度
+     *
+     * @param a      边长
+     * @param b      边长
+     * @param degree 角度
+     * @return
+     */
+    public static Double getLengthOfSide(double a, double b, double degree) {
+        return Math.sqrt(b * b + a * a - 2 * a * b * Math.cos(Math.toRadians(degree)));
+    }
+
 }
