@@ -25,6 +25,7 @@ import com.sss.michael.simpleview.view.SimpleHalfRingView;
 import com.sss.michael.simpleview.view.SimpleLinearChart;
 import com.sss.michael.simpleview.view.SimpleProgressBar;
 import com.sss.michael.simpleview.view.SimpleRotatingView;
+import com.sss.michael.simpleview.view.SimpleRoundTabView;
 import com.sss.michael.simpleview.view.SimpleSlideBesselView;
 import com.sss.michael.simpleview.view.SimpleSpiderView;
 import com.sss.michael.simpleview.view.SimpleWrapOffsetWidthView;
@@ -307,9 +308,9 @@ public class MainActivity extends AppCompatActivity {
             layoutParamsNavigation.height = DensityUtil.dp2px(bottomBarModel.getHeight());
             bottomNavigationBar.setLayoutParams(layoutParamsNavigation);
         }
-       View navigationHolderView = findViewById(R.id.navigation_holder_view);
+        View navigationHolderView = findViewById(R.id.navigation_holder_view);
         ConstraintLayout.LayoutParams layoutParamsHolder = (ConstraintLayout.LayoutParams) navigationHolderView.getLayoutParams();
-        if (layoutParamsHolder != null ) {
+        if (layoutParamsHolder != null) {
             layoutParamsHolder.topMargin = DensityUtil.dp2px(bottomBarModel.getReserveAreaHeight());
             navigationHolderView.setLayoutParams(layoutParamsHolder);
         }
@@ -340,6 +341,23 @@ public class MainActivity extends AppCompatActivity {
             items.add(navigationBarItem);
         }
         bottomNavigationBar.setItems(items);
+
+
+        SimpleRoundTabView simpleRoundTabView = findViewById(R.id.simpleRoundTabView);
+        List<SimpleRoundTabView.SimpleRoundTabBean> simpleRoundTabViewList = new ArrayList();
+        for (int i = 0; i < 3; i++) {
+            SimpleRoundTabView.SimpleRoundTabBean simpleRoundTabBean = new SimpleRoundTabView.SimpleRoundTabBean();
+            simpleRoundTabBean.text = "标签No." + (i + 1);
+            simpleRoundTabBean.checked = i == 0;
+            simpleRoundTabViewList.add(simpleRoundTabBean);
+        }
+        simpleRoundTabView.setList(simpleRoundTabViewList);
+        simpleRoundTabView.setOnSimpleRoundTabViewCallBack(new SimpleRoundTabView.OnSimpleRoundTabViewCallBack() {
+            @Override
+            public void onTabChecked(int fromPosition, int toPosition) {
+                Toast.makeText(MainActivity.this, fromPosition + "***" + toPosition, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
 }

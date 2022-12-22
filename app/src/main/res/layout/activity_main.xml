@@ -101,6 +101,12 @@
                         android:background="@color/colorPrimaryDark"
                         android:gravity="center"
                         android:orientation="vertical">
+                        
+                        <com.sss.michael.simpleview.view.SimpleRoundTabView
+                            android:id="@+id/simpleRoundTabView"
+                            android:layout_width="wrap_content"
+                            android:paddingVertical="10dp"
+                            android:layout_height="wrap_content"/>
 
                         <com.sss.michael.simpleview.view.SimpleWaveView
                             android:id="@+id/simpleWaveView"
