@@ -223,7 +223,7 @@ public class SimpleRoundTabView extends View {
 
     public void setList(List<SimpleRoundTabBean> list) {
         this.list = list;
-        invalidate();
+        requestLayout();
     }
 
     private ValueAnimator valueAnimator;
@@ -248,7 +248,7 @@ public class SimpleRoundTabView extends View {
         valueAnimator = ValueAnimator.ofFloat(maskRectF.left, maskRectF.left + dPosition * eachRectWidth);
 
         valueAnimator.setInterpolator(new LinearInterpolator());
-        valueAnimator.setDuration(300);
+        valueAnimator.setDuration(150);
         valueAnimator.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
