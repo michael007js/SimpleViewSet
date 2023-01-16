@@ -1,6 +1,7 @@
 package com.sss.michael.simpleview;
 
 import android.animation.ValueAnimator;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,6 +15,7 @@ import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.sss.michael.simpleview.bean.BottomBarModel;
+import com.sss.michael.simpleview.bean.GraffitiActivity;
 import com.sss.michael.simpleview.utils.DensityUtil;
 import com.sss.michael.simpleview.utils.JsonUtils;
 import com.sss.michael.simpleview.view.BannerViewPager;
@@ -356,6 +358,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onTabChecked(int fromPosition, int toPosition) {
                 Toast.makeText(MainActivity.this, fromPosition + "***" + toPosition, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        findViewById(R.id.btn_graffiti).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, GraffitiActivity.class));
             }
         });
     }
