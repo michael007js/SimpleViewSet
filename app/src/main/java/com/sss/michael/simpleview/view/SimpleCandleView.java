@@ -21,7 +21,7 @@ import java.util.List;
 
 import androidx.annotation.Nullable;
 
-public class SimpleCandleView extends View {
+public class SimpleCandleView<T> extends View {
     private final boolean DEBUG = false;
 
     /**
@@ -57,7 +57,7 @@ public class SimpleCandleView extends View {
     /**
      * y轴模型
      */
-    private CoordinateAxisBean yAxisBean;
+    private CoordinateAxisBean<T> yAxisBean;
     /**
      * x轴文字区域
      */
@@ -65,11 +65,11 @@ public class SimpleCandleView extends View {
     /**
      * x轴模型
      */
-    private CoordinateAxisBean xAxisBean;
+    private CoordinateAxisBean<T> xAxisBean;
     /**
      * 内容轴模型
      */
-    private CoordinateAxisBean contentAxisBean;
+    private CoordinateAxisBean<T> contentAxisBean;
     /**
      * 每个柱状条宽度
      */
@@ -77,6 +77,12 @@ public class SimpleCandleView extends View {
 
 
     /////////////////////////////////////////
+    private OnSimpleCandleViewCallBack<T> onSimpleCandleViewCallBack;
+
+    public void setOnSimpleCandleViewCallBack(OnSimpleCandleViewCallBack<T> onSimpleCandleViewCallBack) {
+        this.onSimpleCandleViewCallBack = onSimpleCandleViewCallBack;
+    }
+
     private ValueAnimator valueAnimator;
     private Paint debugPaint = new Paint();
     private Paint paint = new Paint();
@@ -139,13 +145,16 @@ public class SimpleCandleView extends View {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 for (int i = 0; i < contentAxisBean.texts.size(); i++) {
-                    contentAxisBean.texts.get(i).rectF.touch = false;
+                    contentAxisBean.getRectF(i).touch = false;
                 }
                 return true;
             case MotionEvent.ACTION_UP:
                 for (int i = 0; i < contentAxisBean.texts.size(); i++) {
-                    if (contentAxisBean.texts.get(i).rectF.contains(event.getX(), event.getY())) {
-                        contentAxisBean.texts.get(i).rectF.touch = !contentAxisBean.texts.get(i).rectF.touch;
+                    if (contentAxisBean.getRectF(i).contains(event.getX(), event.getY())) {
+                        contentAxisBean.getRectF(i).touch = !contentAxisBean.getRectF(i).touch;
+                        if (onSimpleCandleViewCallBack != null) {
+                            onSimpleCandleViewCallBack.onItemClick(contentAxisBean.getOnXyAxisTextRealization(i).getBean());
+                        }
                         break;
                     }
                 }
@@ -210,7 +219,7 @@ public class SimpleCandleView extends View {
                 paint.setColor(0xff999999);
                 canvas.drawLine(yAxisRect.right, yPosition, vailRect.right, yPosition, paint);
                 //绘制y轴文字
-                canvas.drawText(yAxisBean.texts.get(i).xyText.getText(), yAxisRect.left + yAxisBean.getMaxTextSize(true) / 2, yPosition + yAxisTextOffset, yAxisBean.getPaint());
+                canvas.drawText(yAxisBean.getOnXyAxisTextRealization(i).getText(), yAxisRect.left + yAxisBean.getMaxTextSize(true) / 2, yPosition + yAxisTextOffset, yAxisBean.getPaint());
             }
             /*******************************************************Y轴区域绘制结束↑*******************************************************/
 
@@ -228,17 +237,17 @@ public class SimpleCandleView extends View {
             }
             for (int i = 0; i < xAxisBean.texts.size(); i++) {
                 if (i == 0) {
-                    xAxisBean.texts.get(i).rectF.left = xAxisRect.left;
+                    xAxisBean.getRectF(i).left = xAxisRect.left;
                 } else {
-                    xAxisBean.texts.get(i).rectF.left = xAxisBean.texts.get(i - 1).rectF.right + xAxisBetweenDistance;
+                    xAxisBean.getRectF(i).left = xAxisBean.getRectF(i - 1).right + xAxisBetweenDistance;
                 }
-                xAxisBean.texts.get(i).rectF.right = xAxisBean.texts.get(i).rectF.left + eachColumnWidth;
-                xAxisBean.texts.get(i).rectF.top = xAxisRect.top;
-                xAxisBean.texts.get(i).rectF.bottom = xAxisRect.bottom;
+                xAxisBean.getRectF(i).right = xAxisBean.getRectF(i).left + eachColumnWidth;
+                xAxisBean.getRectF(i).top = xAxisRect.top;
+                xAxisBean.getRectF(i).bottom = xAxisRect.bottom;
                 //绘制x轴文字
-                canvas.drawText(xAxisBean.texts.get(i).xyText.getText(),
-                        xAxisBean.texts.get(i).rectF.left + xAxisBean.texts.get(i).rectF.width() / 2,
-                        xAxisBean.texts.get(i).rectF.top + xAxisBean.texts.get(i).rectF.height() / 2 + xAxisBean.getMaxTextSize(false) / 2 - DensityUtil.dp2px(3)/*Y轴偏移量*/,
+                canvas.drawText(xAxisBean.getOnXyAxisTextRealization(i).getText(),
+                        xAxisBean.getRectF(i).left + xAxisBean.getRectF(i).width() / 2,
+                        xAxisBean.getRectF(i).top + xAxisBean.getRectF(i).height() / 2 + xAxisBean.getMaxTextSize(false) / 2 - DensityUtil.dp2px(3)/*Y轴偏移量*/,
                         yAxisBean.getPaint());
             }
             /*******************************************************X轴区域绘制结束↑*******************************************************/
@@ -250,27 +259,27 @@ public class SimpleCandleView extends View {
                 if (contentAxisBean.texts.size() == xAxisBean.texts.size()) {
                     for (int i = 0; i < contentAxisBean.texts.size(); i++) {
                         if (i == 0) {
-                            contentAxisBean.texts.get(i).rectF.left = xAxisRect.left;
+                            contentAxisBean.getRectF(i).left = xAxisRect.left;
                         } else {
-                            contentAxisBean.texts.get(i).rectF.left = contentAxisBean.texts.get(i - 1).rectF.right + xAxisBetweenDistance;
+                            contentAxisBean.getRectF(i).left = contentAxisBean.getRectF(i - 1).right + xAxisBetweenDistance;
                         }
-                        contentAxisBean.texts.get(i).rectF.right = contentAxisBean.texts.get(i).rectF.left + eachColumnWidth;
+                        contentAxisBean.getRectF(i).right = contentAxisBean.getRectF(i).left + eachColumnWidth;
 
-                        contentAxisBean.texts.get(i).rectF.topHigh = xAxisRect.top - contentAxisBean.texts.get(i).xyText.getTopLevelHigh() * eachCoordinatePercent;
-                        contentAxisBean.texts.get(i).rectF.top = xAxisRect.top - contentAxisBean.texts.get(i).xyText.getTopLevelLow() * eachCoordinatePercent;
-                        contentAxisBean.texts.get(i).rectF.bottom = xAxisRect.top - contentAxisBean.texts.get(i).xyText.getBottomLevelHigh() * eachCoordinatePercent;
-                        contentAxisBean.texts.get(i).rectF.bottomLow = xAxisRect.top - contentAxisBean.texts.get(i).xyText.getBottomLevelLow() * eachCoordinatePercent;
+                        contentAxisBean.getRectF(i).topHigh = xAxisRect.top - contentAxisBean.getOnXyAxisTextRealization(i).getTopLevelHigh() * eachCoordinatePercent;
+                        contentAxisBean.getRectF(i).top = xAxisRect.top - contentAxisBean.getOnXyAxisTextRealization(i).getTopLevelLow() * eachCoordinatePercent;
+                        contentAxisBean.getRectF(i).bottom = xAxisRect.top - contentAxisBean.getOnXyAxisTextRealization(i).getBottomLevelHigh() * eachCoordinatePercent;
+                        contentAxisBean.getRectF(i).bottomLow = xAxisRect.top - contentAxisBean.getOnXyAxisTextRealization(i).getBottomLevelLow() * eachCoordinatePercent;
 
                         //空心柱Y轴中点
-                        float center = contentAxisBean.texts.get(i).rectF.top + contentAxisBean.texts.get(i).rectF.height() / 2;
+                        float center = contentAxisBean.getRectF(i).top + contentAxisBean.getRectF(i).height() / 2;
 
-                        rectF.left = contentAxisBean.texts.get(i).rectF.left;
-                        rectF.top = center - contentAxisBean.texts.get(i).rectF.height() / 2 * columnHeightPercent;
-                        rectF.right = contentAxisBean.texts.get(i).rectF.right;
-                        rectF.bottom = center + contentAxisBean.texts.get(i).rectF.height() / 2 * columnHeightPercent;
+                        rectF.left = contentAxisBean.getRectF(i).left;
+                        rectF.top = center - contentAxisBean.getRectF(i).height() / 2 * columnHeightPercent;
+                        rectF.right = contentAxisBean.getRectF(i).right;
+                        rectF.bottom = center + contentAxisBean.getRectF(i).height() / 2 * columnHeightPercent;
 
 
-                        if (contentAxisBean.texts.get(i).rectF.touch) {
+                        if (contentAxisBean.getRectF(i).touch) {
                             paint.setStyle(Paint.Style.FILL);
                             paint.setStrokeWidth(DensityUtil.dp2px(3));
                         } else {
@@ -282,11 +291,11 @@ public class SimpleCandleView extends View {
                         canvas.drawRoundRect(rectF, DensityUtil.dp2px(2), DensityUtil.dp2px(2), paint);
 
                         if (line) {
-                            float x = contentAxisBean.texts.get(i).rectF.left + contentAxisBean.texts.get(i).rectF.width() / 2;
+                            float x = contentAxisBean.getRectF(i).left + contentAxisBean.getRectF(i).width() / 2;
                             //绘制空心轴延长线上半部分
-                            canvas.drawLine(x, contentAxisBean.texts.get(i).rectF.topHigh, x, contentAxisBean.texts.get(i).rectF.top, paint);
+                            canvas.drawLine(x, contentAxisBean.getRectF(i).topHigh, x, contentAxisBean.getRectF(i).top, paint);
                             //绘制空心轴延长线下半部分
-                            canvas.drawLine(x, contentAxisBean.texts.get(i).rectF.bottomLow, x, contentAxisBean.texts.get(i).rectF.bottom, paint);
+                            canvas.drawLine(x, contentAxisBean.getRectF(i).bottomLow, x, contentAxisBean.getRectF(i).bottom, paint);
                         }
                     }
                 }
@@ -296,7 +305,7 @@ public class SimpleCandleView extends View {
     }
 
 
-    public void setData(CoordinateAxisBean yAxisBean, CoordinateAxisBean xAxisBean, CoordinateAxisBean contentAxisBean) {
+    public void setData(CoordinateAxisBean <T>yAxisBean, CoordinateAxisBean<T> xAxisBean, CoordinateAxisBean<T> contentAxisBean) {
         this.yAxisBean = yAxisBean;
         this.xAxisBean = xAxisBean;
         this.contentAxisBean = contentAxisBean;
@@ -345,13 +354,13 @@ public class SimpleCandleView extends View {
     }
 
 
-    public static class CoordinateAxisBean {
+    public static class CoordinateAxisBean<T> {
         /**
          * 最大最小值
          */
         private int max, min;
 
-        private List<TextBean> texts = new ArrayList<>();
+        private List<TextBean<T>> texts = new ArrayList<>();
         private float textSize = DensityUtil.sp2px(10f);
         private int color = 0xff999999;
         private Paint paint = new Paint();
@@ -366,6 +375,20 @@ public class SimpleCandleView extends View {
         public Paint getPaint() {
             paint.setTextAlign(Paint.Align.CENTER);
             return paint;
+        }
+
+        /**
+         * 获取矩阵
+         */
+        public TextBean.AxisRectF getRectF(int position) {
+            return texts.get(position).rectF;
+        }
+
+        /**
+         * 获取文本实现者
+         */
+        public OnXyAxisTextRealization<T> getOnXyAxisTextRealization(int position) {
+            return texts.get(position).xyText;
         }
 
         /**
@@ -391,21 +414,9 @@ public class SimpleCandleView extends View {
         }
 
         /**
-         * 获取文本总宽高尺寸
-         */
-        public float getTotalTextSize(boolean width) {
-            float size = 0;
-            for (TextBean textBean : texts) {
-                size += width ? textBean.size[0] : textBean.size[1];
-            }
-            return size;
-        }
-
-
-        /**
          * 设置坐标轴文本数据
          */
-        public void setCoordinateAxisTextData(List<OnXyAxisTextRealization> textData, boolean reverse) {
+        public void setCoordinateAxisTextData(List<OnXyAxisTextRealization<T>> textData, boolean reverse) {
             if (reverse) {
                 Collections.reverse(textData);
             }
@@ -417,7 +428,7 @@ public class SimpleCandleView extends View {
                     max = Math.max(max, textData.get(i).getTopLevelHigh());
                     min = Math.min(min, textData.get(i).getBottomLevelLow());
                 }
-                TextBean textBean = new TextBean();
+                TextBean<T> textBean = new TextBean<>();
                 textBean.xyText = textData.get(i);
                 textBean.size = DrawViewUtils.getTextWHF(getPaint(), textBean.xyText.getText());
                 texts.add(textBean);
@@ -437,7 +448,7 @@ public class SimpleCandleView extends View {
         /**
          * 文本
          */
-        final class TextBean<T> {
+        static class TextBean<T> {
             /**
              * 矩阵
              */
@@ -449,12 +460,12 @@ public class SimpleCandleView extends View {
             /**
              * xy轴文本实现者
              */
-            private OnXyAxisTextRealization xyText;
+            OnXyAxisTextRealization<T> xyText;
 
             /**
              * 点位
              */
-            final class AxisRectF {
+            static final class AxisRectF {
                 private boolean touch;
                 /**
                  * 左边
@@ -492,14 +503,6 @@ public class SimpleCandleView extends View {
                 public boolean contains(float x, float y) {
                     return left < right && top < bottom && x >= left && x < right && y >= top && y < bottom;
                 }
-
-                public final float centerX() {
-                    return (left + right) * 0.5f;
-                }
-
-                public final float centerY() {
-                    return (top + bottom) * 0.5f;
-                }
             }
         }
     }
@@ -509,14 +512,9 @@ public class SimpleCandleView extends View {
      * xy轴文本实现者
      */
     public interface OnXyAxisTextRealization<T> {
-        /**
-         * 获取文本
-         */
+
         String getText();
 
-        /**
-         * 获取在轴位置上的具体数字
-         */
         int getTopLevelHigh();
 
         int getTopLevelLow();
@@ -526,6 +524,10 @@ public class SimpleCandleView extends View {
         int getBottomLevelLow();
 
         T getBean();
+    }
+
+    public interface OnSimpleCandleViewCallBack<T> {
+        void onItemClick(T t);
     }
 
 

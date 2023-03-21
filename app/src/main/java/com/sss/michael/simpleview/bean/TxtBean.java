@@ -57,5 +57,4 @@ public class TxtBean implements SimpleCandleView.OnXyAxisTextRealization<TxtBean
     public TxtBean getBean() {
         return this;
     }
-
 }

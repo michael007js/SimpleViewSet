@@ -371,7 +371,7 @@ public class MainActivity extends AppCompatActivity {
 
         simpleCandleView = findViewById(R.id.simple_candle_view);
         //Y轴
-        List<SimpleCandleView.OnXyAxisTextRealization> yAxisData = new ArrayList<>();
+        List<SimpleCandleView.OnXyAxisTextRealization<TxtBean>> yAxisData = new ArrayList<>();
         yAxisData.add(new TxtBean("25k", 25000));
         yAxisData.add(new TxtBean("20k", 20000));
         yAxisData.add(new TxtBean("15k", 15000));
@@ -381,7 +381,7 @@ public class MainActivity extends AppCompatActivity {
         SimpleCandleView.CoordinateAxisBean yAxisBean = new SimpleCandleView.CoordinateAxisBean();
         yAxisBean.setCoordinateAxisTextData(yAxisData, true);
         //X轴
-        List<SimpleCandleView.OnXyAxisTextRealization> xAxisData = new ArrayList<>();
+        List<SimpleCandleView.OnXyAxisTextRealization<TxtBean>> xAxisData = new ArrayList<>();
         xAxisData.add(new TxtBean("4月", 25000));
         xAxisData.add(new TxtBean("5月", 20000));
         xAxisData.add(new TxtBean("6月", 15000));
@@ -397,7 +397,7 @@ public class MainActivity extends AppCompatActivity {
         SimpleCandleView.CoordinateAxisBean xAxisBean = new SimpleCandleView.CoordinateAxisBean();
         xAxisBean.setCoordinateAxisTextData(xAxisData, false);
         //内容轴
-        List<SimpleCandleView.OnXyAxisTextRealization> contentAxisData = new ArrayList<>();
+        List<SimpleCandleView.OnXyAxisTextRealization<TxtBean>> contentAxisData = new ArrayList<>();
         contentAxisData.add(new TxtBean("4月", 20000,15000,4000,2000));
         contentAxisData.add(new TxtBean("5月", 19000,14000,6000,4500));
         contentAxisData.add(new TxtBean("6月", 22500,18000,6000,4000));
