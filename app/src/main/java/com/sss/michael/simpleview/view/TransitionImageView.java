@@ -66,11 +66,15 @@ public class TransitionImageView extends AppCompatImageView {
                 setImageBitmap(bitmap);
                 if (bannerImageView != null) {
                     setDrawingCacheEnabled(true);
-                    Bitmap bmp = Bitmap.createBitmap(getDrawingCache());
-                    setDrawingCacheEnabled(false);
-                    bmp = imageCrop(bmp, x, y, width, height);
-                    if (bmp != null) {
-                        bannerImageView.setImageBitmap(bmp);
+                    try {
+                        Bitmap bmp = Bitmap.createBitmap(getDrawingCache());
+                        setDrawingCacheEnabled(false);
+                        bmp = imageCrop(bmp, x, y, width, height);
+                        if (bmp != null) {
+                            bannerImageView.setImageBitmap(bmp);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 }
                 return false;

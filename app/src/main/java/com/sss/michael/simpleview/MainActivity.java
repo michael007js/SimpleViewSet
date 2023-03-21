@@ -10,16 +10,16 @@ import android.view.View;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.sss.michael.simpleview.bean.BottomBarModel;
 import com.sss.michael.simpleview.bean.GraffitiActivity;
+import com.sss.michael.simpleview.bean.TxtBean;
 import com.sss.michael.simpleview.utils.DensityUtil;
-import com.sss.michael.simpleview.utils.JsonUtils;
 import com.sss.michael.simpleview.view.BannerViewPager;
 import com.sss.michael.simpleview.view.BottomNavigationBar;
+import com.sss.michael.simpleview.view.SimpleCandleView;
 import com.sss.michael.simpleview.view.SimpleDoubleSeekBar;
 import com.sss.michael.simpleview.view.SimpleDoubleSeekBar2;
 import com.sss.michael.simpleview.view.SimpleHalfPieChart;
@@ -56,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
     private NestedScrollView nestedScrollView;
     private SeekBar simpleHalfRingViewSeekBar;
     private BottomNavigationBar bottomNavigationBar;
+    private SimpleCandleView simpleCandleView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -367,6 +368,53 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, GraffitiActivity.class));
             }
         });
+
+        simpleCandleView = findViewById(R.id.simple_candle_view);
+        //Y轴
+        List<SimpleCandleView.OnXyAxisTextRealization> yAxisData = new ArrayList<>();
+        yAxisData.add(new TxtBean("25k", 25000));
+        yAxisData.add(new TxtBean("20k", 20000));
+        yAxisData.add(new TxtBean("15k", 15000));
+        yAxisData.add(new TxtBean("10k", 10000));
+        yAxisData.add(new TxtBean("5k", 5000));
+        yAxisData.add(new TxtBean("1k", 1000));
+        SimpleCandleView.CoordinateAxisBean yAxisBean = new SimpleCandleView.CoordinateAxisBean();
+        yAxisBean.setCoordinateAxisTextData(yAxisData, true);
+        //X轴
+        List<SimpleCandleView.OnXyAxisTextRealization> xAxisData = new ArrayList<>();
+        xAxisData.add(new TxtBean("4月", 25000));
+        xAxisData.add(new TxtBean("5月", 20000));
+        xAxisData.add(new TxtBean("6月", 15000));
+        xAxisData.add(new TxtBean("7月", 10000));
+        xAxisData.add(new TxtBean("8月", 5000));
+        xAxisData.add(new TxtBean("9月", 1000));
+        xAxisData.add(new TxtBean("10月", 1000));
+        xAxisData.add(new TxtBean("11月", 1000));
+        xAxisData.add(new TxtBean("12月", 1000));
+        xAxisData.add(new TxtBean("1月", 1000));
+        xAxisData.add(new TxtBean("2月", 1000));
+        xAxisData.add(new TxtBean("3月", 1000));
+        SimpleCandleView.CoordinateAxisBean xAxisBean = new SimpleCandleView.CoordinateAxisBean();
+        xAxisBean.setCoordinateAxisTextData(xAxisData, false);
+        //内容轴
+        List<SimpleCandleView.OnXyAxisTextRealization> contentAxisData = new ArrayList<>();
+        contentAxisData.add(new TxtBean("4月", 20000,15000,4000,2000));
+        contentAxisData.add(new TxtBean("5月", 19000,14000,6000,4500));
+        contentAxisData.add(new TxtBean("6月", 22500,18000,6000,4000));
+        contentAxisData.add(new TxtBean("7月", 20500,16000,10000,5000));
+        contentAxisData.add(new TxtBean("8月", 22000,18000,12000,10500));
+        contentAxisData.add(new TxtBean("9月", 22000,18500,7000,6000));
+        contentAxisData.add(new TxtBean("10月", 19000,16000,13000,11000));
+        contentAxisData.add(new TxtBean("11月", 18500,15500,7000,6000));
+        contentAxisData.add(new TxtBean("12月", 20500,18000,8100,7800));
+        contentAxisData.add(new TxtBean("1月", 21000,16500,4000,4000));
+        contentAxisData.add(new TxtBean("2月", 23000,18000,13500,13500));
+        contentAxisData.add(new TxtBean("3月", 17000,13000,4900,1200));
+        SimpleCandleView.CoordinateAxisBean contentAxisBean = new SimpleCandleView.CoordinateAxisBean();
+        contentAxisBean.setCoordinateAxisTextData(contentAxisData, false);
+
+
+        simpleCandleView.setData(yAxisBean, xAxisBean, contentAxisBean);
     }
 
 }

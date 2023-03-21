@@ -26,6 +26,7 @@
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
+                android:visibility="gone"
                 android:layout_height="150dp">
 
                 <com.sss.michael.simpleview.view.TransitionImageView
@@ -101,6 +102,11 @@
                         android:background="@color/colorPrimaryDark"
                         android:gravity="center"
                         android:orientation="vertical">
+
+                        <com.sss.michael.simpleview.view.SimpleCandleView
+                            android:id="@+id/simple_candle_view"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
 
                         <Button
                             android:id="@+id/btn_graffiti"
