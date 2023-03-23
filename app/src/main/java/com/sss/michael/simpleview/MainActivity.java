@@ -15,7 +15,8 @@ import android.widget.Toast;
 
 import com.sss.michael.simpleview.bean.BottomBarModel;
 import com.sss.michael.simpleview.bean.GraffitiActivity;
-import com.sss.michael.simpleview.bean.TxtBean;
+import com.sss.michael.simpleview.bean.SimpleCandleViewTxtBean;
+import com.sss.michael.simpleview.bean.SimpleLinearChart2TxtBean;
 import com.sss.michael.simpleview.utils.DensityUtil;
 import com.sss.michael.simpleview.view.BannerViewPager;
 import com.sss.michael.simpleview.view.BottomNavigationBar;
@@ -25,6 +26,7 @@ import com.sss.michael.simpleview.view.SimpleDoubleSeekBar2;
 import com.sss.michael.simpleview.view.SimpleHalfPieChart;
 import com.sss.michael.simpleview.view.SimpleHalfRingView;
 import com.sss.michael.simpleview.view.SimpleLinearChart;
+import com.sss.michael.simpleview.view.SimpleLinearChart2;
 import com.sss.michael.simpleview.view.SimpleProgressBar;
 import com.sss.michael.simpleview.view.SimpleRotatingView;
 import com.sss.michael.simpleview.view.SimpleRoundTabView;
@@ -57,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
     private SeekBar simpleHalfRingViewSeekBar;
     private BottomNavigationBar bottomNavigationBar;
     private SimpleCandleView simpleCandleView;
+    private SimpleLinearChart2 simpleLinearChart2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -371,50 +374,105 @@ public class MainActivity extends AppCompatActivity {
 
         simpleCandleView = findViewById(R.id.simple_candle_view);
         //Y轴
-        List<SimpleCandleView.OnXyAxisTextRealization<TxtBean>> yAxisData = new ArrayList<>();
-        yAxisData.add(new TxtBean("25k", 25000));
-        yAxisData.add(new TxtBean("20k", 20000));
-        yAxisData.add(new TxtBean("15k", 15000));
-        yAxisData.add(new TxtBean("10k", 10000));
-        yAxisData.add(new TxtBean("5k", 5000));
-        yAxisData.add(new TxtBean("1k", 1000));
-        SimpleCandleView.CoordinateAxisBean yAxisBean = new SimpleCandleView.CoordinateAxisBean();
+        List<SimpleCandleView.OnSimpleCandleViewXyAxisTextRealization<SimpleCandleViewTxtBean>> yAxisData = new ArrayList<>();
+        yAxisData.add(new SimpleCandleViewTxtBean("25k", 25000));
+        yAxisData.add(new SimpleCandleViewTxtBean("20k", 20000));
+        yAxisData.add(new SimpleCandleViewTxtBean("15k", 15000));
+        yAxisData.add(new SimpleCandleViewTxtBean("10k", 10000));
+        yAxisData.add(new SimpleCandleViewTxtBean("5k", 5000));
+        yAxisData.add(new SimpleCandleViewTxtBean("1k", 1000));
+        SimpleCandleView.SimpleCandleViewCoordinateAxisBean yAxisBean = new SimpleCandleView.SimpleCandleViewCoordinateAxisBean();
         yAxisBean.setCoordinateAxisTextData(yAxisData, true);
         //X轴
-        List<SimpleCandleView.OnXyAxisTextRealization<TxtBean>> xAxisData = new ArrayList<>();
-        xAxisData.add(new TxtBean("4月", 25000));
-        xAxisData.add(new TxtBean("5月", 20000));
-        xAxisData.add(new TxtBean("6月", 15000));
-        xAxisData.add(new TxtBean("7月", 10000));
-        xAxisData.add(new TxtBean("8月", 5000));
-        xAxisData.add(new TxtBean("9月", 1000));
-        xAxisData.add(new TxtBean("10月", 1000));
-        xAxisData.add(new TxtBean("11月", 1000));
-        xAxisData.add(new TxtBean("12月", 1000));
-        xAxisData.add(new TxtBean("1月", 1000));
-        xAxisData.add(new TxtBean("2月", 1000));
-        xAxisData.add(new TxtBean("3月", 1000));
-        SimpleCandleView.CoordinateAxisBean xAxisBean = new SimpleCandleView.CoordinateAxisBean();
+        List<SimpleCandleView.OnSimpleCandleViewXyAxisTextRealization<SimpleCandleViewTxtBean>> xAxisData = new ArrayList<>();
+        xAxisData.add(new SimpleCandleViewTxtBean("4月", 25000));
+        xAxisData.add(new SimpleCandleViewTxtBean("5月", 20000));
+        xAxisData.add(new SimpleCandleViewTxtBean("6月", 15000));
+        xAxisData.add(new SimpleCandleViewTxtBean("7月", 10000));
+        xAxisData.add(new SimpleCandleViewTxtBean("8月", 5000));
+        xAxisData.add(new SimpleCandleViewTxtBean("9月", 1000));
+        xAxisData.add(new SimpleCandleViewTxtBean("10月", 1000));
+        xAxisData.add(new SimpleCandleViewTxtBean("11月", 1000));
+        xAxisData.add(new SimpleCandleViewTxtBean("12月", 1000));
+        xAxisData.add(new SimpleCandleViewTxtBean("1月", 1000));
+        xAxisData.add(new SimpleCandleViewTxtBean("2月", 1000));
+        xAxisData.add(new SimpleCandleViewTxtBean("3月", 1000));
+        SimpleCandleView.SimpleCandleViewCoordinateAxisBean xAxisBean = new SimpleCandleView.SimpleCandleViewCoordinateAxisBean();
         xAxisBean.setCoordinateAxisTextData(xAxisData, false);
         //内容轴
-        List<SimpleCandleView.OnXyAxisTextRealization<TxtBean>> contentAxisData = new ArrayList<>();
-        contentAxisData.add(new TxtBean("4月", 20000,15000,4000,2000));
-        contentAxisData.add(new TxtBean("5月", 19000,14000,6000,4500));
-        contentAxisData.add(new TxtBean("6月", 22500,18000,6000,4000));
-        contentAxisData.add(new TxtBean("7月", 20500,16000,10000,5000));
-        contentAxisData.add(new TxtBean("8月", 22000,18000,12000,10500));
-        contentAxisData.add(new TxtBean("9月", 22000,18500,7000,6000));
-        contentAxisData.add(new TxtBean("10月", 19000,16000,13000,11000));
-        contentAxisData.add(new TxtBean("11月", 18500,15500,7000,6000));
-        contentAxisData.add(new TxtBean("12月", 20500,18000,8100,7800));
-        contentAxisData.add(new TxtBean("1月", 21000,16500,4000,4000));
-        contentAxisData.add(new TxtBean("2月", 23000,18000,13500,13500));
-        contentAxisData.add(new TxtBean("3月", 17000,13000,4900,1200));
-        SimpleCandleView.CoordinateAxisBean contentAxisBean = new SimpleCandleView.CoordinateAxisBean();
+        List<SimpleCandleView.OnSimpleCandleViewXyAxisTextRealization<SimpleCandleViewTxtBean>> contentAxisData = new ArrayList<>();
+        contentAxisData.add(new SimpleCandleViewTxtBean("4月", 20000, 15000, 4000, 2000));
+        contentAxisData.add(new SimpleCandleViewTxtBean("5月", 19000, 14000, 6000, 4500));
+        contentAxisData.add(new SimpleCandleViewTxtBean("6月", 22500, 18000, 6000, 4000));
+        contentAxisData.add(new SimpleCandleViewTxtBean("7月", 20500, 16000, 10000, 5000));
+        contentAxisData.add(new SimpleCandleViewTxtBean("8月", 22000, 18000, 12000, 10500));
+        contentAxisData.add(new SimpleCandleViewTxtBean("9月", 22000, 18500, 7000, 6000));
+        contentAxisData.add(new SimpleCandleViewTxtBean("10月", 19000, 16000, 13000, 11000));
+        contentAxisData.add(new SimpleCandleViewTxtBean("11月", 18500, 15500, 7000, 6000));
+        contentAxisData.add(new SimpleCandleViewTxtBean("12月", 20500, 18000, 8100, 7800));
+        contentAxisData.add(new SimpleCandleViewTxtBean("1月", 21000, 16500, 4000, 4000));
+        contentAxisData.add(new SimpleCandleViewTxtBean("2月", 23000, 18000, 13500, 13500));
+        contentAxisData.add(new SimpleCandleViewTxtBean("3月", 17000, 13000, 4900, 1200));
+        SimpleCandleView.SimpleCandleViewCoordinateAxisBean contentAxisBean = new SimpleCandleView.SimpleCandleViewCoordinateAxisBean();
         contentAxisBean.setCoordinateAxisTextData(contentAxisData, false);
 
 
         simpleCandleView.setData(yAxisBean, xAxisBean, contentAxisBean);
+
+
+        simpleLinearChart2 = findViewById(R.id.simpleLinearChart2);
+        //Y轴
+        List<SimpleLinearChart2.OnSimpleLinearChart2XyAxisTextRealization<SimpleLinearChart2TxtBean>> simpleLinearChart2YAxisData = new ArrayList<>();
+        simpleLinearChart2YAxisData.add(new SimpleLinearChart2TxtBean("5w", 50000));
+        simpleLinearChart2YAxisData.add(new SimpleLinearChart2TxtBean("4w", 40000));
+        simpleLinearChart2YAxisData.add(new SimpleLinearChart2TxtBean("3w", 30000));
+        simpleLinearChart2YAxisData.add(new SimpleLinearChart2TxtBean("2w", 20000));
+        simpleLinearChart2YAxisData.add(new SimpleLinearChart2TxtBean("1w", 10000));
+        simpleLinearChart2YAxisData.add(new SimpleLinearChart2TxtBean("0", 0));
+        SimpleLinearChart2.SimpleLinearChart2CoordinateAxisBean simpleLinearChart2YAxisBean = new SimpleLinearChart2.SimpleLinearChart2CoordinateAxisBean();
+        simpleLinearChart2YAxisBean.setCoordinateAxisTextData(simpleLinearChart2YAxisData, true);
+        //X轴
+        List<SimpleLinearChart2.OnSimpleLinearChart2XyAxisTextRealization<SimpleLinearChart2TxtBean>> simpleLinearChart2XAxisData = new ArrayList<>();
+        simpleLinearChart2XAxisData.add(new SimpleLinearChart2TxtBean("4月", 0));
+        simpleLinearChart2XAxisData.add(new SimpleLinearChart2TxtBean("5月", 0));
+        simpleLinearChart2XAxisData.add(new SimpleLinearChart2TxtBean("6月", 0));
+        simpleLinearChart2XAxisData.add(new SimpleLinearChart2TxtBean("7月", 0));
+        simpleLinearChart2XAxisData.add(new SimpleLinearChart2TxtBean("8月", 0));
+        simpleLinearChart2XAxisData.add(new SimpleLinearChart2TxtBean("9月", 0));
+        simpleLinearChart2XAxisData.add(new SimpleLinearChart2TxtBean("10月", 0));
+        simpleLinearChart2XAxisData.add(new SimpleLinearChart2TxtBean("11月", 0));
+        simpleLinearChart2XAxisData.add(new SimpleLinearChart2TxtBean("12月", 0));
+        simpleLinearChart2XAxisData.add(new SimpleLinearChart2TxtBean("1月", 35000));
+        simpleLinearChart2XAxisData.add(new SimpleLinearChart2TxtBean("2月", 20000));
+        simpleLinearChart2XAxisData.add(new SimpleLinearChart2TxtBean("3月", 30000));
+        SimpleLinearChart2.SimpleLinearChart2CoordinateAxisBean simpleLinearChart2XAxisBean = new SimpleLinearChart2.SimpleLinearChart2CoordinateAxisBean();
+        simpleLinearChart2XAxisBean.setCoordinateAxisTextData(simpleLinearChart2XAxisData, false);
+        //内容轴
+        List<SimpleLinearChart2.SimpleLinearChart2CoordinateAxisBean> contentAxisDataList = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            List<SimpleLinearChart2.OnSimpleLinearChart2XyAxisTextRealization<SimpleLinearChart2TxtBean>> simpleLinearChart2ContentAxisData = new ArrayList<>();
+            simpleLinearChart2ContentAxisData.add(new SimpleLinearChart2TxtBean("4月", (i+1)*10000));
+            simpleLinearChart2ContentAxisData.add(new SimpleLinearChart2TxtBean("5月", (i+1)*10000));
+            simpleLinearChart2ContentAxisData.add(new SimpleLinearChart2TxtBean("6月", (i+1)*9000));
+            simpleLinearChart2ContentAxisData.add(new SimpleLinearChart2TxtBean("7月", (i+1)*12000));
+            simpleLinearChart2ContentAxisData.add(new SimpleLinearChart2TxtBean("8月", (i+1)*9000));
+            simpleLinearChart2ContentAxisData.add(new SimpleLinearChart2TxtBean("9月", (i+1)*8000));
+            simpleLinearChart2ContentAxisData.add(new SimpleLinearChart2TxtBean("10月", (i+1)*7000));
+            simpleLinearChart2ContentAxisData.add(new SimpleLinearChart2TxtBean("11月", (i+1)*8000));
+            simpleLinearChart2ContentAxisData.add(new SimpleLinearChart2TxtBean("12月", (i+1)*11000));
+            simpleLinearChart2ContentAxisData.add(new SimpleLinearChart2TxtBean("1月", (i+1)*10000));
+            simpleLinearChart2ContentAxisData.add(new SimpleLinearChart2TxtBean("2月", (i+1)*9000));
+            simpleLinearChart2ContentAxisData.add(new SimpleLinearChart2TxtBean("3月", (i+1)*10000));
+            SimpleLinearChart2.SimpleLinearChart2CoordinateAxisBean simpleLinearChart2ContentAxisBean = new SimpleLinearChart2.SimpleLinearChart2CoordinateAxisBean();
+            simpleLinearChart2ContentAxisBean.setRemark("202" + i + "年");
+            simpleLinearChart2ContentAxisBean.setChecked(i == 1);
+            simpleLinearChart2ContentAxisBean.setCoordinateAxisTextData(simpleLinearChart2ContentAxisData, false);
+            contentAxisDataList.add(simpleLinearChart2ContentAxisBean);
+        }
+
+
+        simpleLinearChart2.setData(simpleLinearChart2YAxisBean, simpleLinearChart2XAxisBean, contentAxisDataList);
+
     }
 
 }

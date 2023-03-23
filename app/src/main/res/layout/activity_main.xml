@@ -103,6 +103,11 @@
                         android:gravity="center"
                         android:orientation="vertical">
 
+                        <com.sss.michael.simpleview.view.SimpleLinearChart2
+                            android:id="@+id/simpleLinearChart2"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+
                         <com.sss.michael.simpleview.view.SimpleCandleView
                             android:id="@+id/simple_candle_view"
                             android:layout_width="match_parent"

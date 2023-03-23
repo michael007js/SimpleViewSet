@@ -2,7 +2,7 @@ package com.sss.michael.simpleview.bean;
 
 import com.sss.michael.simpleview.view.SimpleCandleView;
 
-public class TxtBean implements SimpleCandleView.OnXyAxisTextRealization<TxtBean> {
+public class SimpleCandleViewTxtBean implements SimpleCandleView.OnSimpleCandleViewXyAxisTextRealization<SimpleCandleViewTxtBean> {
     private String txt;
 
     private int topLevelHigh;
@@ -11,7 +11,7 @@ public class TxtBean implements SimpleCandleView.OnXyAxisTextRealization<TxtBean
     private int bottomLevelHigh;
     private int bottomLevelLow;
 
-    public TxtBean(String txt, int number) {
+    public SimpleCandleViewTxtBean(String txt, int number) {
         this.txt = txt;
         this.topLevelHigh = number;
         this.topLevelLow = number;
@@ -19,7 +19,7 @@ public class TxtBean implements SimpleCandleView.OnXyAxisTextRealization<TxtBean
         this.bottomLevelLow = number;
     }
 
-    public TxtBean(String txt, int topLevelHigh, int topLevelLow, int bottomLevelHigh, int bottomLevelLow) {
+    public SimpleCandleViewTxtBean(String txt, int topLevelHigh, int topLevelLow, int bottomLevelHigh, int bottomLevelLow) {
         this.txt = txt;
         this.topLevelHigh = topLevelHigh;
         this.topLevelLow = topLevelLow;
@@ -54,7 +54,7 @@ public class TxtBean implements SimpleCandleView.OnXyAxisTextRealization<TxtBean
 
 
     @Override
-    public TxtBean getBean() {
+    public SimpleCandleViewTxtBean getBean() {
         return this;
     }
 }

@@ -1,14 +1,16 @@
 package com.sss.michael.simpleview.view;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.LinearGradient;
 import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.PointF;
 import android.graphics.RectF;
+import android.graphics.Shader;
 import android.util.AttributeSet;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 
@@ -23,11 +25,12 @@ import java.util.List;
 import androidx.annotation.Nullable;
 
 /**
- * @author Michael by 61642
- * @date 2023/3/22 14:42
- * @Description 一个简单的蜡烛图
+ * @author Michael by Administrator
+ * @date 2021/1/29 9:47
+ * @Description 一个简单的线性图表
  */
-public class SimpleCandleView<T> extends View {
+@SuppressWarnings("ALL")
+public class SimpleLinearChart2<T> extends View {
     private final boolean DEBUG = false;
 
     /**
@@ -55,7 +58,7 @@ public class SimpleCandleView<T> extends View {
     /**
      * x轴左侧预留区域
      */
-    private int xAxisLeftReservedArea = 10;
+    private int xAxisLeftReservedArea = 0;
     /**
      * x轴右侧预留区域
      */
@@ -63,7 +66,7 @@ public class SimpleCandleView<T> extends View {
     /**
      * y轴模型
      */
-    private SimpleCandleViewCoordinateAxisBean<T> yAxisBean;
+    private SimpleLinearChart2.SimpleLinearChart2CoordinateAxisBean<T> yAxisBean;
     /**
      * x轴文字区域
      */
@@ -71,45 +74,55 @@ public class SimpleCandleView<T> extends View {
     /**
      * x轴模型
      */
-    private SimpleCandleViewCoordinateAxisBean<T> xAxisBean;
+    private SimpleLinearChart2.SimpleLinearChart2CoordinateAxisBean<T> xAxisBean;
     /**
      * 内容轴模型
      */
-    private SimpleCandleViewCoordinateAxisBean<T> contentAxisBean;
+    private List<SimpleLinearChart2.SimpleLinearChart2CoordinateAxisBean<T>> contentAxisBean;
     /**
      * 每个柱状条宽度
      */
     private float eachColumnWidth = DensityUtil.dp2px(13);
+//    /**
+//     * 标注区域
+//     */
+//    private RectF remarkRect = new RectF();
+//    /**
+//     * 标注区域高度
+//     */
+//    private int remarkArea = 48;
+
+    /**
+     * 第一个点是否贴边从Y轴开始绘制
+     */
+    private boolean isClingYAxisForFirst = true;
 
 
     /////////////////////////////////////////
-    private OnSimpleCandleViewCallBack<T> onSimpleCandleViewCallBack;
-
-    public void setOnSimpleCandleViewCallBack(OnSimpleCandleViewCallBack<T> onSimpleCandleViewCallBack) {
-        this.onSimpleCandleViewCallBack = onSimpleCandleViewCallBack;
-    }
 
     private ValueAnimator valueAnimator;
     private Paint debugPaint = new Paint();
     private Paint paint = new Paint();
+
 
     {
         debugPaint.setAntiAlias(true);
         debugPaint.setStrokeWidth(1);
     }
 
+
     RectF rectF = new RectF();
     /////////////////////////////////////////
 
-    public SimpleCandleView(Context context) {
+    public SimpleLinearChart2(Context context) {
         this(context, null);
     }
 
-    public SimpleCandleView(Context context, @Nullable AttributeSet attrs) {
+    public SimpleLinearChart2(Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public SimpleCandleView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public SimpleLinearChart2(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 
@@ -120,55 +133,39 @@ public class SimpleCandleView<T> extends View {
         width = MeasureSpec.getSize(widthMeasureSpec);
         height = MeasureSpec.getSize(heightMeasureSpec);
         if (height == 0) {
-            height = DensityUtil.dp2px(150) + getPaddingTop() + getPaddingBottom();
+            height = DensityUtil.dp2px(200) + getPaddingTop() + getPaddingBottom();
 
         }
         setMeasuredDimension(width, height);
+
         vailRect.left = getPaddingStart() | getPaddingLeft();
         vailRect.top = getPaddingTop() + DensityUtil.dp2px(vailReservedArea[0]);
         vailRect.right = width - (getPaddingRight() | getPaddingEnd());
         vailRect.bottom = height - getPaddingBottom() - DensityUtil.dp2px(vailReservedArea[1]);
 
+//        remarkRect.left = vailRect.left;
+//        remarkRect.bottom = vailRect.bottom;
+//        remarkRect.top = remarkRect.bottom - DensityUtil.dp2px(remarkArea);
+//        remarkRect.right = vailRect.right;
+
 
         if (xAxisBean != null && yAxisBean != null) {
+
             yAxisRect.right = yAxisBean.getMaxTextSize(true);
 
             xAxisRect.left = yAxisRect.right + DensityUtil.dp2px(xAxisLeftReservedArea);
+            xAxisRect.right = vailRect.right - DensityUtil.dp2px(xAxisRightReservedArea);
+//            xAxisRect.bottom = remarkRect.top;
+            xAxisRect.bottom = vailRect.bottom;
+            xAxisRect.top = xAxisRect.bottom - xAxisBean.getMaxTextSize(false);
 
             yAxisRect.left = vailRect.left;
             yAxisRect.top = vailRect.top + DensityUtil.dp2px(yAxisReservedArea);
             yAxisRect.bottom = xAxisRect.top;
 
-            xAxisRect.right = vailRect.right - DensityUtil.dp2px(xAxisRightReservedArea);
-            xAxisRect.bottom = vailRect.bottom;
-            xAxisRect.top = xAxisRect.bottom - xAxisBean.getMaxTextSize(false);
-
         }
     }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                for (int i = 0; i < contentAxisBean.texts.size(); i++) {
-                    contentAxisBean.getRectF(i).touch = false;
-                }
-                return true;
-            case MotionEvent.ACTION_UP:
-                for (int i = 0; i < contentAxisBean.texts.size(); i++) {
-                    if (contentAxisBean.getRectF(i).contains(event.getX(), event.getY())) {
-                        contentAxisBean.getRectF(i).touch = !contentAxisBean.getRectF(i).touch;
-                        if (onSimpleCandleViewCallBack != null) {
-                            onSimpleCandleViewCallBack.onItemClick(contentAxisBean.getOnXyAxisTextRealization(i).getBean());
-                        }
-                        break;
-                    }
-                }
-                invalidate();
-                break;
-        }
-        return super.onTouchEvent(event);
-    }
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -192,6 +189,10 @@ public class SimpleCandleView<T> extends View {
                 //x轴有效区域
                 canvas.drawRect(xAxisRect, debugPaint);
             }
+            debugPaint.setStyle(Paint.Style.FILL);
+            debugPaint.setColor(0xaaff80f0);
+            //remark轴有效区域
+//            canvas.drawRect(remarkRect, debugPaint);
         }
         if (yAxisBean != null && xAxisBean != null) {
             /*******************************************************Y轴区域绘制开始↓*******************************************************/
@@ -223,7 +224,9 @@ public class SimpleCandleView<T> extends View {
                 paint.setStrokeWidth(DensityUtil.dp2px(1));
                 paint.setStyle(Paint.Style.FILL);
                 paint.setColor(0xff999999);
-                canvas.drawLine(yAxisRect.right, yPosition, vailRect.right, yPosition, paint);
+                if (i == 0) {
+                    canvas.drawLine(yAxisRect.right, yPosition, vailRect.right, yPosition, paint);
+                }
                 //绘制y轴文字
                 canvas.drawText(yAxisBean.getOnXyAxisTextRealization(i).getText(), yAxisRect.left + yAxisBean.getMaxTextSize(true) / 2, yPosition + yAxisTextOffset, yAxisBean.getPaint());
             }
@@ -262,55 +265,92 @@ public class SimpleCandleView<T> extends View {
             if (contentAxisBean != null) {
                 //实际坐标轴区域高度除以最大值与最小值的差值可得出该差值的一个值所占用有效绘制区域的百分比
                 float eachCoordinatePercent = yAxisBean.max == 0 ? 0 : yAxisRect.height() / (yAxisBean.max - yAxisBean.min);
-                if (contentAxisBean.texts.size() == xAxisBean.texts.size()) {
-                    for (int ii = 0; ii < contentAxisBean.texts.size(); ii++) {
-                        int i = (int) (ii * columnHeightPercent);
+                //遮罩
+                for (SimpleLinearChart2.SimpleLinearChart2CoordinateAxisBean<T> contentAxisBean : contentAxisBean) {
+                    float maxHeight = 0;
+                    for (int i = 0; i < contentAxisBean.texts.size(); i++) {
                         if (i == 0) {
                             contentAxisBean.getRectF(i).left = xAxisRect.left;
                         } else {
                             contentAxisBean.getRectF(i).left = contentAxisBean.getRectF(i - 1).right + xAxisBetweenDistance;
                         }
                         contentAxisBean.getRectF(i).right = contentAxisBean.getRectF(i).left + eachColumnWidth;
-
-                        contentAxisBean.getRectF(i).topHigh = xAxisRect.top - contentAxisBean.getOnXyAxisTextRealization(i).getTopLevelHigh() * eachCoordinatePercent;
-                        contentAxisBean.getRectF(i).top = xAxisRect.top - contentAxisBean.getOnXyAxisTextRealization(i).getTopLevelLow() * eachCoordinatePercent;
-                        contentAxisBean.getRectF(i).bottom = xAxisRect.top - contentAxisBean.getOnXyAxisTextRealization(i).getBottomLevelHigh() * eachCoordinatePercent;
-                        contentAxisBean.getRectF(i).bottomLow = xAxisRect.top - contentAxisBean.getOnXyAxisTextRealization(i).getBottomLevelLow() * eachCoordinatePercent;
-
-                        //空心柱Y轴中点
-                        float center = contentAxisBean.getRectF(i).top + contentAxisBean.getRectF(i).height() / 2;
-
-                        rectF.left = contentAxisBean.getRectF(i).left;
-                        rectF.top = center - contentAxisBean.getRectF(i).height() / 2 * columnHeightPercent;
-                        rectF.right = contentAxisBean.getRectF(i).right;
-                        rectF.bottom = center + contentAxisBean.getRectF(i).height() / 2 * columnHeightPercent;
-
-
-                        if (contentAxisBean.getRectF(i).touch) {
-                            paint.setStyle(Paint.Style.FILL);
-                            paint.setStrokeWidth(DensityUtil.dp2px(3));
+                        contentAxisBean.getRectF(i).top = xAxisRect.top - contentAxisBean.getOnXyAxisTextRealization(i).getNumber() * eachCoordinatePercent * value;
+                        contentAxisBean.getRectF(i).bottom = xAxisRect.top;
+                        if (isClingYAxisForFirst) {
+                            if (i == contentAxisBean.texts.size() - 1) {
+                                contentAxisBean.bezierPoints.get(i).set(contentAxisBean.getRectF(i).left + contentAxisBean.getRectF(i).width() / 2, contentAxisBean.getRectF(i).top);
+                            } else {
+                                contentAxisBean.bezierPoints.get(i).set(contentAxisBean.getRectF(i).left, contentAxisBean.getRectF(i).top);
+                            }
                         } else {
-                            paint.setStyle(Paint.Style.STROKE);
-                            paint.setStrokeWidth(DensityUtil.dp2px(1.5f));
+                            contentAxisBean.bezierPoints.get(i).set(contentAxisBean.getRectF(i).left + contentAxisBean.getRectF(i).width() / 2, contentAxisBean.getRectF(i).top);
                         }
-                        paint.setColor(0xffff951b);
-                        //绘制空心轴
-                        canvas.drawRoundRect(rectF, DensityUtil.dp2px(2), DensityUtil.dp2px(2), paint);
+                        if (DEBUG) {
+                            //辅助绘制相关
+                            paint.setStrokeWidth(DensityUtil.dp2px(1f));
+                            debugPaint.setStyle(Paint.Style.STROKE);
+                            debugPaint.setColor(0xff000000);
+                            canvas.drawRect(contentAxisBean.getRectF(i), debugPaint);
+                        }
 
-                        float x = contentAxisBean.getRectF(i).left + contentAxisBean.getRectF(i).width() / 2;
-                        //绘制空心轴延长线上半部分
-                        canvas.drawLine(x, rectF.top, x, rectF.top - contentAxisBean.getRectF(i).topHeight() * columnHeightPercent, paint);
-                        //绘制空心轴延长线下半部分
-                        canvas.drawLine(x, rectF.bottom, x, rectF.bottom + contentAxisBean.getRectF(i).bottomHeight() * columnHeightPercent, paint);
+                        maxHeight = Math.max(maxHeight, contentAxisBean.getRectF(i).height());
+                    }
+                    if (contentAxisBean.checked) {
+                        contentAxisBean.path.reset();
+                        if (isClingYAxisForFirst) {
+                            contentAxisBean.path.moveTo(xAxisRect.left, xAxisRect.top);
+                            contentAxisBean.path.lineTo(xAxisRect.left, contentAxisBean.bezierPoints.get(0).y);
+                            contentAxisBean.path.lineTo(contentAxisBean.bezierPoints.get(0).x, contentAxisBean.bezierPoints.get(0).y);
+                        } else {
+                            contentAxisBean.path.moveTo(xAxisRect.left + contentAxisBean.getRectF(0).width() / 2, xAxisRect.top);
+                            contentAxisBean.path.lineTo(xAxisRect.left + contentAxisBean.getRectF(0).width() / 2, contentAxisBean.bezierPoints.get(0).y);
+                            contentAxisBean.path.lineTo(contentAxisBean.bezierPoints.get(0).x, contentAxisBean.bezierPoints.get(0).y);
+                        }
+                        DrawViewUtils.calculateBezier3(contentAxisBean.bezierPoints, 1f, contentAxisBean.path);
+                        contentAxisBean.path.lineTo(contentAxisBean.bezierPoints.get(contentAxisBean.bezierPoints.size() - 1).x, xAxisRect.top);
+                        contentAxisBean.path.lineTo(xAxisRect.left + contentAxisBean.getRectF(0).width() / 2, xAxisRect.top);
+                        contentAxisBean.path.close();
+
+                        contentAxisBean.initMaskPaint(
+                                xAxisRect.right,
+                                xAxisRect.top - maxHeight,
+                                xAxisRect.right,
+                                xAxisRect.top);
+                        canvas.drawPath(contentAxisBean.path, contentAxisBean.maskPaint);
                     }
                 }
+
+                //曲线轨迹
+                for (SimpleLinearChart2.SimpleLinearChart2CoordinateAxisBean<T> contentAxisBean : contentAxisBean) {
+                    //三阶贝塞尔需3个点才是完美的轨迹,两个点绘制出的遮罩不美观，故此处限制大于2
+                    if (contentAxisBean.bezierPoints.size() > 0) {
+                        contentAxisBean.path.reset();
+                        contentAxisBean.path.moveTo(contentAxisBean.bezierPoints.get(0).x, contentAxisBean.bezierPoints.get(0).y);
+                        DrawViewUtils.calculateBezier3(contentAxisBean.bezierPoints, 1f, contentAxisBean.path);
+                        contentAxisBean.path.moveTo(contentAxisBean.bezierPoints.get(0).x, contentAxisBean.bezierPoints.get(0).y);
+                        contentAxisBean.path.close();
+                        contentAxisBean.paint.setColor(contentAxisBean.checked ? 0xff5f8fff : 0xffdfe9ff);
+                        contentAxisBean.paint.setStyle(Paint.Style.STROKE);
+                        contentAxisBean.paint.setStrokeWidth(DensityUtil.dp2px(2f));
+                        canvas.drawPath(contentAxisBean.path, contentAxisBean.paint);
+
+                    }
+                }
+
             }
             /*******************************************************内容轴区域绘制结束↑*******************************************************/
+
+            /*******************************************************注释轴区域绘制结束↑*******************************************************/
+            for (SimpleLinearChart2.SimpleLinearChart2CoordinateAxisBean<T> contentAxisBean : contentAxisBean) {
+
+            }
+            /*******************************************************注释区域绘制结束↓*******************************************************/
         }
     }
 
 
-    public void setData(SimpleCandleViewCoordinateAxisBean<T> yAxisBean, SimpleCandleViewCoordinateAxisBean<T> xAxisBean, SimpleCandleViewCoordinateAxisBean<T> contentAxisBean) {
+    public void setData(SimpleLinearChart2.SimpleLinearChart2CoordinateAxisBean<T> yAxisBean, SimpleLinearChart2.SimpleLinearChart2CoordinateAxisBean<T> xAxisBean, List<SimpleLinearChart2.SimpleLinearChart2CoordinateAxisBean<T>> contentAxisBean) {
         this.yAxisBean = yAxisBean;
         this.xAxisBean = xAxisBean;
         this.contentAxisBean = contentAxisBean;
@@ -323,31 +363,26 @@ public class SimpleCandleView<T> extends View {
         start();
     }
 
-    private float columnHeightPercent = 0f;
-    private boolean line;
+    public void setCheckedLine(int position) {
+        if (position > 0 && position < contentAxisBean.size()) {
+            for (int i = 0; i < contentAxisBean.size(); i++) {
+                contentAxisBean.get(i).setChecked(false);
+            }
+            contentAxisBean.get(position).setChecked(true);
+            invalidate();
+        }
+    }
+
+    private float value = 0f;
 
     private void start() {
         if (valueAnimator == null) {
             valueAnimator = ValueAnimator.ofFloat(0f, 1f);
             valueAnimator.setInterpolator(new LinearInterpolator());
-            valueAnimator.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    super.onAnimationEnd(animation);
-                    line = true;
-                    invalidate();
-                }
-
-                @Override
-                public void onAnimationStart(Animator animation) {
-                    super.onAnimationStart(animation);
-                    line = false;
-                }
-            });
             valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
-                    columnHeightPercent = (float) animation.getAnimatedValue();
+                    value = (float) animation.getAnimatedValue();
                     invalidate();
                 }
             });
@@ -359,40 +394,68 @@ public class SimpleCandleView<T> extends View {
     }
 
 
-    public static class SimpleCandleViewCoordinateAxisBean<T> {
+    public static class SimpleLinearChart2CoordinateAxisBean<T> {
         /**
          * 最大最小值
          */
         private int max, min;
+        /**
+         * 计算后的贝塞尔坐标集
+         */
+        private List<PointF> bezierPoints = new ArrayList<>();
 
-        private List<TextBean<T>> texts = new ArrayList<>();
+        private String remark;
+        private boolean checked;
+
+        public void setRemark(String remark) {
+            this.remark = remark;
+        }
+
+        public void setChecked(boolean checked) {
+            this.checked = checked;
+        }
+
+
+        private List<SimpleLinearChart2.SimpleLinearChart2CoordinateAxisBean.TextBean<T>> texts = new ArrayList<>();
         private float textSize = DensityUtil.sp2px(10f);
         private int color = 0xff999999;
         private Paint paint = new Paint();
+        private Paint maskPaint = new Paint();
+        private Path path = new Path();
 
         {
             paint.setTextSize(textSize);
             paint.setColor(color);
             paint.setAntiAlias(true);
             paint.setStyle(Paint.Style.FILL);
+            maskPaint.setAntiAlias(true);
         }
+
 
         public Paint getPaint() {
             paint.setTextAlign(Paint.Align.CENTER);
             return paint;
         }
 
+        public void initMaskPaint(float startX, float startY, float endX, float endY) {
+            maskPaint.setShader(
+                    new LinearGradient(startX, startY, endX, endY,
+                            new int[]{Color.parseColor("#dbe4fd"), Color.parseColor("#e9effe"), Color.parseColor("#f6f8fe")},
+                            new float[]{0.0f, 0.5f, 1.0f}, Shader.TileMode.CLAMP)
+            );
+        }
+
         /**
          * 获取矩阵
          */
-        public TextBean.AxisRectF getRectF(int position) {
+        public RectF getRectF(int position) {
             return texts.get(position).rectF;
         }
 
         /**
          * 获取文本实现者
          */
-        public OnSimpleCandleViewXyAxisTextRealization<T> getOnXyAxisTextRealization(int position) {
+        public SimpleLinearChart2.OnSimpleLinearChart2XyAxisTextRealization<T> getOnXyAxisTextRealization(int position) {
             return texts.get(position).xyText;
         }
 
@@ -421,22 +484,24 @@ public class SimpleCandleView<T> extends View {
         /**
          * 设置坐标轴文本数据
          */
-        public void setCoordinateAxisTextData(List<OnSimpleCandleViewXyAxisTextRealization<T>> textData, boolean reverse) {
+        public void setCoordinateAxisTextData(List<SimpleLinearChart2.OnSimpleLinearChart2XyAxisTextRealization<T>> textData, boolean reverse) {
             if (reverse) {
                 Collections.reverse(textData);
             }
+            bezierPoints.clear();
             for (int i = 0; i < textData.size(); i++) {
                 if (i == 0) {
-                    max = textData.get(i).getTopLevelHigh();
-                    min = textData.get(i).getBottomLevelLow();
+                    max = textData.get(i).getNumber();
+                    min = textData.get(i).getNumber();
                 } else {
-                    max = Math.max(max, textData.get(i).getTopLevelHigh());
-                    min = Math.min(min, textData.get(i).getBottomLevelLow());
+                    max = Math.max(max, textData.get(i).getNumber());
+                    min = Math.min(min, textData.get(i).getNumber());
                 }
-                TextBean<T> textBean = new TextBean<>();
+                SimpleLinearChart2.SimpleLinearChart2CoordinateAxisBean.TextBean<T> textBean = new SimpleLinearChart2.SimpleLinearChart2CoordinateAxisBean.TextBean<>();
                 textBean.xyText = textData.get(i);
                 textBean.size = DrawViewUtils.getTextWHF(getPaint(), textBean.xyText.getText());
                 texts.add(textBean);
+                bezierPoints.add(new PointF());
             }
         }
 
@@ -457,7 +522,7 @@ public class SimpleCandleView<T> extends View {
             /**
              * 矩阵
              */
-            AxisRectF rectF = new AxisRectF();
+            RectF rectF = new RectF();
             /**
              * 文本尺寸
              */
@@ -465,58 +530,7 @@ public class SimpleCandleView<T> extends View {
             /**
              * xy轴文本实现者
              */
-            OnSimpleCandleViewXyAxisTextRealization<T> xyText;
-
-            /**
-             * 点位
-             */
-            static final class AxisRectF {
-                private boolean touch;
-                /**
-                 * 左边
-                 */
-                public float left;
-                /**
-                 * 顶边高点
-                 */
-                public float topHigh;
-                /**
-                 * 顶边低点
-                 */
-                public float top;
-                /**
-                 * 右边
-                 */
-                public float right;
-                /**
-                 * 底边高点
-                 */
-                public float bottom;
-                /**
-                 * 底边低点
-                 */
-                public float bottomLow;
-
-                public final float width() {
-                    return right - left;
-                }
-
-                public final float height() {
-                    return bottom - top;
-                }
-
-                public final float topHeight() {
-                    return top - topHigh;
-                }
-
-                public final float bottomHeight() {
-                    return bottomLow - bottom;
-                }
-
-                public boolean contains(float x, float y) {
-                    return left < right && top < bottom && x >= left && x < right && y >= top && y < bottom;
-                }
-            }
+            SimpleLinearChart2.OnSimpleLinearChart2XyAxisTextRealization<T> xyText;
         }
     }
 
@@ -524,21 +538,12 @@ public class SimpleCandleView<T> extends View {
     /**
      * xy轴文本实现者
      */
-    public interface OnSimpleCandleViewXyAxisTextRealization<T> extends OnTextRealization<T> {
+    public interface OnSimpleLinearChart2XyAxisTextRealization<T> extends OnTextRealization<T> {
 
-        int getTopLevelHigh();
+        String getRemark();
 
-        int getTopLevelLow();
-
-        int getBottomLevelHigh();
-
-        int getBottomLevelLow();
+        int getNumber();
 
     }
-
-    public interface OnSimpleCandleViewCallBack<T> {
-        void onItemClick(T t);
-    }
-
 
 }
