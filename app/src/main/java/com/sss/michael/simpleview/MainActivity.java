@@ -17,6 +17,7 @@ import com.sss.michael.simpleview.bean.BottomBarModel;
 import com.sss.michael.simpleview.bean.GraffitiActivity;
 import com.sss.michael.simpleview.bean.SimpleCandleViewTxtBean;
 import com.sss.michael.simpleview.bean.SimpleLinearChart2TxtBean;
+import com.sss.michael.simpleview.bean.SimpleMultipleColumnTxtBean;
 import com.sss.michael.simpleview.utils.DensityUtil;
 import com.sss.michael.simpleview.view.BannerViewPager;
 import com.sss.michael.simpleview.view.BottomNavigationBar;
@@ -27,6 +28,7 @@ import com.sss.michael.simpleview.view.SimpleHalfPieChart;
 import com.sss.michael.simpleview.view.SimpleHalfRingView;
 import com.sss.michael.simpleview.view.SimpleLinearChart;
 import com.sss.michael.simpleview.view.SimpleLinearChart2;
+import com.sss.michael.simpleview.view.SimpleMultipleColumnView;
 import com.sss.michael.simpleview.view.SimpleProgressBar;
 import com.sss.michael.simpleview.view.SimpleRotatingView;
 import com.sss.michael.simpleview.view.SimpleRoundTabView;
@@ -60,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     private BottomNavigationBar bottomNavigationBar;
     private SimpleCandleView simpleCandleView;
     private SimpleLinearChart2 simpleLinearChart2;
+    private SimpleMultipleColumnView simpleMultipleColumnView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -472,6 +475,56 @@ public class MainActivity extends AppCompatActivity {
 
 
         simpleLinearChart2.setData(simpleLinearChart2YAxisBean, simpleLinearChart2XAxisBean, contentAxisDataList);
+
+
+
+
+        simpleMultipleColumnView = findViewById(R.id.simpleMultipleColumnView);
+        //Y轴
+        List<SimpleMultipleColumnView.OnSimpleMultipleColumnViewXyAxisTextRealization<SimpleMultipleColumnTxtBean>> simpleMultipleColumnViewYAxisData = new ArrayList<>();
+        simpleMultipleColumnViewYAxisData.add(new SimpleMultipleColumnTxtBean("25k", 25000));
+        simpleMultipleColumnViewYAxisData.add(new SimpleMultipleColumnTxtBean("20k", 20000));
+        simpleMultipleColumnViewYAxisData.add(new SimpleMultipleColumnTxtBean("15k", 15000));
+        simpleMultipleColumnViewYAxisData.add(new SimpleMultipleColumnTxtBean("10k", 10000));
+        simpleMultipleColumnViewYAxisData.add(new SimpleMultipleColumnTxtBean("5k", 5000));
+        simpleMultipleColumnViewYAxisData.add(new SimpleMultipleColumnTxtBean("1k", 1000));
+        SimpleMultipleColumnView.SimpleMultipleColumnViewCoordinateAxisBean simpleMultipleColumnViewYAxisBean = new SimpleMultipleColumnView.SimpleMultipleColumnViewCoordinateAxisBean();
+        simpleMultipleColumnViewYAxisBean.setCoordinateAxisTextData(simpleMultipleColumnViewYAxisData, true);
+        //X轴
+        List<SimpleMultipleColumnView.OnSimpleMultipleColumnViewXyAxisTextRealization<SimpleMultipleColumnTxtBean>> simpleMultipleColumnViewXAxisData = new ArrayList<>();
+        simpleMultipleColumnViewXAxisData.add(new SimpleMultipleColumnTxtBean("1月", 25000));
+        simpleMultipleColumnViewXAxisData.add(new SimpleMultipleColumnTxtBean("2月", 20000));
+        simpleMultipleColumnViewXAxisData.add(new SimpleMultipleColumnTxtBean("3月", 15000));
+        simpleMultipleColumnViewXAxisData.add(new SimpleMultipleColumnTxtBean("4月", 10000));
+        simpleMultipleColumnViewXAxisData.add(new SimpleMultipleColumnTxtBean("5月", 5000));
+        simpleMultipleColumnViewXAxisData.add(new SimpleMultipleColumnTxtBean("6月", 1000));
+        simpleMultipleColumnViewXAxisData.add(new SimpleMultipleColumnTxtBean("7月", 1000));
+        simpleMultipleColumnViewXAxisData.add(new SimpleMultipleColumnTxtBean("8月", 1000));
+        simpleMultipleColumnViewXAxisData.add(new SimpleMultipleColumnTxtBean("9月", 1000));
+        simpleMultipleColumnViewXAxisData.add(new SimpleMultipleColumnTxtBean("10月", 1000));
+        simpleMultipleColumnViewXAxisData.add(new SimpleMultipleColumnTxtBean("11月", 1000));
+        simpleMultipleColumnViewXAxisData.add(new SimpleMultipleColumnTxtBean("12月", 1000));
+        SimpleMultipleColumnView.SimpleMultipleColumnViewCoordinateAxisBean simpleMultipleColumnViewXAxisBean = new SimpleMultipleColumnView.SimpleMultipleColumnViewCoordinateAxisBean();
+        simpleMultipleColumnViewXAxisBean.setCoordinateAxisTextData(simpleMultipleColumnViewXAxisData, false);
+        //内容轴
+        List<SimpleMultipleColumnView.OnSimpleMultipleColumnViewXyAxisTextRealization<SimpleMultipleColumnTxtBean>> simpleMultipleColumnViewContentAxisData = new ArrayList<>();
+        simpleMultipleColumnViewContentAxisData.add(new SimpleMultipleColumnTxtBean("1月", 0f,0f,0f,0f,0f));
+        simpleMultipleColumnViewContentAxisData.add(new SimpleMultipleColumnTxtBean("2月", 0.1f,0.2f,0.3f,0.3f,0.1f));
+        simpleMultipleColumnViewContentAxisData.add(new SimpleMultipleColumnTxtBean("3月", 0.3f,0.2f,0.1f,0.1f,0.3f));
+        simpleMultipleColumnViewContentAxisData.add(new SimpleMultipleColumnTxtBean("4月", 0.1f,0.2f,0.3f,0.3f,0.1f));
+        simpleMultipleColumnViewContentAxisData.add(new SimpleMultipleColumnTxtBean("5月", 0.3f,0.2f,0.1f,0.1f,0.3f));
+        simpleMultipleColumnViewContentAxisData.add(new SimpleMultipleColumnTxtBean("6月", 0.1f,0.2f,0.3f,0.3f,0.1f));
+        simpleMultipleColumnViewContentAxisData.add(new SimpleMultipleColumnTxtBean("7月", 0.3f,0.2f,0.1f,0.1f,0.3f));
+        simpleMultipleColumnViewContentAxisData.add(new SimpleMultipleColumnTxtBean("8月", 0.1f,0.2f,0.3f,0.3f,0.1f));
+        simpleMultipleColumnViewContentAxisData.add(new SimpleMultipleColumnTxtBean("9月", 0.3f,0.2f,0.1f,0.1f,0.3f));
+        simpleMultipleColumnViewContentAxisData.add(new SimpleMultipleColumnTxtBean("10月", 0.1f,0.2f,0.3f,0.3f,0.1f));
+        simpleMultipleColumnViewContentAxisData.add(new SimpleMultipleColumnTxtBean("11月", 0.3f,0.2f,0.1f,0.1f,0.3f));
+        simpleMultipleColumnViewContentAxisData.add(new SimpleMultipleColumnTxtBean("12月", 0.1f,0.2f,0.3f,0.3f,0.1f));
+        SimpleMultipleColumnView.SimpleMultipleColumnViewCoordinateAxisBean simpleMultipleColumnViewContentAxisBean = new SimpleMultipleColumnView.SimpleMultipleColumnViewCoordinateAxisBean();
+        simpleMultipleColumnViewContentAxisBean.setCoordinateAxisTextData(simpleMultipleColumnViewContentAxisData, false);
+
+
+        simpleMultipleColumnView.setData(simpleMultipleColumnViewYAxisBean, simpleMultipleColumnViewXAxisBean, simpleMultipleColumnViewContentAxisBean);
 
     }
 
