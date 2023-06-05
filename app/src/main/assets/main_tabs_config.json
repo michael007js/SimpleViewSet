@@ -22,6 +22,10 @@
       "textSize": 10,
       "checkTextColor": "#e9302d",
       "unCheckTextColor": "#666666",
+      "cornerMark": "角标1",
+      "cornerMarkTextSize": 8,
+      "cornerMarkPaddingVertical": 2,
+      "cornerMarkPaddingHorizontal": 4,
       "isChecked": true
     },
     {
@@ -40,6 +44,10 @@
       "textSize": 10,
       "checkTextColor": "#e9302d",
       "unCheckTextColor": "#666666",
+      "cornerMark": "角标2",
+      "cornerMarkTextSize": 8,
+      "cornerMarkPaddingVertical": 2,
+      "cornerMarkPaddingHorizontal": 4,
       "isChecked": false
     },
     {
@@ -58,6 +66,10 @@
       "textSize": 10,
       "checkTextColor": "#e9302d",
       "unCheckTextColor": "#666666",
+      "cornerMark": "角标3",
+      "cornerMarkTextSize": 8,
+      "cornerMarkPaddingVertical": 2,
+      "cornerMarkPaddingHorizontal": 4,
       "isChecked": false
     },
     {
@@ -76,6 +88,10 @@
       "textSize": 10,
       "checkTextColor": "#e9302d",
       "unCheckTextColor": "#666666",
+      "cornerMark": "角标4",
+      "cornerMarkTextSize": 8,
+      "cornerMarkPaddingVertical": 2,
+      "cornerMarkPaddingHorizontal": 4,
       "isChecked": false
     },
     {
@@ -94,6 +110,10 @@
       "textSize": 10,
       "checkTextColor": "#e9302d",
       "unCheckTextColor": "#666666",
+      "cornerMark": "角标5",
+      "cornerMarkTextSize": 8,
+      "cornerMarkPaddingVertical": 2,
+      "cornerMarkPaddingHorizontal": 4,
       "isChecked": false
     }
   ]

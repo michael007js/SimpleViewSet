@@ -75,6 +75,10 @@ public class BottomBarModel {
         private String checkTextColor;
         private String unCheckTextColor;
         private boolean isChecked;
+        private String cornerMark;
+        private float cornerMarkTextSize;
+        private float cornerMarkPaddingVertical;
+        private float cornerMarkPaddingHorizontal;
 
         public int getFragmentIndex() {
             return fragmentIndex;
@@ -202,6 +206,38 @@ public class BottomBarModel {
 
         public void setIsChecked(boolean isChecked) {
             this.isChecked = isChecked;
+        }
+
+        public String getCornerMark() {
+            return cornerMark;
+        }
+
+        public void setCornerMark(String cornerMark) {
+            this.cornerMark = cornerMark;
+        }
+
+        public float getCornerMarkTextSize() {
+            return cornerMarkTextSize;
+        }
+
+        public void setCornerMarkTextSize(float cornerMarkTextSize) {
+            this.cornerMarkTextSize = cornerMarkTextSize;
+        }
+
+        public float getCornerMarkPaddingVertical() {
+            return cornerMarkPaddingVertical;
+        }
+
+        public void setCornerMarkPaddingVertical(float cornerMarkPaddingVertical) {
+            this.cornerMarkPaddingVertical = cornerMarkPaddingVertical;
+        }
+
+        public float getCornerMarkPaddingHorizontal() {
+            return cornerMarkPaddingHorizontal;
+        }
+
+        public void setCornerMarkPaddingHorizontal(float cornerMarkPaddingHorizontal) {
+            this.cornerMarkPaddingHorizontal = cornerMarkPaddingHorizontal;
         }
     }
 }

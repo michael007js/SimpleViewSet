@@ -4,11 +4,11 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Movie;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
@@ -19,6 +19,7 @@ import android.view.ViewGroup;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.load.resource.gif.GifDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.target.Target;
@@ -28,9 +29,9 @@ import com.sss.michael.simpleview.utils.AssetsUtil;
 import com.sss.michael.simpleview.utils.DensityUtil;
 import com.sss.michael.simpleview.utils.DrawViewUtils;
 import com.sss.michael.simpleview.utils.JsonUtils;
+import com.sss.michael.simpleview.utils.Log;
 
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,6 +65,11 @@ public class BottomNavigationBar extends View {
 
 
     private List<BottomNavigationBarItem> items = new ArrayList<>();
+
+    public void clear() {
+        items.clear();
+        invalidate();
+    }
 
     public BottomNavigationBar(Context context) {
         this(context, null);
@@ -137,11 +143,19 @@ public class BottomNavigationBar extends View {
                 items.get(i).imageRect.bottom = items.get(i).imageRect.top + items.get(i).getImageHeight();
 
                 //文字区域
-                int[] size = DrawViewUtils.getTextWH(items.get(i).getPaint(textPaint), items.get(i).builder.label);
+                int[] size = DrawViewUtils.getTextWH(items.get(i).getLabelPaint(textPaint), items.get(i).builder.label);
                 items.get(i).textRect.left = items.get(i).imageRect.left;
                 items.get(i).textRect.right = items.get(i).imageRect.right;
                 items.get(i).textRect.top = items.get(i).imageRect.bottom + items.get(i).builder.betweenImageAndText;
                 items.get(i).textRect.bottom = items.get(i).textRect.top + size[1];
+            }
+            //角标区域
+            if (items.get(i).builder.cornerMark != null && !"".equals(items.get(i).builder.cornerMark)) {
+                int[] size = DrawViewUtils.getTextWH(items.get(i).getCornerMarkPaint(cornerMarkPaint), items.get(i).builder.cornerMark);
+                items.get(i).cornerMarkRect.left = items.get(i).imageRect.right - size[0] / 2 - items.get(i).builder.cornerMarkPaddingHorizontal;
+                items.get(i).cornerMarkRect.right = items.get(i).cornerMarkRect.left + size[0] + items.get(i).builder.cornerMarkPaddingHorizontal * 2;
+                items.get(i).cornerMarkRect.top = items.get(i).imageRect.top;
+                items.get(i).cornerMarkRect.bottom = items.get(i).cornerMarkRect.top + size[1] + items.get(i).builder.cornerMarkPaddingVertical * 2;
             }
         }
     }
@@ -150,6 +164,7 @@ public class BottomNavigationBar extends View {
     Paint debugPaint = new Paint();
     Paint paint = new Paint();
     Paint textPaint = new Paint();
+    Paint cornerMarkPaint = new Paint();
 
     {
         debugPaint.setAntiAlias(true);
@@ -157,7 +172,7 @@ public class BottomNavigationBar extends View {
         debugPaint.setColor(Color.BLACK);
 
         paint.setAntiAlias(true);
-
+        cornerMarkPaint.setAntiAlias(true);
         textPaint.setAntiAlias(true);
     }
 
@@ -206,56 +221,52 @@ public class BottomNavigationBar extends View {
         canvas.drawRect(backgroundRect, paint);
 
         for (int i = 0; i < items.size(); i++) {
-            if (items.get(i).builder.bigImage) {
-                if (items.get(i).movie != null) {
-                    //计算缩放比例
-                    float saclex = (float) items.get(i).imageRect.width() / (float) items.get(i).movie.width();
-                    float sacley = (float) items.get(i).imageRect.height() / (float) items.get(i).movie.height();
-                    float sameRate = saclex > sacley ? saclex : sacley;
-                    canvas.save();
-                    canvas.scale(sameRate, sameRate, items.get(i).imageRect.left, items.get(i).imageRect.top);
-                    //GIF图片与预计显示框之间的差距
-                    int diffeWidth = items.get(i).movie.width() - items.get(i).imageRect.width();
-                    //X轴偏移量，取决于diffeWidth
-                    int offsetX = diffeWidth > 0 ? items.get(i).imageRect.width() / 2 - diffeWidth / 2 : 0;
-                    // 绘制GIF区域
-                    items.get(i).movie.draw(
-                            canvas,
-                            items.get(i).imageRect.left + offsetX,
-                            items.get(i).imageRect.top
-                    );
-                    canvas.restore();
-                    // 播放GIF
-                    items.get(i).movie.setTime((int) (System.currentTimeMillis() % items.get(i).movie.duration()));
-                } else {
-                    if (items.get(i).checked != null && items.get(i).getImage() != null && items.get(i).getImageHeight() != 0 && items.get(i).getImageWidth() != 0) {
-                        //绘制图片
-                        if (!items.get(i).getImage().isRecycled()) {
-                            canvas.drawBitmap(items.get(i).getImage(), null, items.get(i).imageRect, paint);
+            if (items.get(i).getImage() != null) {
+                if (items.get(i).getImageHeight() != 0 && items.get(i).getImageWidth() != 0) {
+                    if (items.get(i).getImage() instanceof GifDrawable) {
+                        ((GifDrawable) items.get(i).getImage()).start();
+                        ((GifDrawable) items.get(i).getImage()).setBounds(items.get(i).imageRect.left, items.get(i).imageRect.top, items.get(i).imageRect.right, items.get(i).imageRect.bottom);
+                        ((GifDrawable) items.get(i).getImage()).draw(canvas);
+                    } else if (items.get(i).getImage() instanceof Bitmap) {
+                        if (!((Bitmap) items.get(i).getImage()).isRecycled()) {
+                            canvas.drawBitmap((Bitmap) items.get(i).getImage(), null, items.get(i).imageRect, paint);
                         }
                     }
                 }
-            } else {
-                if (items.get(i).checked != null && items.get(i).getImage() != null && items.get(i).getImageHeight() != 0 && items.get(i).getImageWidth() != 0) {
-                    //绘制图片
-                    if (!items.get(i).getImage().isRecycled()) {
-                        canvas.drawBitmap(items.get(i).getImage(), null, items.get(i).imageRect, paint);
-                    }
-                }
+            }
+
+            if (!items.get(i).builder.bigImage) {
                 //绘制文字
                 if (items.get(i).builder.isChecked) {
                     textPaint.setColor(items.get(i).builder.checkTextColor);
                 } else {
                     textPaint.setColor(items.get(i).builder.unCheckTextColor);
                 }
-                int[] size = DrawViewUtils.getTextWH(items.get(i).getPaint(textPaint), items.get(i).builder.label);
+                int[] size = DrawViewUtils.getTextWH(items.get(i).getLabelPaint(textPaint), items.get(i).builder.label);
                 canvas.drawText(
                         items.get(i).builder.label,
                         getRectCenterX(items.get(i).textRect),
                         getRectCenterY(items.get(i).textRect) + items.get(i).builder.textOffsetY,
-                        items.get(i).getPaint(textPaint)
+                        items.get(i).getLabelPaint(textPaint)
                 );
             }
+
+            if (items.get(i).builder.cornerMark != null && !"".equals(items.get(i).builder.cornerMark)) {
+                cornerMarkPaint.setColor(Color.RED);
+                int[] size = DrawViewUtils.getTextWH(items.get(i).getLabelPaint(textPaint), items.get(i).builder.cornerMark);
+                float roundX = Math.min(items.get(i).cornerMarkRect.width(), items.get(i).cornerMarkRect.height()) / 2;
+                float roundY = Math.min(items.get(i).cornerMarkRect.width(), items.get(i).cornerMarkRect.height()) / 2;
+                canvas.drawRoundRect(items.get(i).cornerMarkRect, roundX, roundY, items.get(i).getCornerMarkPaint(cornerMarkPaint));
+                cornerMarkPaint.setColor(Color.WHITE);
+                canvas.drawText(
+                        items.get(i).builder.cornerMark,
+                        items.get(i).cornerMarkRect.left + items.get(i).cornerMarkRect.width() / 2,
+                        items.get(i).cornerMarkRect.top + items.get(i).cornerMarkRect.height() / 2 + items.get(i).builder.textOffsetY,
+                        items.get(i).getCornerMarkPaint(cornerMarkPaint)
+                );
+
+            }
+
 
             if (DEBUG) {
                 debugPaint.setStyle(Paint.Style.STROKE);
@@ -265,6 +276,8 @@ public class BottomNavigationBar extends View {
                 canvas.drawRect(items.get(i).imageRect, debugPaint);
                 //辅助绘制文字区域矩形
                 canvas.drawRect(items.get(i).textRect, debugPaint);
+                //辅助绘制角标文字区域矩形
+                canvas.drawRect(items.get(i).cornerMarkRect, debugPaint);
                 //辅助绘制中心线
                 canvas.drawLine(items.get(i).vaildRect.left, getRectCenterY(items.get(i).vaildRect), items.get(i).vaildRect.right, getRectCenterY(items.get(i).vaildRect), debugPaint);
             }
@@ -286,16 +299,119 @@ public class BottomNavigationBar extends View {
     }
 
 
+    /**
+     * 设置选中项
+     *
+     * @param position 选中项索引
+     */
+    public void setItemSelected(int position) {
+        if (position >= 0 && position < items.size() && items.size() > 0) {
+            for (int i = 0; i < items.size(); i++) {
+                if (items.get(i).builder != null) {
+                    items.get(i).builder.isChecked = false;
+                }
+            }
+
+            if (items.get(position).builder != null) {
+                items.get(position).builder.isChecked = true;
+                invalidate();
+            }
+        }
+    }
+
+    /**
+     * 设置触摸选中项
+     *
+     * @param position 摸选中项索引
+     */
+    public void setTouchItemSelected(int position) {
+        if (items != null && position >= 0 && position < items.size()) {
+            if (!items.get(position).builder.bigImage) {
+                for (int i = 0; i < items.size(); i++) {
+                    items.get(i).builder.isChecked = i == position;
+                }
+                invalidate();
+            }
+            if (onBottomNavigationBarCallBack != null) {
+                onBottomNavigationBarCallBack.onBottomNavigationBarItemClick(position, items.get(position).builder.bigImage, items.get(position).extra);
+            }
+        }
+    }
+
+    /**
+     * 获取选中项索引
+     *
+     * @param defaultPosition 默认选中项，如果没找到，将返回此项
+     * @return 索引
+     */
+    public int getItemSelectedPosition(int defaultPosition) {
+        for (int i = 0; i < items.size(); i++) {
+            if (items.get(i).builder.isChecked) {
+                return i;
+            }
+        }
+        return defaultPosition;
+    }
+
+
+    /**
+     * 通过标签设置角标
+     *
+     * @param label      标签
+     * @param cornerMark 角标内容
+     */
+    public void setCornerMarkByLabel(String label, String cornerMark) {
+        if (label != null) {
+            for (int i = 0; i < items.size(); i++) {
+                if (label.equals(items.get(i).builder.label)) {
+                    items.get(i).builder.cornerMark = cornerMark;
+                }
+            }
+            requestLayout();
+        }
+    }
+
+    /**
+     * 设置导航栏元素
+     *
+     * @param items 导航栏元素
+     */
     public void setItems(List<BottomNavigationBarItem> items) {
         this.items = items;
         requestLayout();
     }
 
+    /**
+     * 设置保留区域高度
+     *
+     * @param reserveArealHeight 保留区域高度
+     */
+    public BottomNavigationBar setReserveArealHeight(int reserveArealHeight) {
+        this.reserveArealHeight = DensityUtil.dp2px(reserveArealHeight);
+        return this;
+    }
+
+    /**
+     * 设置顶部内边距
+     *
+     * @param paddingTop 顶边距
+     */
+    public BottomNavigationBar setPaddingTop(int paddingTop) {
+        this.paddingTop = DensityUtil.dp2px(paddingTop);
+        return this;
+    }
+
+    /**
+     * 设置底部内边距
+     *
+     * @param paddingBottom 底边距
+     */
+    public BottomNavigationBar setPaddingBottom(int paddingBottom) {
+        this.paddingBottom = DensityUtil.dp2px(paddingBottom);
+        return this;
+    }
+
     public static class BottomNavigationBarItem {
-        /**
-         * 电影播放器
-         */
-        private Movie movie;
         /**
          * 参数
          */
@@ -321,33 +437,57 @@ public class BottomNavigationBar extends View {
          */
         Rect textRect = new Rect();
         /**
-         * 选中与为选中图片
+         * 角标矩阵
          */
-        Bitmap checked, unChecked;
+        RectF cornerMarkRect = new RectF();
+        /**
+         * 选中与未选中对象
+         */
+        Object checked, unChecked;
 
         public BottomNavigationBarItem() {
-            throw new RuntimeException("please call constructor with_parameter");
+            throw new RuntimeException("please call constructor with parameter");
         }
 
         public BottomNavigationBarItem(Extra extra) {
             this.extra = extra;
         }
 
-        Bitmap getImage() {
-
+        Object getImage() {
             return builder.isChecked ? checked : unChecked;
         }
 
         int getImageWidth() {
-            return builder.imageWidth == 0 ? (getImage() == null ? 0 : getImage().getWidth()) : builder.imageWidth;
+            if (builder.imageWidth > 0) {
+                return builder.imageWidth;
+            } else if (getImage() instanceof Bitmap) {
+                return ((Bitmap) getImage()).getWidth();
+            } else if (getImage() instanceof GifDrawable) {
+                return ((GifDrawable) getImage()).getIntrinsicWidth();
+            }
+            return 1;
         }
 
         int getImageHeight() {
-            return builder.imageHeight == 0 ? (getImage() == null ? 0 : getImage().getHeight()) : builder.imageHeight;
+            if (builder.imageHeight > 0) {
+                return builder.imageHeight;
+            } else if (getImage() instanceof Bitmap) {
+                return ((Bitmap) getImage()).getHeight();
+            } else if (getImage() instanceof GifDrawable) {
+                return ((GifDrawable) getImage()).getIntrinsicHeight();
+            }
+            return 1;
         }
 
-        Paint getPaint(Paint paint) {
+        Paint getLabelPaint(Paint paint) {
             paint.setTextSize(builder.textSize);
+            paint.setTypeface(Typeface.DEFAULT);
+            paint.setTextAlign(Paint.Align.CENTER);
+            return paint;
+        }
+
+        Paint getCornerMarkPaint(Paint paint) {
+            paint.setTextSize(builder.cornerMarkTextSize);
             paint.setTypeface(Typeface.DEFAULT);
             paint.setTextAlign(Paint.Align.CENTER);
             return paint;
@@ -365,22 +505,26 @@ public class BottomNavigationBar extends View {
         private void image(final AppCompatActivity activity, final boolean isCheckedUrl, final String url) {
             if (url != null) {
                 if (url.toLowerCase().endsWith(".gif")) {
-                    if (movie == null) {
+                    if (checked == null) {
                         Glide.with(activity)
-                                .asFile()
+                                .asGif()
                                 .load(url)
-                                .addListener(new RequestListener<File>() {
+                                .addListener(new RequestListener<GifDrawable>() {
                                     @Override
-                                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<File> target, boolean isFirstResource) {
+                                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<GifDrawable> target, boolean isFirstResource) {
                                         return false;
                                     }
 
                                     @Override
-                                    public boolean onResourceReady(final File resource, Object model, Target<File> target, DataSource dataSource, boolean isFirstResource) {
+                                    public boolean onResourceReady(final GifDrawable resource, Object model, Target<GifDrawable> target, DataSource dataSource, boolean isFirstResource) {
                                         activity.runOnUiThread(new Runnable() {
                                             @Override
                                             public void run() {
-                                                movie = Movie.decodeFile(resource.getAbsolutePath());
+                                                if (isCheckedUrl) {
+                                                    checked = resource;
+                                                } else {
+                                                    unChecked = resource;
+                                                }
                                                 builder.bottomNavigationBar.requestLayout();
                                             }
                                         });
@@ -412,6 +556,23 @@ public class BottomNavigationBar extends View {
 
 
     public static class Builder {
+
+        /**
+         * 角标
+         */
+        private String cornerMark;
+        /**
+         * 角标字体大小
+         */
+        private float cornerMarkTextSize;
+        /**
+         * 角标竖向内边距
+         */
+        private float cornerMarkPaddingVertical;
+        /**
+         * 角标横向内边距
+         */
+        private float cornerMarkPaddingHorizontal;
         /**
          * 额外参数
          */
@@ -538,6 +699,26 @@ public class BottomNavigationBar extends View {
             return this;
         }
 
+        public Builder setCornerMark(String cornerMark) {
+            this.cornerMark = cornerMark;
+            return this;
+        }
+
+        public Builder setCornerMarkTextSize(float cornerMarkTextSize) {
+            this.cornerMarkTextSize = cornerMarkTextSize;
+            return this;
+        }
+
+        public Builder setCornerMarkPaddingVertical(float cornerMarkPaddingVertical) {
+            this.cornerMarkPaddingVertical = cornerMarkPaddingVertical;
+            return this;
+        }
+
+        public Builder setCornerMarkPaddingHorizontal(float cornerMarkPaddingHorizontal) {
+            this.cornerMarkPaddingHorizontal = cornerMarkPaddingHorizontal;
+            return this;
+        }
+
         public BottomNavigationBarItem build(AppCompatActivity context) {
             weight = weight > 0 ? weight : 1.0f;
             imageWidth = DensityUtil.dp2px(imageWidth > 0 ? imageWidth : 20);
@@ -545,6 +726,9 @@ public class BottomNavigationBar extends View {
             betweenImageAndText = DensityUtil.dp2px(betweenImageAndText > 0 ? betweenImageAndText : 3);
             label = label == null ? "" : label;
             textSize = DensityUtil.sp2px(textSize > 0 ? textSize : 10);
+            cornerMarkTextSize = DensityUtil.sp2px(cornerMarkTextSize > 0 ? cornerMarkTextSize : 8);
+            cornerMarkPaddingVertical = DensityUtil.sp2px(cornerMarkPaddingVertical > 0 ? cornerMarkPaddingVertical : 2);
+            cornerMarkPaddingHorizontal = DensityUtil.sp2px(cornerMarkPaddingHorizontal > 0 ? cornerMarkPaddingHorizontal : 4);
             textOffsetY = DensityUtil.dp2px(textOffsetY != 0 ? textOffsetY : 3);
             return new BottomNavigationBarItem(extra).load(context, this);
         }
