@@ -56,7 +56,10 @@ public class BottomNavigationBar extends View {
      * 上下内边距
      */
     private int paddingTop = DensityUtil.dp2px(5), paddingBottom = DensityUtil.dp2px(5);
-
+    /**
+     * 角标是否由配置决定 值为true,{@link #setCornerMarkByLabel(String, String)}将失效
+     */
+    private boolean cornerMarkByConfig;
     /**
      * 背景矩阵
      */
@@ -361,6 +364,9 @@ public class BottomNavigationBar extends View {
      * @param cornerMark 角标内容
      */
     public void setCornerMarkByLabel(String label, String cornerMark) {
+        if (cornerMarkByConfig) {
+            return;
+        }
         if (label != null) {
             for (int i = 0; i < items.size(); i++) {
                 if (label.equals(items.get(i).builder.label)) {
@@ -379,6 +385,16 @@ public class BottomNavigationBar extends View {
     public void setItems(List<BottomNavigationBarItem> items) {
         this.items = items;
         requestLayout();
+    }
+
+    /**
+     * 角标是否由配置决定
+     *
+     * @param cornerByConfig 值为true,{@link #setCornerMarkByLabel(String, String)}将失效
+     */
+    public BottomNavigationBar setCornerMarkByConfig(boolean cornerMarkByConfig) {
+        this.cornerMarkByConfig = this.cornerMarkByConfig;
+        return this;
     }
 
     /**

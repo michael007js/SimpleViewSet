@@ -8,7 +8,8 @@ public class BottomBarModel {
     private int pattingTop;
     private int pattingBottom;
     private int selectTab;
-    private List<Tab> tabs;
+    private boolean cornerMarkByConfig;
+    private List<Tabs> tabs;
 
     public int getReserveAreaHeight() {
         return reserveAreaHeight;
@@ -50,15 +51,23 @@ public class BottomBarModel {
         this.selectTab = selectTab;
     }
 
-    public List<Tab> getTabs() {
+    public List<Tabs> getTabs() {
         return tabs;
     }
 
-    public void setTabs(List<Tab> tabs) {
+    public void setTabs(List<Tabs> tabs) {
         this.tabs = tabs;
     }
 
-    public static class Tab {
+    public boolean isCornerMarkByConfig() {
+        return cornerMarkByConfig;
+    }
+
+    public void setCornerMarkByConfig(boolean cornerMarkByConfig) {
+        this.cornerMarkByConfig = cornerMarkByConfig;
+    }
+
+    public static class Tabs {
         private int fragmentIndex;
         private boolean bigImage;
         private int imageWidth;

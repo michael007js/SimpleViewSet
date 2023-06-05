@@ -339,7 +339,9 @@ public class MainActivity extends AppCompatActivity {
             builder.setTextOffsetY(bottomBarModel.getTabs().get(i).getTextOffsetY());
             builder.setTextSize(bottomBarModel.getTabs().get(i).getTextSize());
             builder.setWeight(bottomBarModel.getTabs().get(i).getWeight());
-            builder.setCornerMark(bottomBarModel.getTabs().get(i).getCornerMark());
+            if (bottomBarModel.isCornerMarkByConfig()){
+                builder.setCornerMark(bottomBarModel.getTabs().get(i).getCornerMark());
+            }
             builder.setCornerMarkTextSize(bottomBarModel.getTabs().get(i).getCornerMarkTextSize());
             builder.setCornerMarkPaddingVertical(bottomBarModel.getTabs().get(i).getCornerMarkPaddingVertical());
             builder.setCornerMarkPaddingHorizontal(bottomBarModel.getTabs().get(i).getCornerMarkPaddingHorizontal());

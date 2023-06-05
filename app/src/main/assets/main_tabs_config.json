@@ -5,6 +5,7 @@
   "height": 50,
   "reserveAreaHeight": 10,
   "backgroundColor": "#FFFFFF",
+  "cornerMarkByConfig":true,
   "tabs": [
     {
       "fragmentIndex": 0,
