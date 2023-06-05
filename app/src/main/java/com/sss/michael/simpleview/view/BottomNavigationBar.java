@@ -393,7 +393,7 @@ public class BottomNavigationBar extends View {
      * @param cornerByConfig 值为true,{@link #setCornerMarkByLabel(String, String)}将失效
      */
     public BottomNavigationBar setCornerMarkByConfig(boolean cornerMarkByConfig) {
-        this.cornerMarkByConfig = this.cornerMarkByConfig;
+        this.cornerMarkByConfig = cornerMarkByConfig;
         return this;
     }
 
