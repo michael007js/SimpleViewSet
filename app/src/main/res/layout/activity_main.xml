@@ -26,8 +26,8 @@
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:visibility="gone"
-                android:layout_height="150dp">
+                android:layout_height="150dp"
+                android:visibility="gone">
 
                 <com.sss.michael.simpleview.view.TransitionImageView
                     android:id="@+id/lastBuffer"
@@ -99,9 +99,14 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:background="@color/colorPrimaryDark"
                         android:gravity="center"
                         android:orientation="vertical">
+
+                        <com.sss.michael.simpleview.view.SimpleColumnTextView
+                            android:layout_width="match_parent"
+                            android:layout_height="200dp"
+                            android:paddingHorizontal="10dp" />
+
                         <com.sss.michael.simpleview.view.SimpleMultipleColumnView
                             android:id="@+id/simpleMultipleColumnView"
                             android:layout_width="match_parent"
@@ -122,12 +127,12 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="涂鸦板" />
-                        
+
                         <com.sss.michael.simpleview.view.SimpleRoundTabView
                             android:id="@+id/simpleRoundTabView"
                             android:layout_width="wrap_content"
-                            android:paddingVertical="10dp"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content"
+                            android:paddingVertical="10dp" />
 
                         <com.sss.michael.simpleview.view.SimpleWaveView
                             android:id="@+id/simpleWaveView"
@@ -325,9 +330,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-<!--    <com.sss.michael.simpleview.view.SimpleGraffitiView-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:background="@color/colorAccent"-->
-<!--        android:layout_height="match_parent"/>-->
+    <!--    <com.sss.michael.simpleview.view.SimpleGraffitiView-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:background="@color/colorAccent"-->
+    <!--        android:layout_height="match_parent"/>-->
 
 </FrameLayout>
