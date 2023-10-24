@@ -15,6 +15,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.sss.michael.simpleview.utils.DensityUtil;
+import com.sss.michael.simpleview.utils.DrawViewUtils;
 import com.sss.michael.simpleview.utils.EmptyUtils;
 
 import androidx.annotation.FloatRange;
@@ -193,7 +194,8 @@ public class SimpleColumnTextView extends View {
         if (EmptyUtils.isEmpty(unit)) {
 
             textPaint.setTextSize(axisLabelTextSize);
-            canvas.drawText(axisLabel, previewRect.left + previewRect.width() / 2f, previewRect.top - distanceBetweenLabelAndLimit, textPaint);
+            int offset = previewRect.height() == 0 ? DrawViewUtils.getTextWH(textPaint, axisLabel)[1] : 0;//防止遮罩高度为0时字体高度过低
+            canvas.drawText(axisLabel, previewRect.left + previewRect.width() / 2f, previewRect.top - distanceBetweenLabelAndLimit - offset, textPaint);
         } else {
             textPaint.setTextAlign(Paint.Align.RIGHT);
             textPaint.setTextSize(axisLabelTextSize);
@@ -205,11 +207,13 @@ public class SimpleColumnTextView extends View {
 
             textPaint.setTextAlign(Paint.Align.RIGHT);
             textPaint.setTextSize(axisLabelTextSize);
-            canvas.drawText(axisLabel, previewRect.left + previewRect.width() / 2f + (axisLabelWidth + unitWidth) / 2, previewRect.top - distanceBetweenLabelAndLimit, textPaint);
+            int offset = previewRect.height() == 0 ? DrawViewUtils.getTextWH(textPaint, axisLabel)[1] : 0;//防止遮罩高度为0时字体高度过低
+            canvas.drawText(axisLabel, previewRect.left + previewRect.width() / 2f + (axisLabelWidth + unitWidth) / 2, previewRect.top - distanceBetweenLabelAndLimit - offset, textPaint);
 
             textPaint.setTextAlign(Paint.Align.LEFT);
             textPaint.setTextSize(unitTextSize);
-            canvas.drawText(unit, previewRect.left + previewRect.width() / 2f + (axisLabelWidth + unitWidth) / 2, previewRect.top - distanceBetweenLabelAndLimit, textPaint);
+            offset = previewRect.height() == 0 ? DrawViewUtils.getTextWH(textPaint, axisLabel)[1] : 0;//防止遮罩高度为0时字体高度过低
+            canvas.drawText(unit, previewRect.left + previewRect.width() / 2f + (axisLabelWidth + unitWidth) / 2, previewRect.top - distanceBetweenLabelAndLimit - offset, textPaint);
         }
     }
 
