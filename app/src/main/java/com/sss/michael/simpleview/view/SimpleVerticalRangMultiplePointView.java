@@ -26,10 +26,6 @@ import androidx.annotation.Nullable;
 public class SimpleVerticalRangMultiplePointView extends View {
     private boolean debug = true;
     /**
-     * 调试色值
-     */
-    private int debugColor = 0xff000000;
-    /**
      * 背景线色值
      */
     private int backgroundLineColor = 0xffd8d8d8;
@@ -40,7 +36,7 @@ public class SimpleVerticalRangMultiplePointView extends View {
     /**
      * 无效垂直内边距，这个数值范围内的将不算作有效高度
      */
-    private int disableVerticalPaddingPercent = DensityUtil.dp2px(3);
+    private int disableVerticalPaddingPercent = DensityUtil.dp2px(5);
     /**
      * 区间画笔
      */
@@ -66,13 +62,13 @@ public class SimpleVerticalRangMultiplePointView extends View {
      */
     private float distance = DensityUtil.dp2px(3);
     /**
-     * 柱状宽度
-     */
-    private int columnWidth = DensityUtil.dp2px(12);
-    /**
      * 圆点宽度
      */
-    private int pointWidth = DensityUtil.dp2px(4);
+    private int pointWidth = DensityUtil.dp2px(6);
+    /**
+     * 柱状宽度
+     */
+    private int columnWidth = pointWidth * 3;
     /**
      * 前景数据
      */
@@ -100,15 +96,16 @@ public class SimpleVerticalRangMultiplePointView extends View {
         super(context, attrs, defStyleAttr);
         if (debug) {
             List<Integer> bg = new ArrayList<>();
-            bg.add(666);
-            bg.add(999);
-            bg.add(9999);
-            bg.add(111);
+            bg.add(660);
+            bg.add(630);
+            bg.add(690);
 
             List<Bean> fg = new ArrayList<>();
-            fg.add(new Bean(3296));
-            fg.add(new Bean(3100));
-            setBgData(true, bg, fg);
+            fg.add(new Bean(688));
+            fg.add(new Bean(652));
+            fg.add(new Bean(666));
+            fg.add(new Bean(650));
+            setData(true, bg, fg);
         }
     }
 
@@ -122,147 +119,108 @@ public class SimpleVerticalRangMultiplePointView extends View {
         } else {
             height = DensityUtil.dp2px(100);
         }
-        rect.left = width / 2 - columnWidth / 2;
-        rect.right = width / 2 + columnWidth / 2;
+        effectiveRect.top = disableVerticalPaddingPercent + pointWidth / 2;
+        effectiveRect.bottom = height - disableVerticalPaddingPercent - pointWidth / 2;
+        effectiveRect.left = width / 2 - columnWidth / 2;
+        effectiveRect.right = width / 2 + columnWidth / 2;
         for (Bean bean : foregroundData) {
-            bean.rect.left = rect.left + rect.width() / 2 - pointWidth / 2;
+            bean.rect.left = effectiveRect.left + effectiveRect.width() / 2 - pointWidth / 2;
             bean.rect.right = bean.rect.left + pointWidth;
         }
         setMeasuredDimension(width, height);
     }
+
+
+    float getReallyY(float effectiveHeight, float eachDataRangHeight, int data, int maxData, int minData) {
+        return effectiveRect.top + convert(data, minData, maxData) * eachDataRangHeight + effectiveHeight;
+    }
+
+    float convert(int data, int minData, int maxData) {
+        return maxData - data;
+    }
+
+    Rect effectiveRect = new Rect();
+    Rect foregroundRect = new Rect();
+
+
+    private int debugColor = 0x66000000;
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         if (debug) {
             setBackgroundColor(0xffeeeeee);
+            bgPaint.setColor(debugColor);
+//            canvas.drawRect(effectiveRect, bgPaint);
         }
-        float minHeight = 0;
-        float maxHeight = 0;
-
-        float eachDataRangHeight = 0;
-        float effectiveHeight = getHeight() - disableVerticalPaddingPercent * 2.0f;
-        if (backgroundData.size() > 0) {
-            int max = 0;
-            int min = 0;
-
-
-            for (int i = 0; i < backgroundData.size(); i++) {
-                if (i == 0) {
-                    max = backgroundData.get(i).value;
-                    min = backgroundData.get(i).value;
-                } else {
-                    max = Math.max(max, backgroundData.get(i).value);
-                    min = Math.min(min, backgroundData.get(i).value);
-                }
-            }
-
-            if (max == 0) {
-                return;
-            }
-            //数据区间
-            float dataRange = (max - min) * 1.0f / (backgroundData.size() - 1);
-            //每一个数据所占据的视图高度
-            eachDataRangHeight = effectiveHeight / (max - min);
-
-            for (int i = 0; i < backgroundData.size(); i++) {
-                if (i != 0 && i != backgroundData.size() - 1) {
-                    backgroundData.get(i).previewText = String.valueOf(((int) (dataRange * i)));
-                } else {
-                    backgroundData.get(i).previewText = String.valueOf(backgroundData.get(i).value);
-                }
-            }
-
-            float x;
-            if (drawText) {
-                x = maxTextWidth == 0 ? 0 : maxTextWidth + distance;
+        int maxData = 0;
+        int minData = 0;
+        for (int i = 0; i < backgroundData.size(); i++) {
+            if (i == 0) {
+                maxData = backgroundData.get(i).value;
+                minData = backgroundData.get(i).value;
             } else {
-                x = 0;
+                maxData = Math.max(maxData, backgroundData.get(i).value);
+                minData = Math.min(minData, backgroundData.get(i).value);
             }
-            for (int i = 0; i < backgroundData.size(); i++) {
-                //真实数据Y轴
-                float reallyY = effectiveHeight - backgroundData.get(i).value * eachDataRangHeight;
-                //等分数据Y轴
-                float y = i * dataRange * eachDataRangHeight;
-                float textHeight = DrawViewUtils.getTextWH(textPaint, backgroundData.get(i).previewText)[1];
-                float yWithOffset;
-                if (i == 0) {
-                    if (drawText) {
-                        textPaint.setColor(backgroundTextColor);
-                        canvas.drawText(backgroundData.get(i).previewText, 0, y + textHeight + disableVerticalPaddingPercent, textPaint);
-                        yWithOffset = textHeight / 2 + disableVerticalPaddingPercent;
-                        bgPaint.setColor(backgroundLineColor);
-                        canvas.drawLine(x, y + yWithOffset, getWidth(), y + yWithOffset, bgPaint);
-                    } else {
-                        bgPaint.setColor(backgroundLineColor);
-                        yWithOffset = (keepYAxisForBackgroundLineSameWithTextYAxisWhileTextDisable ? textHeight / 2 : 0) + disableVerticalPaddingPercent;
-                        canvas.drawLine(x, y + yWithOffset, getWidth(), y + yWithOffset, bgPaint);
-                    }
-                    minHeight = y + yWithOffset;
-                    maxHeight = y + yWithOffset;
-                    rect.top = (int) yWithOffset;
-                    if (debug) {
-                        //绘制真实背景数据线
-                        bgPaint.setColor(debugColor);
-                        canvas.drawLine(x, reallyY + yWithOffset, getWidth(), reallyY + yWithOffset, bgPaint);
-                    }
-                } else if (i == backgroundData.size() - 1) {
-                    textPaint.setColor(backgroundTextColor);
-                    if (drawText) {
-                        canvas.drawText(backgroundData.get(i).previewText, 0, y, textPaint);
-                        yWithOffset = textHeight / 2;
-                        bgPaint.setColor(backgroundLineColor);
-                        canvas.drawLine(x, y - yWithOffset, getWidth(), y - yWithOffset, bgPaint);
-                    } else {
-                        yWithOffset = (keepYAxisForBackgroundLineSameWithTextYAxisWhileTextDisable ? textHeight / 2 : 0);
-                        canvas.drawLine(x, y - yWithOffset, getWidth(), y - yWithOffset, bgPaint);
-                    }
-                    rect.bottom = (int) (y - yWithOffset);
-                    if (debug) {
-                        //绘制真实背景数据线
-                        bgPaint.setColor(debugColor);
-                        canvas.drawLine(x, reallyY - yWithOffset, getWidth(), reallyY - yWithOffset, bgPaint);
-                    }
-                } else {
-                    if (drawText) {
-                        textPaint.setColor(backgroundTextColor);
-                        canvas.drawText(backgroundData.get(i).previewText, 0, y + textHeight - disableVerticalPaddingPercent, textPaint);
-                        yWithOffset = textHeight / 2 - disableVerticalPaddingPercent;
-                        bgPaint.setColor(backgroundLineColor);
-                        canvas.drawLine(x, y + yWithOffset, getWidth(), y + yWithOffset, bgPaint);
-                    } else {
-                        bgPaint.setColor(backgroundLineColor);
-                        yWithOffset = (keepYAxisForBackgroundLineSameWithTextYAxisWhileTextDisable ? textHeight / 2 : 0) - disableVerticalPaddingPercent;
-                        canvas.drawLine(x, y + yWithOffset, getWidth(), y + yWithOffset, bgPaint);
-                    }
-                    minHeight = Math.min(minHeight, y + yWithOffset);
-                    maxHeight = Math.max(maxHeight, y + yWithOffset);
-                    if (debug) {
-                        //绘制真实背景数据线
-                        bgPaint.setColor(debugColor);
-                        canvas.drawLine(x, reallyY, getWidth(), reallyY, bgPaint);
-                    }
-                }
-
-            }
-
         }
-        fgPaint.setColor(0x12ff7d00);
-        canvas.drawRect(rect, fgPaint);
-        fgPaint.setColor(0xffff7d00);
+        //有效宽度
+        float effectiveHeight = effectiveRect.height();
+        //每1个数据占据的高度
+        float eachDataRangHeight = effectiveHeight / (maxData - minData);
+        //背景x位置
+        float x;
+        if (drawText) {
+            x = maxTextWidth == 0 ? 0 : maxTextWidth + distance;
+        } else {
+            x = 0;
+        }
+
+
+        for (BackgroundBean backgroundBean : backgroundData) {
+            bgPaint.setColor(backgroundLineColor);
+            float y = getReallyY(effectiveHeight, eachDataRangHeight, backgroundBean.value, minData, maxData);
+            if (drawText) {
+                float textHeight = DrawViewUtils.getTextWH(textPaint, backgroundBean.previewText)[1];
+                textPaint.setColor(backgroundTextColor);
+                canvas.drawText(backgroundBean.previewText, 0, y + textHeight / 2, textPaint);
+                bgPaint.setColor(backgroundLineColor);
+                canvas.drawLine(x, y, getWidth(), y, bgPaint);
+            } else {
+                bgPaint.setColor(backgroundLineColor);
+                canvas.drawLine(0, y, getWidth(), y, bgPaint);
+            }
+        }
+
+        if (foregroundData.size() > 1) {
+            float topY = getReallyY(effectiveHeight, eachDataRangHeight, foregroundData.get(0).value, minData, maxData);
+            float bottomY = getReallyY(effectiveHeight, eachDataRangHeight, foregroundData.get(foregroundData.size() - 1).value, minData, maxData);
+            foregroundRect.top = (int) topY;
+            foregroundRect.bottom = (int) bottomY;
+            foregroundRect.left = effectiveRect.left;
+            foregroundRect.right = effectiveRect.right;
+            fgPaint.setColor(0x12ff7d00);
+            canvas.drawRect(foregroundRect, fgPaint);
+        }
+
         for (Bean bean : foregroundData) {
-            float y = effectiveHeight - bean.value * eachDataRangHeight;
-            int yOffset = pointWidth / 2;
-            bean.rect.top = (int) (y - pointWidth / 2) + yOffset;
-            bean.rect.bottom = (int) (y + pointWidth / 2) + yOffset;
+            float y = getReallyY(effectiveHeight, eachDataRangHeight, bean.value, minData, maxData);
+            if (debug) {
+                fgPaint.setColor(debugColor);
+                canvas.drawLine(x, y, getWidth(), y, fgPaint);
+            }
+            bean.rect.top = (int) (y - pointWidth / 2);
+            bean.rect.bottom = bean.rect.top + pointWidth;
             canvas.save();
             canvas.rotate(45, bean.rect.left + (bean.rect.width() >> 1), bean.rect.top + (bean.rect.height() >> 1));
+            fgPaint.setColor(0xffff7d00);
             canvas.drawRect(bean.rect, fgPaint);
             canvas.restore();
+
         }
+
     }
 
-    Rect rect = new Rect();
 
     /**
      * 文字最大宽度
@@ -272,12 +230,8 @@ public class SimpleVerticalRangMultiplePointView extends View {
      * 是否绘制文字
      */
     boolean drawText;
-    /**
-     * 不绘制文本时背景线的Y轴保持与文字存在时相同的Y轴位置
-     */
-    boolean keepYAxisForBackgroundLineSameWithTextYAxisWhileTextDisable = true;
 
-    public void setBgData(boolean drawText, List<Integer> backgroundData, List<Bean> foregroundData) {
+    public void setData(boolean drawText, List<Integer> backgroundData, List<Bean> foregroundData) {
         this.drawText = drawText;
         Collections.sort(backgroundData, new Comparator<Integer>() {
             @Override
@@ -301,6 +255,7 @@ public class SimpleVerticalRangMultiplePointView extends View {
 
         BackgroundBean(int i) {
             this.value = i;
+            previewText = String.valueOf(value);
 
         }
     }
