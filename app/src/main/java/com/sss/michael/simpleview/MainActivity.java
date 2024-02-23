@@ -1,16 +1,19 @@
 package com.sss.michael.simpleview;
 
 import android.animation.ValueAnimator;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.sss.michael.simpleview.bean.BottomBarModel;
@@ -32,6 +35,7 @@ import com.sss.michael.simpleview.view.SimpleMultipleColumnView;
 import com.sss.michael.simpleview.view.SimpleProgressBar;
 import com.sss.michael.simpleview.view.SimpleRotatingView;
 import com.sss.michael.simpleview.view.SimpleRoundTabView;
+import com.sss.michael.simpleview.view.SimpleRoundTabViewV2;
 import com.sss.michael.simpleview.view.SimpleSlideBesselView;
 import com.sss.michael.simpleview.view.SimpleSpiderView;
 import com.sss.michael.simpleview.view.SimpleWrapOffsetWidthView;
@@ -39,11 +43,15 @@ import com.sss.michael.simpleview.view.TransitionImageView;
 import com.sss.michael.simpleview.view.toutiaoanimation.ArticleRl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.widget.NestedScrollView;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 
 @SuppressWarnings("all")
 public class MainActivity extends AppCompatActivity {
@@ -339,7 +347,7 @@ public class MainActivity extends AppCompatActivity {
             builder.setTextOffsetY(bottomBarModel.getTabs().get(i).getTextOffsetY());
             builder.setTextSize(bottomBarModel.getTabs().get(i).getTextSize());
             builder.setWeight(bottomBarModel.getTabs().get(i).getWeight());
-            if (bottomBarModel.isCornerMarkByConfig()){
+            if (bottomBarModel.isCornerMarkByConfig()) {
                 builder.setCornerMark(bottomBarModel.getTabs().get(i).getCornerMark());
             }
             builder.setCornerMarkTextSize(bottomBarModel.getTabs().get(i).getCornerMarkTextSize());
@@ -356,7 +364,7 @@ public class MainActivity extends AppCompatActivity {
             items.add(navigationBarItem);
         }
         bottomNavigationBar.setItems(items);
-        bottomNavigationBar.setCornerMarkByLabel("模块3","666");
+        bottomNavigationBar.setCornerMarkByLabel("模块3", "666");
 
         SimpleRoundTabView simpleRoundTabView = findViewById(R.id.simpleRoundTabView);
         List<SimpleRoundTabView.SimpleRoundTabBean> simpleRoundTabViewList = new ArrayList();
@@ -373,6 +381,57 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, fromPosition + "***" + toPosition, Toast.LENGTH_SHORT).show();
             }
         });
+
+
+        SimpleRoundTabViewV2 simpleRoundTabViewV2 = findViewById(R.id.simpleRoundTabViewV2);
+        List<SimpleRoundTabViewV2.SimpleRoundTabBean> simpleRoundTabViewV2List = new ArrayList();
+        for (int i = 0; i < 3; i++) {
+            SimpleRoundTabViewV2.SimpleRoundTabBean simpleRoundTabBean = new SimpleRoundTabViewV2.SimpleRoundTabBean();
+            simpleRoundTabBean.text = "标签No." + (i + 1);
+            simpleRoundTabBean.checked = i == 0;
+            simpleRoundTabViewV2List.add(simpleRoundTabBean);
+        }
+        simpleRoundTabViewV2.setTab(simpleRoundTabViewV2List);
+        ViewPager viewPager = findViewById(R.id.view_pager);
+        viewPager.setAdapter(new PagerAdapter() {
+            private Context mContext = MainActivity.this;
+            private List<String> mData = Arrays.asList("Page 1", "Page 2", "Page 3");
+
+            @NonNull
+            @Override
+            public Object instantiateItem(@NonNull ViewGroup container, int position) {
+                TextView textView = new TextView(mContext);
+                textView.setText(mData.get(position));
+                textView.setTextSize(20);
+                textView.setLayoutParams(new ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                container.addView(textView);
+                return textView;
+            }
+
+            @Override
+            public int getCount() {
+                return mData.size();
+            }
+
+            @Override
+            public boolean isViewFromObject(@NonNull View view, @NonNull Object object) {
+                return view == object;
+            }
+
+            @Override
+            public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
+                container.removeView((View) object);
+            }
+        });
+
+        simpleRoundTabViewV2.setOnSimpleRoundTabViewV2CallBack(new SimpleRoundTabViewV2.OnSimpleRoundTabViewCallBack() {
+            @Override
+            public void onTabChecked(int fromPosition, int toPosition) {
+                Toast.makeText(MainActivity.this, fromPosition + "***" + toPosition, Toast.LENGTH_SHORT).show();
+            }
+        });
+        simpleRoundTabViewV2.attachToViewPager(viewPager);
 
         findViewById(R.id.btn_graffiti).setOnClickListener(new View.OnClickListener() {
             @Override
