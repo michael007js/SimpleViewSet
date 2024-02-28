@@ -36,6 +36,7 @@ import com.sss.michael.simpleview.view.SimpleProgressBar;
 import com.sss.michael.simpleview.view.SimpleRotatingView;
 import com.sss.michael.simpleview.view.SimpleRoundTabView;
 import com.sss.michael.simpleview.view.SimpleRoundTabViewV2;
+import com.sss.michael.simpleview.view.SimpleRoundTabViewV3;
 import com.sss.michael.simpleview.view.SimpleSlideBesselView;
 import com.sss.michael.simpleview.view.SimpleSpiderView;
 import com.sss.michael.simpleview.view.SimpleWrapOffsetWidthView;
@@ -392,6 +393,17 @@ public class MainActivity extends AppCompatActivity {
             simpleRoundTabViewV2List.add(simpleRoundTabBean);
         }
         simpleRoundTabViewV2.setTab(simpleRoundTabViewV2List);
+
+
+        SimpleRoundTabViewV3 simpleRoundTabViewV3 = findViewById(R.id.simpleRoundTabViewV3);
+        List<SimpleRoundTabViewV3.SimpleRoundTabBean> simpleRoundTabViewV3List = new ArrayList();
+        for (int i = 0; i < 3; i++) {
+            SimpleRoundTabViewV3.SimpleRoundTabBean simpleRoundTabBean = new SimpleRoundTabViewV3.SimpleRoundTabBean();
+            simpleRoundTabBean.text = "标签No." + (i + 1);
+            simpleRoundTabBean.checked = i == 0;
+            simpleRoundTabViewV3List.add(simpleRoundTabBean);
+        }
+        simpleRoundTabViewV3.setTab(simpleRoundTabViewV3List);
         ViewPager viewPager = findViewById(R.id.view_pager);
         viewPager.setAdapter(new PagerAdapter() {
             private Context mContext = MainActivity.this;
@@ -432,6 +444,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         simpleRoundTabViewV2.attachToViewPager(viewPager);
+
+        simpleRoundTabViewV3.setOnSimpleRoundTabViewV3CallBack(new SimpleRoundTabViewV3.OnSimpleRoundTabViewCallBack() {
+            @Override
+            public void onTabChecked(int fromPosition, int toPosition) {
+                Toast.makeText(MainActivity.this, fromPosition + "***" + toPosition, Toast.LENGTH_SHORT).show();
+            }
+        });
+        simpleRoundTabViewV3.attachToViewPager(viewPager);
 
         findViewById(R.id.btn_graffiti).setOnClickListener(new View.OnClickListener() {
             @Override
