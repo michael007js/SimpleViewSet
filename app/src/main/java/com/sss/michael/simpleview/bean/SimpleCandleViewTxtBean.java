@@ -4,6 +4,8 @@ import com.sss.michael.simpleview.view.SimpleCandleView;
 
 public class SimpleCandleViewTxtBean implements SimpleCandleView.OnSimpleCandleViewXyAxisTextRealization<SimpleCandleViewTxtBean> {
     private String txt;
+    private String txTop;
+    private String txBottom;
 
     private int topLevelHigh;
     private int topLevelLow;
@@ -27,9 +29,27 @@ public class SimpleCandleViewTxtBean implements SimpleCandleView.OnSimpleCandleV
         this.bottomLevelLow = bottomLevelLow;
     }
 
+    public SimpleCandleViewTxtBean(String txt, String txTop, String txBottom, int topLevelHigh, int topLevelLow, int bottomLevelHigh, int bottomLevelLow) {
+        this.txt = txt;
+        this.txTop = txTop;
+        this.txBottom = txBottom;
+        this.topLevelHigh = topLevelHigh;
+        this.topLevelLow = topLevelLow;
+        this.bottomLevelHigh = bottomLevelHigh;
+        this.bottomLevelLow = bottomLevelLow;
+    }
+
     @Override
     public String getText() {
         return txt;
+    }
+
+    public String getTxTop() {
+        return txTop;
+    }
+
+    public String getTxBottom() {
+        return txBottom;
     }
 
     @Override

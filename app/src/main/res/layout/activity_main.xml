@@ -102,6 +102,11 @@
                         android:gravity="center"
                         android:orientation="vertical">
 
+                        <com.sss.michael.simpleview.view.SimpleMiddleColumnView
+                            android:layout_width="match_parent"
+                            android:layout_height="200dp"
+                            android:paddingHorizontal="10dp" />
+
                         <com.sss.michael.simpleview.view.SimpleVerticalRangMultiplePointView
                             android:layout_width="match_parent"
                             android:layout_height="200dp"

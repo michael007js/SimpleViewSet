@@ -489,23 +489,25 @@ public class MainActivity extends AppCompatActivity {
         xAxisBean.setCoordinateAxisTextData(xAxisData, false);
         //内容轴
         List<SimpleCandleView.OnSimpleCandleViewXyAxisTextRealization<SimpleCandleViewTxtBean>> contentAxisData = new ArrayList<>();
-        contentAxisData.add(new SimpleCandleViewTxtBean("4月", 20000, 15000, 4000, 2000));
-        contentAxisData.add(new SimpleCandleViewTxtBean("5月", 19000, 14000, 6000, 4500));
-        contentAxisData.add(new SimpleCandleViewTxtBean("6月", 22500, 18000, 6000, 4000));
-        contentAxisData.add(new SimpleCandleViewTxtBean("7月", 20500, 16000, 10000, 5000));
-        contentAxisData.add(new SimpleCandleViewTxtBean("8月", 22000, 18000, 12000, 10500));
-        contentAxisData.add(new SimpleCandleViewTxtBean("9月", 22000, 18500, 7000, 6000));
-        contentAxisData.add(new SimpleCandleViewTxtBean("10月", 19000, 16000, 13000, 11000));
-        contentAxisData.add(new SimpleCandleViewTxtBean("11月", 18500, 15500, 7000, 6000));
-        contentAxisData.add(new SimpleCandleViewTxtBean("12月", 20500, 18000, 8100, 7800));
-        contentAxisData.add(new SimpleCandleViewTxtBean("1月", 21000, 16500, 4000, 4000));
-        contentAxisData.add(new SimpleCandleViewTxtBean("2月", 23000, 18000, 13500, 13500));
-        contentAxisData.add(new SimpleCandleViewTxtBean("3月", 17000, 13000, 4900, 1200));
+        contentAxisData.add(new SimpleCandleViewTxtBean("", "4月上部文字", "4月下部文字", 20000, 15000, 4000, 2000));
+        contentAxisData.add(new SimpleCandleViewTxtBean("", "5月上部文字", "5月下部文字", 19000, 14000, 6000, 4500));
+        contentAxisData.add(new SimpleCandleViewTxtBean("", "6月上部文字", "6月下部文字", 22500, 18000, 6000, 4000));
+        contentAxisData.add(new SimpleCandleViewTxtBean("", "7月上部文字", "7月下部文字", 20500, 16000, 10000, 5000));
+        contentAxisData.add(new SimpleCandleViewTxtBean("", "8月上部文字", "8月下部文字", 22000, 18000, 12000, 10500));
+        contentAxisData.add(new SimpleCandleViewTxtBean("", "9月上部文字", "9月下部文字", 22000, 18500, 7000, 6000));
+        contentAxisData.add(new SimpleCandleViewTxtBean("", "10月上部文字", "10月下部文字", 19000, 16000, 13000, 11000));
+        contentAxisData.add(new SimpleCandleViewTxtBean("", "11月上部文字", "11月下部文字", 18500, 15500, 7000, 6000));
+        contentAxisData.add(new SimpleCandleViewTxtBean("", "12月上部文字", "12月下部文字", 20500, 18000, 8100, 7800));
+        contentAxisData.add(new SimpleCandleViewTxtBean("", "1月上部文字", "1月下部文字", 21000, 16500, 4000, 4000));
+        contentAxisData.add(new SimpleCandleViewTxtBean("", "2月上部文字", "2月下部文字", 23000, 18000, 13500, 13500));
+        contentAxisData.add(new SimpleCandleViewTxtBean("", "3月上部文字", "3月下部文字", 17000, 13000, 4900, 1200));
         SimpleCandleView.SimpleCandleViewCoordinateAxisBean contentAxisBean = new SimpleCandleView.SimpleCandleViewCoordinateAxisBean();
         contentAxisBean.setCoordinateAxisTextData(contentAxisData, false);
 
-
-        simpleCandleView.setData(yAxisBean, xAxisBean, contentAxisBean);
+        simpleCandleView.setDrawVerticalLineForEachRectAtTopAndBottom(true);
+        simpleCandleView.setDrawVerticalTextForEachRectAtTopAndBottom(true);
+        simpleCandleView.setDrawBezierForEachRectAtCenter(true);
+        simpleCandleView.setData(false, yAxisBean, xAxisBean, contentAxisBean);
 
 
         simpleLinearChart2 = findViewById(R.id.simpleLinearChart2);

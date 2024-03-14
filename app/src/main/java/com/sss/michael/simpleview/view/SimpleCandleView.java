@@ -6,15 +6,19 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.PointF;
 import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 
+import com.sss.michael.simpleview.bean.SimpleCandleViewTxtBean;
 import com.sss.michael.simpleview.callback.OnTextRealization;
 import com.sss.michael.simpleview.utils.DensityUtil;
 import com.sss.michael.simpleview.utils.DrawViewUtils;
+import com.sss.michael.simpleview.utils.EmptyUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -61,6 +65,10 @@ public class SimpleCandleView<T> extends View {
      */
     private int xAxisRightReservedArea = 0;
     /**
+     * X轴区域与内容轴区域之间的间距
+     */
+    private int betweenXAxisAndContent = 3;
+    /**
      * y轴模型
      */
     private SimpleCandleViewCoordinateAxisBean<T> yAxisBean;
@@ -81,7 +89,23 @@ public class SimpleCandleView<T> extends View {
      */
     private float eachColumnWidth = DensityUtil.dp2px(13);
 
+    /**
+     * 是否为每个矩阵上下两端绘制延长线,与{@link #drawVerticalTextForEachRectAtTopAndBottom}互斥
+     */
+    private boolean drawVerticalLineForEachRectAtTopAndBottom = true;
 
+    /**
+     * 是否为每个矩阵上下两端绘制说明文本,与{@link #drawVerticalLineForEachRectAtTopAndBottom}互斥
+     */
+    private boolean drawVerticalTextForEachRectAtTopAndBottom = false;
+
+    /**
+     * 用贝塞尔曲线相连每个矩阵的中心
+     */
+    private boolean drawBezierForEachRectAtCenter = false;
+
+
+    private float offset;
     /////////////////////////////////////////
     private OnSimpleCandleViewCallBack<T> onSimpleCandleViewCallBack;
 
@@ -124,7 +148,7 @@ public class SimpleCandleView<T> extends View {
 
         }
         setMeasuredDimension(width, height);
-        vailRect.left = getPaddingStart() | getPaddingLeft();
+        vailRect.left = offset + (getPaddingStart() | getPaddingLeft());
         vailRect.top = getPaddingTop() + DensityUtil.dp2px(vailReservedArea[0]);
         vailRect.right = width - (getPaddingRight() | getPaddingEnd());
         vailRect.bottom = height - getPaddingBottom() - DensityUtil.dp2px(vailReservedArea[1]);
@@ -133,11 +157,11 @@ public class SimpleCandleView<T> extends View {
         if (xAxisBean != null && yAxisBean != null) {
             yAxisRect.right = yAxisBean.getMaxTextSize(true);
 
-            xAxisRect.left = yAxisRect.right + DensityUtil.dp2px(xAxisLeftReservedArea);
+            xAxisRect.left = offset + yAxisRect.right + DensityUtil.dp2px(xAxisLeftReservedArea);
 
             yAxisRect.left = vailRect.left;
             yAxisRect.top = vailRect.top + DensityUtil.dp2px(yAxisReservedArea);
-            yAxisRect.bottom = xAxisRect.top;
+            yAxisRect.bottom = xAxisRect.top - DensityUtil.dp2px(betweenXAxisAndContent);
 
             xAxisRect.right = vailRect.right - DensityUtil.dp2px(xAxisRightReservedArea);
             xAxisRect.bottom = vailRect.bottom;
@@ -148,27 +172,34 @@ public class SimpleCandleView<T> extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                for (int i = 0; i < contentAxisBean.texts.size(); i++) {
-                    contentAxisBean.getRectF(i).touch = false;
-                }
-                return true;
-            case MotionEvent.ACTION_UP:
-                for (int i = 0; i < contentAxisBean.texts.size(); i++) {
-                    if (contentAxisBean.getRectF(i).contains(event.getX(), event.getY())) {
-                        contentAxisBean.getRectF(i).touch = !contentAxisBean.getRectF(i).touch;
-                        if (onSimpleCandleViewCallBack != null) {
-                            onSimpleCandleViewCallBack.onItemClick(contentAxisBean.getOnXyAxisTextRealization(i).getBean());
-                        }
-                        break;
+        if (contentAxisBean != null && onSimpleCandleViewCallBack != null) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    for (int i = 0; i < contentAxisBean.texts.size(); i++) {
+                        contentAxisBean.getRectF(i).touch = false;
                     }
-                }
-                invalidate();
-                break;
+                    return true;
+                case MotionEvent.ACTION_MOVE:
+                    offset = event.getX();
+                    invalidate();
+                    break;
+                case MotionEvent.ACTION_UP:
+                    for (int i = 0; i < contentAxisBean.texts.size(); i++) {
+                        if (contentAxisBean.getRectF(i).contains(event.getX(), event.getY())) {
+                            contentAxisBean.getRectF(i).touch = !contentAxisBean.getRectF(i).touch;
+                            onSimpleCandleViewCallBack.onItemClick(contentAxisBean.getOnXyAxisTextRealization(i).getBean());
+                            break;
+                        }
+                    }
+                    invalidate();
+                    break;
+            }
         }
         return super.onTouchEvent(event);
     }
+
+    List<PointF> list = new ArrayList<>();
+    Path path = new Path();
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -200,7 +231,7 @@ public class SimpleCandleView<T> extends View {
             //绘制y轴线
             paint.setStyle(Paint.Style.FILL);
             paint.setStrokeWidth(DensityUtil.dp2px(1));
-            paint.setColor(0xffcccccc);
+            paint.setColor(0xfff6f6f6);
             canvas.drawLine(yAxisRect.right, yAxisRect.top - extendedLine, yAxisRect.right, xAxisRect.top, paint);
             //y轴绘制区域均分
             float eachBetweenHeight = yAxisRect.height() / (yAxisBean.texts.size() - 1);
@@ -208,7 +239,7 @@ public class SimpleCandleView<T> extends View {
                 float yPosition;
                 paint.setStrokeWidth(DensityUtil.dp2px(1));
                 paint.setStyle(Paint.Style.FILL);
-                paint.setColor(0xffcccccc);
+                paint.setColor(0xfff6f6f6);
                 //Y轴文字偏移量，第0个贴底，其余的跟Y轴均分线对其
                 float yAxisTextOffset;
                 if (i == 0) {
@@ -222,7 +253,7 @@ public class SimpleCandleView<T> extends View {
                 //绘制y轴等分背景线
                 paint.setStrokeWidth(DensityUtil.dp2px(1));
                 paint.setStyle(Paint.Style.FILL);
-                paint.setColor(0xff999999);
+                paint.setColor(0xfff6f6f6);
                 canvas.drawLine(yAxisRect.right, yPosition, vailRect.right, yPosition, paint);
                 //绘制y轴文字
                 canvas.drawText(yAxisBean.getOnXyAxisTextRealization(i).getText(), yAxisRect.left + yAxisBean.getMaxTextSize(true) / 2, yPosition + yAxisTextOffset, yAxisBean.getPaint());
@@ -243,26 +274,27 @@ public class SimpleCandleView<T> extends View {
             }
             for (int i = 0; i < xAxisBean.texts.size(); i++) {
                 if (i == 0) {
-                    xAxisBean.getRectF(i).left = xAxisRect.left;
+                    xAxisBean.getRectF(i).left = offset + xAxisRect.left;
                 } else {
-                    xAxisBean.getRectF(i).left = xAxisBean.getRectF(i - 1).right + xAxisBetweenDistance;
+                    xAxisBean.getRectF(i).left = offset + xAxisBean.getRectF(i - 1).right + xAxisBetweenDistance;
                 }
-                xAxisBean.getRectF(i).right = xAxisBean.getRectF(i).left + eachColumnWidth;
+                xAxisBean.getRectF(i).right = offset + xAxisBean.getRectF(i).left + eachColumnWidth;
                 xAxisBean.getRectF(i).top = xAxisRect.top;
                 xAxisBean.getRectF(i).bottom = xAxisRect.bottom;
                 //绘制x轴文字
                 canvas.drawText(xAxisBean.getOnXyAxisTextRealization(i).getText(),
-                        xAxisBean.getRectF(i).left + xAxisBean.getRectF(i).width() / 2,
-                        xAxisBean.getRectF(i).top + xAxisBean.getRectF(i).height() / 2 + xAxisBean.getMaxTextSize(false) / 2 - DensityUtil.dp2px(3)/*Y轴偏移量*/,
+                        offset + xAxisBean.getRectF(i).left + xAxisBean.getRectF(i).width() / 2,
+                        xAxisBean.getRectF(i).top + xAxisBean.getRectF(i).height() / 2 + xAxisBean.getMaxTextSize(false) / 2 + DensityUtil.dp2px(betweenXAxisAndContent)/*Y轴偏移量*/,
                         yAxisBean.getPaint());
             }
             /*******************************************************X轴区域绘制结束↑*******************************************************/
 
             /*******************************************************内容轴区域绘制开始↓*******************************************************/
-            if (contentAxisBean != null) {
+            if (contentAxisBean != null && contentAxisBean.texts.size() > 0) {
                 //实际坐标轴区域高度除以最大值与最小值的差值可得出该差值的一个值所占用有效绘制区域的百分比
                 float eachCoordinatePercent = yAxisBean.max == 0 ? 0 : yAxisRect.height() / (yAxisBean.max - yAxisBean.min);
                 if (contentAxisBean.texts.size() == xAxisBean.texts.size()) {
+                    list.clear();
                     for (int ii = 0; ii < contentAxisBean.texts.size(); ii++) {
                         int i = (int) (ii * columnHeightPercent);
                         if (i == 0) {
@@ -294,29 +326,95 @@ public class SimpleCandleView<T> extends View {
                             paint.setStrokeWidth(DensityUtil.dp2px(1.5f));
                         }
                         paint.setColor(0xffff951b);
-                        //绘制空心轴
-                        canvas.drawRoundRect(rectF, DensityUtil.dp2px(2), DensityUtil.dp2px(2), paint);
 
-                        float x = contentAxisBean.getRectF(i).left + contentAxisBean.getRectF(i).width() / 2;
-                        //绘制空心轴延长线上半部分
-                        canvas.drawLine(x, rectF.top, x, rectF.top - contentAxisBean.getRectF(i).topHeight() * columnHeightPercent, paint);
-                        //绘制空心轴延长线下半部分
-                        canvas.drawLine(x, rectF.bottom, x, rectF.bottom + contentAxisBean.getRectF(i).bottomHeight() * columnHeightPercent, paint);
+                        if (contentAxisBean.getOnXyAxisTextRealization(i).getTopLevelHigh() > 0 &&
+                                contentAxisBean.getOnXyAxisTextRealization(i).getTopLevelLow() > 0 &&
+                                contentAxisBean.getOnXyAxisTextRealization(i).getBottomLevelHigh() > 0 &&
+                                contentAxisBean.getOnXyAxisTextRealization(i).getBottomLevelLow() > 0) {
+                            //绘制空心轴
+                            canvas.drawRoundRect(rectF, DensityUtil.dp2px(2), DensityUtil.dp2px(2), paint);
+
+                            float x = contentAxisBean.getRectF(i).left + contentAxisBean.getRectF(i).width() / 2;
+                            list.add(new PointF(x, rectF.top + rectF.height() / 2));
+
+                            if (drawBezierForEachRectAtCenter) {
+                                float y = contentAxisBean.getRectF(i).top + contentAxisBean.getRectF(i).height() / 2;
+                                //绘制矩阵中心圆点
+                                int radius = DensityUtil.dp2px(1);
+                                canvas.save();
+                                canvas.rotate(45, x, y);
+                                canvas.drawRect(x - radius, y - radius, x + radius, y + radius, paint);
+                                canvas.restore();
+                            }
+                            if (drawVerticalLineForEachRectAtTopAndBottom) {
+                                //绘制空心轴延长线上半部分
+                                canvas.drawLine(x, rectF.top, x, rectF.top - contentAxisBean.getRectF(i).topHeight() * columnHeightPercent, paint);
+                                //绘制空心轴延长线下半部分
+                                canvas.drawLine(x, rectF.bottom, x, rectF.bottom + contentAxisBean.getRectF(i).bottomHeight() * columnHeightPercent, paint);
+                            } else if (drawVerticalTextForEachRectAtTopAndBottom) {
+                                String topText = contentAxisBean.getVerticalTextForEachRectAtTopAndBottom(i, true);
+                                if (!EmptyUtils.isEmpty(topText)) {
+                                    int[] topSize = DrawViewUtils.getTextWH(contentAxisBean.getPaint(), topText);
+                                    canvas.drawText(topText, x, rectF.top - topSize[1], contentAxisBean.getPaint());
+                                }
+                                String bottomText = contentAxisBean.getVerticalTextForEachRectAtTopAndBottom(i, false);
+                                if (!EmptyUtils.isEmpty(bottomText)) {
+                                    int[] bottomSize = DrawViewUtils.getTextWH(contentAxisBean.getPaint(), bottomText);
+                                    canvas.drawText(bottomText, x, rectF.bottom + bottomSize[1] + (bottomSize[1] >> 1), contentAxisBean.getPaint());
+                                }
+
+                            }
+                        }
+
+                    }
+
+                    if (drawBezierForEachRectAtCenter && list.size() > 0) {
+                        path.reset();
+                        path.moveTo(list.get(0).x, list.get(0).y);
+                        DrawViewUtils.calculateBezier3(list, 0.7f, path);
+                        paint.setStrokeWidth(DensityUtil.dp2px(1));
+                        canvas.drawPath(path, paint);
                     }
                 }
+            } else {
+                paint.setStrokeWidth(DensityUtil.dp2px(1));
+                paint.setStyle(Paint.Style.FILL);
+                paint.setColor(0xff999999);
+                paint.setTextSize(DensityUtil.dp2px(12));
+                float[] size = DrawViewUtils.getTextWHF(paint, "暂无数据");
+                canvas.drawText("暂无数据", xAxisRect.left + xAxisRect.width() / 2 - size[0] / 2, yAxisRect.top + yAxisRect.height() / 2 - size[1] / 2, paint);
             }
             /*******************************************************内容轴区域绘制结束↑*******************************************************/
         }
     }
 
 
-    public void setData(SimpleCandleViewCoordinateAxisBean<T> yAxisBean, SimpleCandleViewCoordinateAxisBean<T> xAxisBean, SimpleCandleViewCoordinateAxisBean<T> contentAxisBean) {
+    public void setData(boolean animation, SimpleCandleViewCoordinateAxisBean<T> yAxisBean, SimpleCandleViewCoordinateAxisBean<T> xAxisBean, SimpleCandleViewCoordinateAxisBean<T> contentAxisBean) {
         this.yAxisBean = yAxisBean;
         this.xAxisBean = xAxisBean;
         this.contentAxisBean = contentAxisBean;
-        start();
+        if (animation) {
+            start();
+        } else {
+            columnHeightPercent = 1f;
+            invalidate();
+
+        }
     }
 
+    public void setDrawVerticalLineForEachRectAtTopAndBottom(boolean drawVerticalLineForEachRectAtTopAndBottom) {
+        this.drawVerticalLineForEachRectAtTopAndBottom = drawVerticalLineForEachRectAtTopAndBottom;
+        this.drawVerticalTextForEachRectAtTopAndBottom = false;
+    }
+
+    public void setDrawVerticalTextForEachRectAtTopAndBottom(boolean drawVerticalTextForEachRectAtTopAndBottom) {
+        this.drawVerticalTextForEachRectAtTopAndBottom = drawVerticalTextForEachRectAtTopAndBottom;
+        this.drawVerticalLineForEachRectAtTopAndBottom = false;
+    }
+
+    public void setDrawBezierForEachRectAtCenter(boolean drawBezierForEachRectAtCenter) {
+        this.drawBezierForEachRectAtCenter = drawBezierForEachRectAtCenter;
+    }
 
     public void setEachColumnWidth(float eachColumnWidth) {
         this.eachColumnWidth = eachColumnWidth;
@@ -326,7 +424,10 @@ public class SimpleCandleView<T> extends View {
     private float columnHeightPercent = 0f;
     private boolean line;
 
-    private void start() {
+    public void start() {
+        if (yAxisBean == null || xAxisBean == null || contentAxisBean == null) {
+            return;
+        }
         if (valueAnimator == null) {
             valueAnimator = ValueAnimator.ofFloat(0f, 1f);
             valueAnimator.setInterpolator(new LinearInterpolator());
@@ -354,7 +455,7 @@ public class SimpleCandleView<T> extends View {
         }
         valueAnimator.cancel();
         valueAnimator.setRepeatMode(ValueAnimator.RESTART);
-        valueAnimator.setDuration(1000);
+        valueAnimator.setDuration(800);
         valueAnimator.start();
     }
 
@@ -394,6 +495,14 @@ public class SimpleCandleView<T> extends View {
          */
         public OnSimpleCandleViewXyAxisTextRealization<T> getOnXyAxisTextRealization(int position) {
             return texts.get(position).xyText;
+        }
+
+        /**
+         * 每个矩阵上下两端绘制说明文本
+         */
+        public String getVerticalTextForEachRectAtTopAndBottom(int position, boolean top) {
+            SimpleCandleViewTxtBean simpleCandleViewTxtBean = (SimpleCandleViewTxtBean) texts.get(position).xyText;
+            return top ? simpleCandleViewTxtBean.getTxTop() : simpleCandleViewTxtBean.getTxBottom();
         }
 
         /**
@@ -539,6 +648,4 @@ public class SimpleCandleView<T> extends View {
     public interface OnSimpleCandleViewCallBack<T> {
         void onItemClick(T t);
     }
-
-
 }
