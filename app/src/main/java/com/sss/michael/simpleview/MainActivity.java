@@ -401,8 +401,15 @@ public class MainActivity extends AppCompatActivity {
             SimpleRoundTabViewV3.SimpleRoundTabBean simpleRoundTabBean = new SimpleRoundTabViewV3.SimpleRoundTabBean();
             simpleRoundTabBean.text = "标签No." + (i + 1);
             simpleRoundTabBean.checked = i == 0;
+            simpleRoundTabBean.showRedPoint = i == 0;
             simpleRoundTabViewV3List.add(simpleRoundTabBean);
         }
+        simpleRoundTabViewV3.setOnSimpleRoundTabViewV3CallBack(new SimpleRoundTabViewV3.OnSimpleRoundTabViewCallBack() {
+            @Override
+            public void onTabChecked(int fromPosition, int toPosition) {
+                simpleRoundTabViewV3.setRedPoint(false,true,true);
+            }
+        });
         simpleRoundTabViewV3.setTab(simpleRoundTabViewV3List);
         ViewPager viewPager = findViewById(R.id.view_pager);
         viewPager.setAdapter(new PagerAdapter() {

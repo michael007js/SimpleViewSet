@@ -22,6 +22,7 @@ import com.sss.michael.simpleview.utils.Log;
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.Nullable;
 import androidx.viewpager.widget.ViewPager;
 
@@ -37,15 +38,15 @@ public class SimpleRoundTabViewV3 extends View {
     /**
      * 四个顶点圆角半径
      */
-    private float topLeftRadius = DensityUtil.dp2px(8);
-    private float topRightRadius = DensityUtil.dp2px(8);
+    private float topLeftRadius = DensityUtil.dp2px(16);
+    private float topRightRadius = DensityUtil.dp2px(16);
     private float bottomLeftRadius = 0f;
     private float bottomRightRadius = 0f;
 
     /**
      * 底部反圆角
      */
-    private float reverseRadius = DensityUtil.dp2px(8);
+    private float reverseRadius = DensityUtil.dp2px(16);
 
     /**
      * 每一个矩阵的宽度
@@ -58,7 +59,7 @@ public class SimpleRoundTabViewV3 extends View {
     /**
      * 背景色
      */
-    private int backgroundColor = Color.parseColor("#f9f9f9");
+    private int backgroundColor = Color.parseColor("#EEF8FF");
     /**
      * 遮罩色
      */
@@ -210,6 +211,36 @@ public class SimpleRoundTabViewV3 extends View {
         changeMask(0);
     }
 
+    public boolean backgroundRadius = true;
+
+    public void setBackgroundColor(int backgroundColor) {
+        this.backgroundColor = backgroundColor;
+        invalidate();
+    }
+
+    public void setBackgroundRadius(boolean backgroundRadius) {
+        this.backgroundRadius = backgroundRadius;
+        invalidate();
+    }
+
+    public void setDrawIndicator(boolean drawIndicator) {
+        this.drawIndicator = drawIndicator;
+        invalidate();
+    }
+
+    public void setRedPoint(boolean... state) {
+        if (state.length != list.size()) {
+            return;
+        }
+        try {
+            for (int i = 0; i < list.size(); i++) {
+                list.get(i).showRedPoint = state[i];
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        invalidate();
+    }
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -219,7 +250,11 @@ public class SimpleRoundTabViewV3 extends View {
         float[] radii = getCornerRadii();
 
         path.reset();
-        path.addRoundRect(backgroundRectF, radii, Path.Direction.CW);
+        if (backgroundRadius) {
+            path.addRoundRect(backgroundRectF, radii, Path.Direction.CW);
+        } else {
+            canvas.drawRect(backgroundRectF, paint);
+        }
         canvas.drawPath(path, paint);
         paint.setColor(indicatorBackgroundColor);
         canvas.drawRect(indicatorBackgroundRectF, paint);
@@ -279,7 +314,19 @@ public class SimpleRoundTabViewV3 extends View {
         //绘制文字
         for (SimpleRoundTabBean bean : list) {
             bean.getPaint().setColor(bean.getTextColor());
-            canvas.drawText(bean.text, bean.rectF.left + bean.rectF.width() / 2, bean.rectF.top + bean.rectF.height() / 2 + (bean.getSize()[1] >> 1) - DensityUtil.dp2px(2), bean.getPaint());
+            bean.getPaint().setTypeface(bean.getTextStyle());
+            float textX = bean.rectF.left + bean.rectF.width() / 2;
+            float textY = bean.rectF.top + bean.rectF.height() / 2 + (bean.getSize()[1] >> 1) - DensityUtil.dp2px(2);
+            canvas.drawText(bean.text, textX, textY, bean.getPaint());
+
+            //绘制文字右上角小圆点
+            if (bean.showRedPoint) {
+                int between = DensityUtil.dp2px(2);
+                int radius = DensityUtil.dp2px(2);
+                paint.setColor(0xffe9302d);
+                int[] size = bean.getSize();
+                canvas.drawCircle(textX + between + size[0] / 2 + radius, size[1] - between - radius, radius, paint);
+            }
         }
     }
 
@@ -296,20 +343,7 @@ public class SimpleRoundTabViewV3 extends View {
             case MotionEvent.ACTION_UP:
                 for (int i = 0; i < list.size(); i++) {
                     if (list.get(i).rectF.contains(clickX, clickY)) {
-                        int fromPosition = 0;
-                        //获取起始下标
-                        for (int ii = 0; ii < list.size(); ii++) {
-                            if (list.get(ii).checked) {
-                                fromPosition = ii;
-                                break;
-                            }
-                        }
-                        //重置所有选中状态
-                        for (int iii = 0; iii < list.size(); iii++) {
-                            list.get(iii).checked = false;
-                        }
-                        list.get(i).checked = true;
-                        change(fromPosition, i);
+                        setSelectPosition(i, true);
                         break;
                     }
                 }
@@ -317,6 +351,45 @@ public class SimpleRoundTabViewV3 extends View {
         }
         return super.onTouchEvent(event);
     }
+
+    public void setSelectPosition(int position, boolean animation) {
+        int fromPosition = 0;
+        //获取起始下标
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).checked) {
+                fromPosition = i;
+                break;
+            }
+        }
+        //重置所有选中状态
+        for (int i = 0; i < list.size(); i++) {
+            list.get(i).checked = false;
+        }
+        list.get(position).checked = true;
+        if (animation) {
+            change(fromPosition, position);
+        } else {
+            changeMask(eachRectWidth * position);
+            invalidate();
+            if (onSimpleRoundTabViewCallBack != null) {
+                onSimpleRoundTabViewCallBack.onTabChecked(fromPosition, position);
+            }
+            invalidate();
+            if (viewPager != null) {
+                viewPager.setCurrentItem(position);
+            }
+        }
+    }
+
+    public int getSelectPosition() {
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).checked) {
+                return i;
+            }
+        }
+        return 0;
+    }
+
 
     /**
      * 设置tab
@@ -334,6 +407,14 @@ public class SimpleRoundTabViewV3 extends View {
         this.topRightRadius = topRightRadius;
         this.bottomLeftRadius = bottomLeftRadius;
         this.bottomRightRadius = bottomRightRadius;
+        invalidate();
+    }
+
+    /**
+     * 设置背景颜色
+     */
+    public void setBackGroundColor(@ColorInt int color) {
+        backgroundColor = color;
         invalidate();
     }
 
@@ -492,7 +573,15 @@ public class SimpleRoundTabViewV3 extends View {
         /**
          * 选中时文字颜色
          */
-        public int checkedTextColor = Color.parseColor("#e9302d");
+        public int checkedTextColor = Color.parseColor("#212121");
+        /**
+         * 未选中时文字颜色
+         */
+        public Typeface normalTextStyle = Typeface.DEFAULT;
+        /**
+         * 选中时文字颜色
+         */
+        public Typeface checkedTextStyle = Typeface.DEFAULT_BOLD;
         /**
          * 背景色
          */
@@ -501,12 +590,21 @@ public class SimpleRoundTabViewV3 extends View {
          * 文字大小
          */
         public int textSize = DensityUtil.sp2px(14);
+        public boolean showRedPoint;
 
         int getTextColor() {
             if (checked) {
                 return checkedTextColor;
             } else {
                 return normalTextColor;
+            }
+        }
+
+        Typeface getTextStyle() {
+            if (checked) {
+                return checkedTextStyle;
+            } else {
+                return normalTextStyle;
             }
         }
 
