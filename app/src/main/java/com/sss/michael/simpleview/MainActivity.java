@@ -21,6 +21,7 @@ import com.sss.michael.simpleview.bean.GraffitiActivity;
 import com.sss.michael.simpleview.bean.SimpleCandleViewTxtBean;
 import com.sss.michael.simpleview.bean.SimpleLinearChart2TxtBean;
 import com.sss.michael.simpleview.bean.SimpleMultipleColumnTxtBean;
+import com.sss.michael.simpleview.callback.LuckDrawActivity;
 import com.sss.michael.simpleview.utils.DensityUtil;
 import com.sss.michael.simpleview.view.BannerViewPager;
 import com.sss.michael.simpleview.view.BottomNavigationBar;
@@ -77,6 +78,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        findViewById(R.id.luck_draw).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, LuckDrawActivity.class));
+            }
+        });
         simpleSlideBesselView = findViewById(R.id.simpleSlideBesselView);
         nestedScrollView = findViewById(R.id.nestedScrollView);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -407,7 +414,7 @@ public class MainActivity extends AppCompatActivity {
         simpleRoundTabViewV3.setOnSimpleRoundTabViewV3CallBack(new SimpleRoundTabViewV3.OnSimpleRoundTabViewCallBack() {
             @Override
             public void onTabChecked(int fromPosition, int toPosition) {
-                simpleRoundTabViewV3.setRedPoint(false,true,true);
+                simpleRoundTabViewV3.setRedPoint(false, true, true);
             }
         });
         simpleRoundTabViewV3.setTab(simpleRoundTabViewV3List);

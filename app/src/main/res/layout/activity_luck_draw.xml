@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/iv_shadow"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:src="@mipmap/bg_light"
+        tools:tint="@color/colorPrimary" />
+
+    <com.sss.michael.simpleview.view.SimpleLuckDrawView
+        android:id="@+id/luck_draw_view"
+        android:layout_width="350dp"
+        android:layout_height="350dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="40dp"
+        app:layout_constraintBottom_toBottomOf="@+id/luck_draw_view"
+        app:layout_constraintEnd_toEndOf="@+id/luck_draw_view"
+        app:layout_constraintStart_toStartOf="@+id/luck_draw_view" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/luck_draw_bottom_1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:src="@mipmap/luck_draw_bottom"
+        app:layout_constraintEnd_toEndOf="@+id/luck_draw_view"
+        app:layout_constraintStart_toStartOf="@+id/luck_draw_view"
+        app:layout_constraintTop_toBottomOf="@+id/view" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

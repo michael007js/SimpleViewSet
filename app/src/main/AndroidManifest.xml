@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.sss.michael.simpleview">
+
     <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:allowBackup="true"
@@ -17,6 +18,9 @@
             </intent-filter>
         </activity>
         <activity android:name=".bean.GraffitiActivity" />
+        <activity
+            android:name=".callback.LuckDrawActivity"
+            android:theme="@style/activityDialog" />
     </application>
 
 </manifest>
