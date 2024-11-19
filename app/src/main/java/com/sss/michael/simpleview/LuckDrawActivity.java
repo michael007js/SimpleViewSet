@@ -1,4 +1,4 @@
-package com.sss.michael.simpleview.callback;
+package com.sss.michael.simpleview;
 
 import android.content.pm.ActivityInfo;
 import android.os.Build;
@@ -8,7 +8,6 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.sss.michael.simpleview.R;
 import com.sss.michael.simpleview.view.SimpleLuckDrawView;
 
 import java.util.ArrayList;

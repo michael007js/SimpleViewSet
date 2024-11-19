@@ -10,7 +10,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -19,8 +21,9 @@
         </activity>
         <activity android:name=".bean.GraffitiActivity" />
         <activity
-            android:name=".callback.LuckDrawActivity"
+            android:name=".LuckDrawActivity"
             android:theme="@style/activityDialog" />
+        <activity android:name=".StreamTextActivity" />
     </application>
 
 </manifest>

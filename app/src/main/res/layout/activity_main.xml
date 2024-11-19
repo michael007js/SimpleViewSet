@@ -26,9 +26,15 @@
 
             <Button
                 android:id="@+id/luck_draw"
-                android:text="摇奖机"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:text="摇奖机" />
+
+            <Button
+                android:id="@+id/ai_stream_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="AI流式布局" />
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"

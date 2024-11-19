@@ -21,7 +21,6 @@ import com.sss.michael.simpleview.bean.GraffitiActivity;
 import com.sss.michael.simpleview.bean.SimpleCandleViewTxtBean;
 import com.sss.michael.simpleview.bean.SimpleLinearChart2TxtBean;
 import com.sss.michael.simpleview.bean.SimpleMultipleColumnTxtBean;
-import com.sss.michael.simpleview.callback.LuckDrawActivity;
 import com.sss.michael.simpleview.utils.DensityUtil;
 import com.sss.michael.simpleview.view.BannerViewPager;
 import com.sss.michael.simpleview.view.BottomNavigationBar;
@@ -82,6 +81,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, LuckDrawActivity.class));
+            }
+        });
+        findViewById(R.id.ai_stream_layout).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, StreamTextActivity.class));
             }
         });
         simpleSlideBesselView = findViewById(R.id.simpleSlideBesselView);
