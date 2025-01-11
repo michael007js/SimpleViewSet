@@ -24,6 +24,10 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:context=".MainActivity">
 
+            <com.sss.michael.simpleview.view.SimpleRecommendDashboardView
+                android:layout_width="match_parent"
+                android:layout_height="200dp" />
+
             <Button
                 android:id="@+id/luck_draw"
                 android:layout_width="match_parent"
@@ -338,6 +342,11 @@
 
                         </LinearLayout>
 
+                        <com.sss.michael.simpleview.view.toutiaoanimation.ArticleRl
+                            android:id="@+id/article_view"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent" />
+
                     </LinearLayout>
 
                 </androidx.core.widget.NestedScrollView>
@@ -363,11 +372,6 @@
             app:layout_constraintStart_toStartOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <com.sss.michael.simpleview.view.toutiaoanimation.ArticleRl
-        android:id="@+id/article_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
 
     <!--    <com.sss.michael.simpleview.view.SimpleGraffitiView-->
     <!--        android:layout_width="match_parent"-->
