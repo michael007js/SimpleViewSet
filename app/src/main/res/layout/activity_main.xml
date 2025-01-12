@@ -26,7 +26,10 @@
 
             <com.sss.michael.simpleview.view.SimpleRecommendDashboardView
                 android:layout_width="match_parent"
-                android:layout_height="200dp" />
+                android:layout_height="200dp"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:paddingTop="10dp"/>
 
             <Button
                 android:id="@+id/luck_draw"

@@ -49,7 +49,7 @@ public class SimpleRecommendDashboardView extends View {
      * 因所有元素都是基于{@link #outerCircleRingRect}绘制
      * 同时也是控制所有元素的相对位置
      */
-    private float outerCircleRingEnlargePercent = 0.12f;
+    private float outerCircleRingEnlargePercent = 0.15f;
     /**
      * 外圆环位置
      */
@@ -133,13 +133,15 @@ public class SimpleRecommendDashboardView extends View {
         }
         setMeasuredDimension(width, height);
 
-        centerPoint.set(width / 2, height);
+        //向上的偏移量,用来控制整体向上绘制偏移
+        int offsetToUp = (int) (height / 5f);
+
+        centerPoint.set(width / 2, height - offsetToUp);
 
         int value = Math.min(width, height);
-
-        outerCircleRingRect.left = centerPoint.x - (value >> 1) - outerCircleRingEnlargePercent * value;
+        outerCircleRingRect.left = centerPoint.x - (value >> 1) - outerCircleRingEnlargePercent * value + DensityUtil.dp2px(10);
         outerCircleRingRect.top = centerPoint.y - (value >> 1) - outerCircleRingEnlargePercent * value;
-        outerCircleRingRect.right = centerPoint.x + (value >> 1) + outerCircleRingEnlargePercent * value;
+        outerCircleRingRect.right = centerPoint.x + (value >> 1) + outerCircleRingEnlargePercent * value - DensityUtil.dp2px(10);
         outerCircleRingRect.bottom = centerPoint.y;
     }
 
@@ -161,8 +163,11 @@ public class SimpleRecommendDashboardView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        if (model == null) {
+            return;
+        }
         if (DEBUG) {
-            setBackgroundColor(0xff000000);
+            setBackgroundColor(0xff12345f);
             DEBUG_PAINT.setStyle(Paint.Style.STROKE);
             canvas.drawRect(outerCircleRingRect, DEBUG_PAINT);
         } else {
@@ -170,9 +175,9 @@ public class SimpleRecommendDashboardView extends View {
             setBackgroundColor(Color.TRANSPARENT);
         }
         //开始角度
-        int startAngle = 179;//向前偏移角度以填充满底图
+        int startAngle = 175;//向前偏移角度以填充满底图
         //结束角度
-        int endAngle = 182;//向后偏移角度以填充满底图
+        int endAngle = 190;//向后偏移角度以填充满底图
         //总绘制角度
         float totalAngle = startAngle + endAngle - 180f;
 
@@ -218,7 +223,7 @@ public class SimpleRecommendDashboardView extends View {
         float chongEndAngle = model.getSweepAngle(1, endAngle);
         chongEndAngle = Math.min(chongEndAngle, totalAngle);
         //绘制冲外圆环底图
-        outerCircleRingPaint.setColor(0xffe9302d);
+        outerCircleRingPaint.setColor(0xffff6142);
         canvas.drawArc(
                 outerCircleRingRect.left + (outerCircleWidth >> 1),
                 outerCircleRingRect.top + (outerCircleWidth >> 1),
@@ -232,7 +237,7 @@ public class SimpleRecommendDashboardView extends View {
         wenEndAngle = Math.min(wenEndAngle, totalAngle);
 
         //绘制稳外圆环底图
-        outerCircleRingPaint.setColor(0xff00ff00);
+        outerCircleRingPaint.setColor(0xffffca29);
         canvas.drawArc(
                 outerCircleRingRect.left + (outerCircleWidth >> 1),
                 outerCircleRingRect.top + (outerCircleWidth >> 1),
@@ -247,7 +252,7 @@ public class SimpleRecommendDashboardView extends View {
         baoEndAngle = Math.min(baoEndAngle, totalAngle);
 
         //绘制保外圆环底图
-        outerCircleRingPaint.setColor(0xff0000ff);
+        outerCircleRingPaint.setColor(0x40d8d8d8);
         canvas.drawArc(
                 outerCircleRingRect.left + (outerCircleWidth >> 1),
                 outerCircleRingRect.top + (outerCircleWidth >> 1),
