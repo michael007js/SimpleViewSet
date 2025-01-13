@@ -110,8 +110,9 @@ public class SimpleRecommendDashboardView extends View {
     public SimpleRecommendDashboardView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         if (DEBUG) {
-            SimpleRecommendDashboardViewBean model = new SimpleRecommendDashboardViewBean(662, 177, 88, "所需冲刺", "所较稳妥", "所可保底", "0", "999", "建议尝试拨打报警电话");
-            setModel(model, false);
+            SimpleRecommendDashboardViewBean model = new SimpleRecommendDashboardViewBean(
+                    1f, 90, 662, 177, "所需冲刺", "所较稳妥", "所可保底", "0", "999", "建议拨打报警电话");
+            setModel(model, true);
             setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -121,39 +122,54 @@ public class SimpleRecommendDashboardView extends View {
         }
     }
 
+    /**
+     * 向上的偏移量,用来控制整体向上绘制偏移
+     */
+    int offsetToUp = DensityUtil.dp2px(20);
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         width = MeasureSpec.getSize(widthMeasureSpec);
+
+        offsetToUp = DensityUtil.dp2px(20);
         int heightSize = MeasureSpec.getSize(heightMeasureSpec);
         if (MeasureSpec.EXACTLY == MeasureSpec.getMode(heightMeasureSpec)) {
             height = heightSize;
+            offsetToUp = DensityUtil.dp2px(20);
         } else {
             height = DensityUtil.dp2px(200);
+            offsetToUp = height / 5;
         }
         setMeasuredDimension(width, height);
 
-        //向上的偏移量,用来控制整体向上绘制偏移
-        int offsetToUp = (int) (height / 5f);
+        int centerX = width / 2;
+        int centerY = height - offsetToUp;
 
-        centerPoint.set(width / 2, height - offsetToUp);
+        centerPoint.set(centerX, centerY);
 
         int value = Math.min(width, height);
-        outerCircleRingRect.left = centerPoint.x - (value >> 1) - outerCircleRingEnlargePercent * value + DensityUtil.dp2px(10);
-        outerCircleRingRect.top = centerPoint.y - (value >> 1) - outerCircleRingEnlargePercent * value;
-        outerCircleRingRect.right = centerPoint.x + (value >> 1) + outerCircleRingEnlargePercent * value - DensityUtil.dp2px(10);
-        outerCircleRingRect.bottom = centerPoint.y;
+        outerCircleRingRect.left = centerX - (value >> 1) - outerCircleRingEnlargePercent * value + DensityUtil.dp2px(10);
+        outerCircleRingRect.top = centerY - (value >> 1) - outerCircleRingEnlargePercent * value;
+        outerCircleRingRect.right = centerX + (value >> 1) + outerCircleRingEnlargePercent * value - DensityUtil.dp2px(10);
+        outerCircleRingRect.bottom = centerY;
     }
 
+
+    /**
+     * 指针偏移
+     */
+    int pointOffset = DensityUtil.dp2px(-3);
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         mPointerPath = new Path();
         pointStartX = outerCircleRingRect.left + (outerCircleWidth >> 1) + innerCircleWidth;
-        mPointerPath.moveTo(pointStartX + DensityUtil.dp2px(22), h - DensityUtil.dp2px(5));
-        mPointerPath.lineTo(pointStartX + DensityUtil.dp2px(19), h - DensityUtil.dp2px(4f));
-        mPointerPath.lineTo(pointStartX + DensityUtil.dp2px(22), h - DensityUtil.dp2px(3));
+
+        mPointerPath.moveTo(pointStartX + DensityUtil.dp2px(22), h - DensityUtil.dp2px(5) - offsetToUp + pointOffset);
+        mPointerPath.lineTo(pointStartX + DensityUtil.dp2px(19), h - DensityUtil.dp2px(4f) - offsetToUp + pointOffset);
+        mPointerPath.lineTo(pointStartX + DensityUtil.dp2px(22), h - DensityUtil.dp2px(3) - offsetToUp + pointOffset);
         mPointerPath.close();
     }
 
@@ -175,11 +191,11 @@ public class SimpleRecommendDashboardView extends View {
             setBackgroundColor(Color.TRANSPARENT);
         }
         //开始角度
-        int startAngle = 175;//向前偏移角度以填充满底图
+        int startAngle = 180;//向前偏移角度以填充满底图
         //结束角度
-        int endAngle = 190;//向后偏移角度以填充满底图
+        int maxSweepAngle = 180;//向后偏移角度以填充满底图
         //总绘制角度
-        float totalAngle = startAngle + endAngle - 180f;
+        float totalAngle = startAngle + maxSweepAngle - 180f;
 
         //外圆环向底部偏移，因outerCircleRingRect是一整个矩形，只需要画一半的圆，绘制圆环时需要向下偏移outerCircleRingRect的一半高度
         int circleRingOffsetToBottom = (int) (outerCircleRingRect.bottom / 2);
@@ -192,7 +208,7 @@ public class SimpleRecommendDashboardView extends View {
                 outerCircleRingRect.top + (outerCircleWidth >> 1),
                 outerCircleRingRect.right - (outerCircleWidth >> 1),
                 bottom,
-                startAngle, endAngle, false, outerCircleRingPaint);
+                startAngle, maxSweepAngle, false, outerCircleRingPaint);
 
         //绘制内圆环底图
         innerCircleRingPaint.setColor(0x40ffffff);
@@ -200,27 +216,12 @@ public class SimpleRecommendDashboardView extends View {
                 outerCircleRingRect.left + (outerCircleWidth >> 1) + innerCircleWidth + distanceBetweenOfOuterAndInnerCircleRingRadius,
                 outerCircleRingRect.top + (outerCircleWidth >> 1) + innerCircleWidth + distanceBetweenOfOuterAndInnerCircleRingRadius,
                 outerCircleRingRect.right - (outerCircleWidth >> 1) - innerCircleWidth - distanceBetweenOfOuterAndInnerCircleRingRadius,
-                bottom,
-                180, 180, false, innerCircleRingPaint);
-
-        //绘制内圆环前景
-        innerCircleRingPaint.setColor(Color.WHITE);
-        canvas.drawArc(
-                outerCircleRingRect.left + (outerCircleWidth >> 1) + innerCircleWidth + distanceBetweenOfOuterAndInnerCircleRingRadius,
-                outerCircleRingRect.top + (outerCircleWidth >> 1) + innerCircleWidth + distanceBetweenOfOuterAndInnerCircleRingRadius,
-                outerCircleRingRect.right - (outerCircleWidth >> 1) - innerCircleWidth - distanceBetweenOfOuterAndInnerCircleRingRadius,
-                bottom,
-                180, model.getRecommendDegree() * 180 * progress, false, innerCircleRingPaint);
-
-        //绘制箭头
-        canvas.save();
-        canvas.rotate(model.getRecommendDegree() * 180 * progress, centerPoint.x, centerPoint.y);
-        canvas.drawPath(mPointerPath, pointerPaint);
-        canvas.restore();
+                bottom - distanceBetweenOfOuterAndInnerCircleRingRadius,
+                startAngle, maxSweepAngle, false, innerCircleRingPaint);
 
         //冲起始角度
         float chongStartAngle = startAngle;
-        float chongEndAngle = model.getSweepAngle(1, endAngle);
+        float chongEndAngle = model.getSweepAngle(1, maxSweepAngle);
         chongEndAngle = Math.min(chongEndAngle, totalAngle);
         //绘制冲外圆环底图
         outerCircleRingPaint.setColor(0xffff6142);
@@ -233,7 +234,7 @@ public class SimpleRecommendDashboardView extends View {
 
         //稳起始角度
         float wenStartAngle = chongStartAngle + chongEndAngle;
-        float wenEndAngle = model.getSweepAngle(2, endAngle);
+        float wenEndAngle = model.getSweepAngle(2, maxSweepAngle);
         wenEndAngle = Math.min(wenEndAngle, totalAngle);
 
         //绘制稳外圆环底图
@@ -245,10 +246,29 @@ public class SimpleRecommendDashboardView extends View {
                 bottom,
                 wenStartAngle, wenEndAngle, false, outerCircleRingPaint);
 
+        Log.log(startAngle, wenEndAngle);
+
+        //绘制内圆环前景
+        innerCircleRingPaint.setColor(Color.WHITE);
+        canvas.drawArc(
+                outerCircleRingRect.left + (outerCircleWidth >> 1) + innerCircleWidth + distanceBetweenOfOuterAndInnerCircleRingRadius,
+                outerCircleRingRect.top + (outerCircleWidth >> 1) + innerCircleWidth + distanceBetweenOfOuterAndInnerCircleRingRadius,
+                outerCircleRingRect.right - (outerCircleWidth >> 1) - innerCircleWidth - distanceBetweenOfOuterAndInnerCircleRingRadius,
+                bottom - distanceBetweenOfOuterAndInnerCircleRingRadius,
+                startAngle, (chongEndAngle + wenEndAngle) * progress, false, innerCircleRingPaint);
+
+
+        //绘制箭头
+        canvas.save();
+        //此处需要反向旋转画布，所以是-90度
+        canvas.rotate((chongEndAngle + wenEndAngle) * progress, centerPoint.x, centerPoint.y - pointOffset - distanceBetweenOfOuterAndInnerCircleRingRadius - innerCircleWidth);
+        canvas.drawPath(mPointerPath, pointerPaint);
+        canvas.restore();
+
 
         //保起始角度
         float baoStartAngle = wenStartAngle + wenEndAngle;
-        float baoEndAngle = model.getSweepAngle(3, endAngle);
+        float baoEndAngle = model.getSweepAngle(3, maxSweepAngle);
         baoEndAngle = Math.min(baoEndAngle, totalAngle);
 
         //绘制保外圆环底图
@@ -284,7 +304,15 @@ public class SimpleRecommendDashboardView extends View {
         ///////////////////////////👇计算中间文字👇///////////////////////////
 
         //中心上方百分比数字文本
-        String textOfCenterUpperNumber = Math.round(model.getRecommendDegree() * progress * 100) + "";
+        int sum = model.chong + model.wen + model.bao;
+        String textOfCenterUpperNumber;
+        if (sum > 0) {
+            textOfCenterUpperNumber = Math.round(model.percent * progress * 100) + "";
+        } else {
+            textOfCenterUpperNumber = "--";
+        }
+
+
         textPaint.setTextSize(DensityUtil.dp2px(40));
         textPaint.setTypeface(Typeface.DEFAULT_BOLD);
         int[] textOfCenterUpperNumberSize = DrawViewUtils.getTextWH(textPaint, textOfCenterUpperNumber);
@@ -302,19 +330,26 @@ public class SimpleRecommendDashboardView extends View {
         int[] textOfCenterLowerSize = DrawViewUtils.getTextWH(textPaint, textOfCenterLower);
         ///////////////////////////👆计算中间文字👆///////////////////////////
 
-        boolean toBottom = true;//是否贴底显示，如果是，则跟随矩阵底部
+        //是否贴底显示，如果是，则跟随矩阵底部
+        boolean toBottom = true;
 
 
         //中心上方百分比数字文本
         float textOfCenterUpperNumberX = outerCircleRingRect.left + outerCircleRingRect.width() / 2 - textOfCenterUpperPercentSize[0];
         float textOfCenterUpperNumberY;
-        if (toBottom) {
-            textOfCenterUpperNumberY = outerCircleRingRect.bottom - textOfCenterUpperNumberSize[1] - textOfCenterLowerSize[1];
+        if (sum == 0) {
+            //居中
+            textOfCenterUpperNumberY = outerCircleRingRect.top + outerCircleRingRect.height() / 2 + textOfCenterLowerSize[1];
         } else {
-            //垂直90时指针到中心点之间的距离
-            float effectiveDistanceOfPointAndCenterPoint = outerCircleRingRect.left + outerCircleRingRect.width() / 2 - pointStartX;
-            textOfCenterUpperNumberY = outerCircleRingRect.top + effectiveDistanceOfPointAndCenterPoint / 2 + textOfCenterUpperNumberSize[1] - textOfCenterLowerSize[1];
+            if (toBottom) {
+                textOfCenterUpperNumberY = outerCircleRingRect.bottom - textOfCenterUpperNumberSize[1] - textOfCenterLowerSize[1];
+            } else {
+                //垂直90时指针到中心点之间的距离
+                float effectiveDistanceOfPointAndCenterPoint = outerCircleRingRect.left + outerCircleRingRect.width() / 2 - pointStartX;
+                textOfCenterUpperNumberY = outerCircleRingRect.top + effectiveDistanceOfPointAndCenterPoint / 2 + textOfCenterUpperNumberSize[1] - textOfCenterLowerSize[1];
+            }
         }
+
         textPaint.setTextSize(DensityUtil.dp2px(40));
         textPaint.setTypeface(Typeface.DEFAULT_BOLD);
         canvas.drawText(textOfCenterUpperNumber, textOfCenterUpperNumberX, textOfCenterUpperNumberY, textPaint);
@@ -344,17 +379,14 @@ public class SimpleRecommendDashboardView extends View {
         //半径(如果控件小于该值+冲稳保的最大文字尺寸，冲稳保文字注释将显示不全)
         int radius = (int) (distanceBetweenOfOuterAndInnerCircleRingRadius + outerCircleRingRect.width() / 2);
 
-
-        getQuadrantPositionByAngle(canvas, model.chongText + "", 0, chongStartAngle, chongEndAngle, radius);
-        getQuadrantPositionByAngle(canvas, model.wenText + "", 0, wenStartAngle, wenEndAngle, radius);
-        getQuadrantPositionByAngle(canvas, model.baoText + "", 0, baoStartAngle, baoEndAngle, radius);
-
+        getQuadrantPositionByAngle(canvas, model.chongText + "", chongStartAngle, chongEndAngle, radius);
+        getQuadrantPositionByAngle(canvas, model.wenText + "", wenStartAngle, wenEndAngle, radius);
+        getQuadrantPositionByAngle(canvas, model.baoText + "", baoStartAngle, baoEndAngle, radius);
 
     }
 
 
-    void getQuadrantPositionByAngle(Canvas canvas, String text, int offset, float startAngle, float sweepAngle, int radius) {
-
+    void getQuadrantPositionByAngle(Canvas canvas, String text, float startAngle, float sweepAngle, int radius) {
         //第一段折线长度
         int brokenLineFirstLineLength = DensityUtil.dp2px(10);
 
@@ -490,12 +522,12 @@ public class SimpleRecommendDashboardView extends View {
         String textOfLowest;
         //底部右侧高点文本
         String textOfMaxest;
-        //中心上方百分比数字文本
-        String textOfCenterUpperNumper;
         //中心下方文本
         String textOfCenterLower;
 
-        public SimpleRecommendDashboardViewBean(int chong, int wen, int bao, String chongText, String wenText, String baoText, String textOfLowest, String textOfMaxest, String textOfCenterLower) {
+        float percent;
+
+        public SimpleRecommendDashboardViewBean(float percent, int chong, int wen, int bao, String chongText, String wenText, String baoText, String textOfLowest, String textOfMaxest, String textOfCenterLower) {
             this.chong = chong;
             this.wen = wen;
             this.bao = bao;
@@ -504,19 +536,8 @@ public class SimpleRecommendDashboardView extends View {
             this.baoText = bao + baoText;
             this.textOfLowest = textOfLowest;
             this.textOfMaxest = textOfMaxest;
+            this.percent = percent;
             this.textOfCenterLower = textOfCenterLower;
-        }
-
-        /**
-         * 获取推荐度
-         *
-         * @return (冲 + 稳)/（冲+稳+保）
-         */
-        float getRecommendDegree() {
-            float v1 = chong + wen;
-            float v2 = chong + wen + bao;
-            float r = v1 / v2;
-            return r;
         }
 
         float getSweepAngle(int type, int TotalAngle) {
