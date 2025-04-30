@@ -24,12 +24,16 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:context=".MainActivity">
 
+            <com.sss.michael.simpleview.view.SimpleEditTextWithMaskedPhone
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
             <com.sss.michael.simpleview.view.SimpleRecommendDashboardView
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
                 android:paddingStart="10dp"
-                android:paddingEnd="10dp"
-                android:paddingTop="10dp"/>
+                android:paddingTop="10dp"
+                android:paddingEnd="10dp" />
 
             <Button
                 android:id="@+id/luck_draw"
