@@ -8,7 +8,6 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -132,7 +131,6 @@ public class SimpleTableView<T> extends View {
 
                 @Override
                 public void onClickItem(String s, int[] position) {
-                    Log.e("SSSSS",s);
                 }
 
                 @Override

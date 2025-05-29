@@ -41,6 +41,7 @@ import com.sss.michael.simpleview.view.SimpleSlideBesselView;
 import com.sss.michael.simpleview.view.SimpleSpiderView;
 import com.sss.michael.simpleview.view.SimpleWrapOffsetWidthView;
 import com.sss.michael.simpleview.view.TransitionImageView;
+import com.sss.michael.simpleview.view.ratingbar.SimpleRatingBar;
 import com.sss.michael.simpleview.view.toutiaoanimation.ArticleRl;
 
 import java.util.ArrayList;
@@ -72,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
     private SimpleCandleView simpleCandleView;
     private SimpleLinearChart2 simpleLinearChart2;
     private SimpleMultipleColumnView simpleMultipleColumnView;
+    private SimpleRatingBar simpleRatingBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -630,6 +632,10 @@ public class MainActivity extends AppCompatActivity {
 
         simpleMultipleColumnView.setData(simpleMultipleColumnViewYAxisBean, simpleMultipleColumnViewXAxisBean, simpleMultipleColumnViewContentAxisBean);
 
+
+        simpleRatingBar=findViewById(R.id.simpleRatingBar);
+        simpleRatingBar.setClickable(false);
+        simpleRatingBar.setRating(3.3f,true);
     }
 
 }

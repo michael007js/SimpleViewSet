@@ -328,7 +328,6 @@ public class SimpleDoubleSeekBar extends View {
                     for (int i = 0; i < rectFList.size(); i++) {
                         if (rectFList.get(i).contains(event.getX(), event.getY())) {
                             if (isShowTextMode) {
-                                Log.e("SSSSS", i + "");
                                 currentMinPosition = i == 0 ? percent : (i + 1 + percent);
                             } else {
                                 currentMinPosition = i == 0 ? 0 : (i + 1 + percent);

@@ -246,8 +246,6 @@ public class SimpleRecommendDashboardView extends View {
                 bottom,
                 wenStartAngle, wenEndAngle, false, outerCircleRingPaint);
 
-        Log.log(startAngle, wenEndAngle);
-
         //绘制内圆环前景
         innerCircleRingPaint.setColor(Color.WHITE);
         canvas.drawArc(

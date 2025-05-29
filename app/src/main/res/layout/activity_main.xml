@@ -125,6 +125,11 @@
                         android:gravity="center"
                         android:orientation="vertical">
 
+                        <com.sss.michael.simpleview.view.ratingbar.SimpleRatingBar
+                            android:id="@+id/simpleRatingBar"
+                            android:layout_width="match_parent"
+                            android:layout_height="30dp" />
+
                         <com.sss.michael.simpleview.view.SimpleMajorAutoMatchPreviewView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content" />
