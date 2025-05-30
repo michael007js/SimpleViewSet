@@ -125,6 +125,11 @@
                         android:gravity="center"
                         android:orientation="vertical">
 
+                        <com.sss.michael.simpleview.view.SimpleDoubleSeekBar2
+                            android:id="@+id/simpleDoubleSeekBar2"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+
                         <com.sss.michael.simpleview.view.ratingbar.SimpleRatingBar
                             android:id="@+id/simpleRatingBar"
                             android:layout_width="match_parent"
@@ -278,12 +283,6 @@
                                 android:layout_height="20dp" />
 
                         </LinearLayout>
-
-
-                        <com.sss.michael.simpleview.view.SimpleDoubleSeekBar2
-                            android:id="@+id/simpleDoubleSeekBar2"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
 
 
                         <FrameLayout

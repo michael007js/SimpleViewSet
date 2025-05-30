@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -180,12 +181,18 @@ public class MainActivity extends AppCompatActivity {
         });
 
         simpleDoubleSeekBar2 = findViewById(R.id.simpleDoubleSeekBar2);
-        simpleDoubleSeekBar2.setData(true, 50, 30, 50, 300);
+        simpleDoubleSeekBar2.setData(true, false, 570, 620, 520, 650);
         simpleDoubleSeekBar2.setOnSimpleDoubleSeekBarCallBack(new SimpleDoubleSeekBar2.OnSimpleDoubleSeekBar2CallBack() {
             @Override
-            public void onValueChanged(int currentMinValue, int currentMaxValue, float currentMinPosition, float currentMaxPosition) {
+            public void onValueChanged(int currentMinValue, int currentMaxValue, float currentMinPosition, float currentMaxPosition, float x, int value) {
 //                Log.e("SSS", "CMinV:" + currentMinValue + ",CMaxV:" + currentMaxValue + ",MinP:" + currentMinPosition + ",MaxP:" + currentMaxPosition);
             }
+
+            @Override
+            public void onTouchUp() {
+
+            }
+
         });
 
         simpleHalfRingView = findViewById(R.id.simple_half_ring_view);
@@ -633,9 +640,9 @@ public class MainActivity extends AppCompatActivity {
         simpleMultipleColumnView.setData(simpleMultipleColumnViewYAxisBean, simpleMultipleColumnViewXAxisBean, simpleMultipleColumnViewContentAxisBean);
 
 
-        simpleRatingBar=findViewById(R.id.simpleRatingBar);
+        simpleRatingBar = findViewById(R.id.simpleRatingBar);
         simpleRatingBar.setClickable(false);
-        simpleRatingBar.setRating(3.3f,true);
+        simpleRatingBar.setRating(3.3f, true);
     }
 
 }

@@ -75,7 +75,7 @@ public class SimpleDoubleSeekBar2 extends View {
     /**
      * 背景高度
      */
-    private float backgroundHeight = DensityUtil.dp2px(4);
+    private float backgroundHeight = DensityUtil.dp2px(6);
     /**
      * 前景色
      */
@@ -87,7 +87,7 @@ public class SimpleDoubleSeekBar2 extends View {
     /**
      * 前景高度
      */
-    private float foregroundHeight = DensityUtil.dp2px(8);
+    private float foregroundHeight = DensityUtil.dp2px(6);
     /**
      * 每百分之一的进度换算成对应总宽度的值
      */
@@ -103,7 +103,7 @@ public class SimpleDoubleSeekBar2 extends View {
     /**
      * 滑块半径
      */
-    private int sliderRadius = DensityUtil.dp2px(9);
+    private int sliderRadius = DensityUtil.dp2px(8);
     /**
      * 滑块边框宽度
      */
@@ -127,7 +127,7 @@ public class SimpleDoubleSeekBar2 extends View {
     /**
      * 滑块条中间文字大小
      */
-    private float sliderTextSize = DensityUtil.sp2px(10f);
+    private float sliderTextSize = DensityUtil.sp2px(12f);
     /**
      * 滑块条中间文字字体
      */
@@ -151,11 +151,11 @@ public class SimpleDoubleSeekBar2 extends View {
     /**
      * 左滑块长度
      */
-    private int leftSlideLength = DensityUtil.dp2px(7.5f);
+    private int leftSlideLength = DensityUtil.dp2px(10);
     /**
      * 右滑块长度
      */
-    private int rightSlideLength = DensityUtil.dp2px(7.5f);
+    private int rightSlideLength = DensityUtil.dp2px(10);
 
     private OnSimpleDoubleSeekBar2CallBack onSimpleDoubleSeekBarCallBack;
 
@@ -248,8 +248,8 @@ public class SimpleDoubleSeekBar2 extends View {
             paint.setTextSize(sliderTextSize);
             paint.setTypeface(sliderTextStyle);
             paint.setTextAlign(Paint.Align.CENTER);
-            canvas.drawText(sliderLeftText, currentLeftPoint.x + leftSlideLength, currentLeftPoint.y + DensityUtil.dp2px(2.5f), paint);
-            canvas.drawText(sliderRightText, currentRightPoint.x - rightSlideLength, currentRightPoint.y + DensityUtil.dp2px(2.5f), paint);
+            canvas.drawText(sliderLeftText, currentLeftPoint.x + leftSlideLength, currentLeftPoint.y + DensityUtil.dp2px(4f), paint);
+            canvas.drawText(sliderRightText, currentRightPoint.x - rightSlideLength, currentRightPoint.y + DensityUtil.dp2px(4f), paint);
         }
 
 
@@ -294,7 +294,8 @@ public class SimpleDoubleSeekBar2 extends View {
                     float percent = Math.abs(widthDiffer / eachPercentByWidth);
                     lastX = event.getX();
                     for (int i = 0; i < rectFList.size(); i++) {
-                        if (rectFList.get(i).contains(event.getX(), event.getY())) {
+                        if (rectFList.get(i).contains(event.getX(), rectFList.get(i).centerY())) {//只判断X轴手指可以滑出seekbar客户区，体验更好
+                            //rectFList.get(i).contains(event.getX(), event.getY())
                             currentMinPosition = i == 0 ? percent : (i + 1 + percent);
                             calc(true);
                             invalidate();
@@ -307,7 +308,8 @@ public class SimpleDoubleSeekBar2 extends View {
                     float percent = Math.abs(widthDiffer / eachPercentByWidth);
                     lastX = event.getX();
                     for (int i = 0; i < rectFList.size(); i++) {
-                        if (rectFList.get(i).contains(event.getX(), event.getY())) {
+                        if (rectFList.get(i).contains(event.getX(), rectFList.get(i).centerY())) {//只判断X轴手指可以滑出seekbar客户区，体验更好
+                            //rectFList.get(i).contains(event.getX(), event.getY())
                             currentMaxPosition = i == rectFList.size() - 1 ? 100 : (i + 1 + percent);
                             calc(true);
                             invalidate();
@@ -320,6 +322,9 @@ public class SimpleDoubleSeekBar2 extends View {
                 effectiveLeftTouch = false;
                 effectiveRightTouch = false;
                 calc(true);
+                if (onSimpleDoubleSeekBarCallBack != null) {
+                    onSimpleDoubleSeekBarCallBack.onTouchUp();
+                }
                 break;
             default:
                 effectiveLeftTouch = false;
@@ -386,7 +391,6 @@ public class SimpleDoubleSeekBar2 extends View {
     }
 
     private LinearGradient linearGradient;
-    private PopupWindow popWindow;
 
     /**
      * 计算各组件绘制位置
@@ -394,24 +398,26 @@ public class SimpleDoubleSeekBar2 extends View {
     private void calc(boolean touchFromUser) {
         correctPosition();
         if (onSimpleDoubleSeekBarCallBack != null) {
-            if (popWindow == null) {
-                popWindow = new PopupWindow(this);
-                popWindow.setContentView(new SimplePopView(getContext()));
-                popWindow.setWidth(DensityUtil.dp2px(40));
-                popWindow.setHeight(DensityUtil.dp2px(30));
-                popWindow.getContentView().setVisibility(touchFromUser ? VISIBLE : INVISIBLE);
+            if (isInTouchMode()) {
+                int value = 0;
+                int x = 0;
+                if (effectiveLeftTouch) {
+                    value = Math.round(currentMinPosition * eachPercentByValue) + minValue;
+                    x = (int) (leftSliderRect.left) - DensityUtil.dp2px(5);
+                } else if (effectiveRightTouch) {
+                    value = Math.round(currentMaxPosition * eachPercentByValue) + minValue;
+                    x = (int) (rightSliderRect.left) - DensityUtil.dp2px(5);
+                }
+
+                onSimpleDoubleSeekBarCallBack.onValueChanged(
+                        Math.round(currentMinPosition * eachPercentByValue) + minValue,
+                        Math.round(currentMaxPosition * eachPercentByValue) + minValue,
+                        currentMinPosition,
+                        currentMaxPosition,
+                        x,
+                        value
+                );
             }
-            popWindow.dismiss();
-            if (effectiveLeftTouch) {
-                popWindow.getContentView().setVisibility(VISIBLE);
-                popWindow.showAsDropDown(this, (int) currentLeftPoint.x - popWindow.getContentView().getWidth() / 2 + leftSlideLength, 0 - popWindow.getContentView().getHeight() - getHeight());
-            } else if (effectiveRightTouch) {
-                popWindow.getContentView().setVisibility(VISIBLE);
-                popWindow.showAsDropDown(this, (int) currentRightPoint.x - popWindow.getContentView().getWidth() / 2 - rightSlideLength, 0 - popWindow.getContentView().getHeight() - getHeight());
-            } else {
-                popWindow.getContentView().setVisibility(INVISIBLE);
-            }
-            onSimpleDoubleSeekBarCallBack.onValueChanged(Math.round(currentMinPosition * eachPercentByValue) + minValue, Math.round(currentMaxPosition * eachPercentByValue) + minValue, currentMinPosition, currentMaxPosition);
         }
         foregroundArea.left = currentLeftPoint.x;
         foregroundArea.top = centerPoint.y - foregroundHeight / 2;
@@ -420,17 +426,17 @@ public class SimpleDoubleSeekBar2 extends View {
 
         leftSliderRect.set(
                 Math.max(currentLeftPoint.x - leftSlideLength - sliderRadius + leftSlideLength, 0),
-                currentLeftPoint.y - DensityUtil.dp2px(1) - sliderRadius,
+                currentLeftPoint.y - sliderRadius,
                 currentLeftPoint.x + leftSlideLength + sliderRadius + leftSlideLength,
-                currentLeftPoint.y + DensityUtil.dp2px(1) + sliderRadius
+                currentLeftPoint.y + sliderRadius
 
         );
 
         rightSliderRect.set(
                 currentRightPoint.x - rightSlideLength - sliderRadius - rightSlideLength,
-                currentRightPoint.y - DensityUtil.dp2px(1) - sliderRadius,
+                currentRightPoint.y - sliderRadius,
                 currentRightPoint.x + rightSlideLength + sliderRadius - rightSlideLength,
-                currentRightPoint.y + DensityUtil.dp2px(1) + sliderRadius
+                currentRightPoint.y + sliderRadius
 
         );
 
@@ -454,13 +460,14 @@ public class SimpleDoubleSeekBar2 extends View {
     /**
      * 设置数据
      *
-     * @param mirroring       镜像模式，整个滑块条反转
-     * @param currentMinValue 左滑块当前值
-     * @param currentMaxValue 右滑块当前值
-     * @param minValue        最小值
-     * @param maxValue        最大值
+     * @param mirroring                  镜像模式，整个滑块条反转
+     * @param adaptiveValueOfEachPenecnt 自适应进度条每百分之一所对应的值
+     * @param currentMinValue            左滑块当前值
+     * @param currentMaxValue            右滑块当前值
+     * @param minValue                   最小值
+     * @param maxValue                   最大值
      */
-    public void setData(boolean mirroring, int currentMinValue, int currentMaxValue, int minValue, int maxValue) {
+    public void setData(boolean mirroring, boolean adaptiveValueOfEachPenecnt, int currentMinValue, int currentMaxValue, int minValue, int maxValue) {
         if (maxValue < minValue || currentMaxValue < currentMinValue) {
             return;
         }
@@ -476,8 +483,11 @@ public class SimpleDoubleSeekBar2 extends View {
             this.maxValue = maxValue;
         }
 
-        eachPercentByValue = (this.maxValue - this.minValue) / 100f;
-
+        if (adaptiveValueOfEachPenecnt) {
+            eachPercentByValue = (this.maxValue - this.minValue) / 100f;
+        } else {
+            eachPercentByValue = -1f;
+        }
         currentMinPosition = (this.currentMinValue - this.minValue) / eachPercentByValue;
         currentMaxPosition = (this.currentMaxValue - this.minValue) / eachPercentByValue;
         calc(false);
@@ -485,67 +495,8 @@ public class SimpleDoubleSeekBar2 extends View {
     }
 
     public interface OnSimpleDoubleSeekBar2CallBack {
-        void onValueChanged(int currentMinValue, int currentMaxValue, float currentMinPosition, float currentMaxPosition);
-    }
+        void onValueChanged(int currentMinValue, int currentMaxValue, float currentMinPosition, float currentMaxPosition, float x, int value);
 
-
-    public class SimplePopView extends View {
-        private int color = Color.parseColor("#aa000000");
-        private Path path = new Path();
-        private Paint paint = new Paint();
-
-        {
-            paint.setAntiAlias(true);
-        }
-
-        private int triangleHeight = DensityUtil.dp2px(4);
-        private int width = DensityUtil.dp2px(40);
-        private int height = DensityUtil.dp2px(30);
-
-        public SimplePopView(Context context) {
-            super(context);
-        }
-
-        public SimplePopView(Context context, @Nullable AttributeSet attrs) {
-            super(context, attrs);
-        }
-
-        public SimplePopView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-            super(context, attrs, defStyleAttr);
-        }
-
-        @Override
-        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-            setMeasuredDimension(width, height);
-        }
-
-
-        @Override
-        protected void onDraw(Canvas canvas) {
-            super.onDraw(canvas);
-            paint.setColor(color);
-            canvas.drawRoundRect(0, 0, width, height - triangleHeight, height - triangleHeight, height - triangleHeight, paint);
-            path.reset();
-            path.moveTo(getWidth() / 2 - triangleHeight, height - triangleHeight);
-            path.lineTo(getWidth() / 2 - triangleHeight, height - triangleHeight);
-            path.lineTo(getWidth() / 2 + triangleHeight, height - triangleHeight);
-            path.lineTo(getWidth() / 2, height);
-            path.lineTo(getWidth() / 2 - triangleHeight, height - triangleHeight);
-            path.close();
-            canvas.drawPath(path, paint);
-            paint.setTextSize(DensityUtil.sp2px(12f));
-            paint.setColor(Color.WHITE);
-            paint.setTextAlign(Paint.Align.CENTER);
-            if (isInTouchMode()) {
-                if (effectiveLeftTouch) {
-                    canvas.drawText(String.valueOf(Math.round(currentMinPosition * eachPercentByValue) + minValue), width / 2, height / 2, paint);
-                } else {
-                    canvas.drawText(String.valueOf(Math.round(currentMaxPosition * eachPercentByValue) + minValue), width / 2, height / 2, paint);
-                }
-
-            }
-        }
-
+        void onTouchUp();
     }
 }
