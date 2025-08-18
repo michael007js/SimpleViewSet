@@ -283,40 +283,19 @@ public class SimpleDoubleSeekBar2 extends View {
                 }
                 return effectiveLeftTouch || effectiveRightTouch;
             case MotionEvent.ACTION_MOVE:
-                if (effectiveLeftTouch || effectiveRightTouch) {
-                    if (getParent() != null) {
-                        getParent().requestDisallowInterceptTouchEvent(true);
-                    }
-                }
+                float x = event.getX();
+                float percent = (x - backgroundArea.left - sliderRadius) / (backgroundArea.width() - 2 * sliderRadius);
+                percent = Math.max(0f, Math.min(1f, percent)); // clamp to [0,1]
+
                 if (effectiveLeftTouch) {
-                    float widthDiffer = event.getX() - lastX;
-                    //当前X轴方向微调相对于一格（等宽/100格）的百分比
-                    float percent = Math.abs(widthDiffer / eachPercentByWidth);
-                    lastX = event.getX();
-                    for (int i = 0; i < rectFList.size(); i++) {
-                        if (rectFList.get(i).contains(event.getX(), rectFList.get(i).centerY())) {//只判断X轴手指可以滑出seekbar客户区，体验更好
-                            //rectFList.get(i).contains(event.getX(), event.getY())
-                            currentMinPosition = i == 0 ? percent : (i + 1 + percent);
-                            calc(true);
-                            invalidate();
-                            break;
-                        }
-                    }
+                    currentMinPosition = Math.min(percent * 100f, currentMaxPosition - 1f);
                 } else if (effectiveRightTouch) {
-                    float widthDiffer = event.getX() - lastX;
-                    //当前X轴方向微调相对于一格（等宽/100格）的百分比
-                    float percent = Math.abs(widthDiffer / eachPercentByWidth);
-                    lastX = event.getX();
-                    for (int i = 0; i < rectFList.size(); i++) {
-                        if (rectFList.get(i).contains(event.getX(), rectFList.get(i).centerY())) {//只判断X轴手指可以滑出seekbar客户区，体验更好
-                            //rectFList.get(i).contains(event.getX(), event.getY())
-                            currentMaxPosition = i == rectFList.size() - 1 ? 100 : (i + 1 + percent);
-                            calc(true);
-                            invalidate();
-                            break;
-                        }
-                    }
+                    currentMaxPosition = Math.max(percent * 100f, currentMinPosition + 1f);
                 }
+
+                lastX = x;
+                calc(true);
+                invalidate();
                 break;
             case MotionEvent.ACTION_UP:
                 effectiveLeftTouch = false;
@@ -461,13 +440,12 @@ public class SimpleDoubleSeekBar2 extends View {
      * 设置数据
      *
      * @param mirroring                  镜像模式，整个滑块条反转
-     * @param adaptiveValueOfEachPenecnt 自适应进度条每百分之一所对应的值
      * @param currentMinValue            左滑块当前值
      * @param currentMaxValue            右滑块当前值
      * @param minValue                   最小值
      * @param maxValue                   最大值
      */
-    public void setData(boolean mirroring, boolean adaptiveValueOfEachPenecnt, int currentMinValue, int currentMaxValue, int minValue, int maxValue) {
+    public void setData(boolean mirroring, int currentMinValue, int currentMaxValue, int minValue, int maxValue) {
         if (maxValue < minValue || currentMaxValue < currentMinValue) {
             return;
         }
@@ -483,11 +461,7 @@ public class SimpleDoubleSeekBar2 extends View {
             this.maxValue = maxValue;
         }
 
-        if (adaptiveValueOfEachPenecnt) {
-            eachPercentByValue = (this.maxValue - this.minValue) / 100f;
-        } else {
-            eachPercentByValue = -1f;
-        }
+        eachPercentByValue = (this.maxValue - this.minValue) / 100f;
         currentMinPosition = (this.currentMinValue - this.minValue) / eachPercentByValue;
         currentMaxPosition = (this.currentMaxValue - this.minValue) / eachPercentByValue;
         calc(false);
