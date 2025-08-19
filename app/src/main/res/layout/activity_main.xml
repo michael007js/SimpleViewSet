@@ -24,6 +24,11 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:context=".MainActivity">
 
+            <com.sss.michael.simpleview.view.ShadowButtonView
+                android:layout_width="match_parent"
+                android:layout_margin="20dp"
+                android:layout_height="wrap_content" />
+
             <com.sss.michael.simpleview.view.SimpleEditTextWithMaskedPhone
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
@@ -124,9 +129,10 @@
                         android:layout_height="match_parent"
                         android:gravity="center"
                         android:orientation="vertical">
+
                         <com.sss.michael.simpleview.view.SimpleDoubleSeekBar3
                             android:layout_width="match_parent"
-                            android:layout_height="30dp"/>
+                            android:layout_height="30dp" />
 
                         <com.sss.michael.simpleview.view.SimpleDoubleSeekBar2
                             android:id="@+id/simpleDoubleSeekBar2"

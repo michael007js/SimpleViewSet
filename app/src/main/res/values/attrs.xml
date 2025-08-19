@@ -89,5 +89,19 @@
         <attr name="srb_starHeight" format="dimension" />
         <attr name="srb_stepSize" format="float" />
     </declare-styleable>
-
+    <declare-styleable name="ShadowButtonView">
+        <attr name="sbv_text" format="string" />
+        <attr name="sbv_textSize" format="dimension" />
+        <attr name="sbv_textColor" format="color" />
+        <attr name="sbv_maxLines" format="integer" />
+        <attr name="sbv_cornerRadius" format="dimension" />
+        <attr name="sbv_strokeWidth" format="dimension" />
+        <attr name="sbv_strokeColor" format="color" />
+        <attr name="sbv_fillColor" format="color" />
+        <attr name="sbv_shadowRadius" format="dimension" />
+        <attr name="sbv_shadowDx" format="dimension" />
+        <attr name="sbv_shadowDy" format="dimension" />
+        <attr name="sbv_shadowColor" format="color" />
+        <attr name="sbv_autoPadding" format="boolean" />
+    </declare-styleable>
 </resources>
