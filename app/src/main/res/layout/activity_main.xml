@@ -24,24 +24,9 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:context=".MainActivity">
 
-            <com.sss.michael.simpleview.view.ShadowButtonView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="20dp" />
-
-            <com.sss.michael.simpleview.view.ShadowAlienButtonView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
             <com.sss.michael.simpleview.view.SimpleEditTextWithMaskedPhone
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
-
-            <com.sss.michael.simpleview.view.SimpleRecommendDashboardView
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:paddingStart="10dp"
-                android:paddingTop="10dp"
-                android:paddingEnd="10dp" />
 
             <Button
                 android:id="@+id/luck_draw"
@@ -132,6 +117,27 @@
                         android:layout_height="match_parent"
                         android:gravity="center"
                         android:orientation="vertical">
+
+                        <com.sss.michael.simpleview.view.SimpleRecommendDashboardView
+                            android:layout_width="match_parent"
+                            android:layout_height="200dp"
+                            android:paddingStart="10dp"
+                            android:paddingTop="10dp"
+                            android:paddingEnd="10dp" />
+
+                        <com.sss.michael.simpleview.view.AvatarFlowView
+                            android:id="@+id/avatarFlow"
+                            android:layout_width="wrap_content"
+                            android:layout_height="50dp" />
+
+                        <com.sss.michael.simpleview.view.ShadowButtonView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="20dp" />
+
+                        <com.sss.michael.simpleview.view.ShadowAlienButtonView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
 
                         <com.sss.michael.simpleview.view.SimpleDoubleSeekBar3
                             android:layout_width="match_parent"

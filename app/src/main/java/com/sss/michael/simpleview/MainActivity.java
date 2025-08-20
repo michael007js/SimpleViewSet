@@ -3,6 +3,8 @@ package com.sss.michael.simpleview;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,6 +25,7 @@ import com.sss.michael.simpleview.bean.SimpleCandleViewTxtBean;
 import com.sss.michael.simpleview.bean.SimpleLinearChart2TxtBean;
 import com.sss.michael.simpleview.bean.SimpleMultipleColumnTxtBean;
 import com.sss.michael.simpleview.utils.DensityUtil;
+import com.sss.michael.simpleview.view.AvatarFlowView;
 import com.sss.michael.simpleview.view.BannerViewPager;
 import com.sss.michael.simpleview.view.BottomNavigationBar;
 import com.sss.michael.simpleview.view.SimpleCandleView;
@@ -181,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         simpleDoubleSeekBar2 = findViewById(R.id.simpleDoubleSeekBar2);
-        simpleDoubleSeekBar2.setData(true,  570, 620, 520, 650);
+        simpleDoubleSeekBar2.setData(true, 570, 620, 520, 650);
         simpleDoubleSeekBar2.setOnSimpleDoubleSeekBarCallBack(new SimpleDoubleSeekBar2.OnSimpleDoubleSeekBar2CallBack() {
             @Override
             public void onValueChanged(int currentMinValue, int currentMaxValue, float currentMinPosition, float currentMaxPosition, float x, int value) {
@@ -643,6 +646,19 @@ public class MainActivity extends AppCompatActivity {
         simpleRatingBar = findViewById(R.id.simpleRatingBar);
         simpleRatingBar.setClickable(false);
         simpleRatingBar.setRating(3.3f, true);
+
+        AvatarFlowView flow = findViewById(R.id.avatarFlow);
+
+// 准备头像（示例用本地资源）
+        List<Bitmap> bitmaps = new ArrayList<>();
+        bitmaps.add(BitmapFactory.decodeResource(getResources(), R.drawable.emoji_1));
+        bitmaps.add(BitmapFactory.decodeResource(getResources(), R.drawable.emoji_2));
+        bitmaps.add(BitmapFactory.decodeResource(getResources(), R.drawable.emoji_3));
+        bitmaps.add(BitmapFactory.decodeResource(getResources(), R.drawable.emoji_4));
+        bitmaps.add(BitmapFactory.decodeResource(getResources(), R.drawable.emoji_5));
+        flow.setAvatars(bitmaps);
+        flow.setVisibleCount(3);
+        flow.start();
     }
 
 }
