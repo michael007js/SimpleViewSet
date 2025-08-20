@@ -125,6 +125,10 @@
                             android:paddingTop="10dp"
                             android:paddingEnd="10dp" />
 
+                        <com.sss.michael.simpleview.view.SimpleRingPentagonView
+                            android:layout_width="match_parent"
+                            android:layout_height="370dp" />
+
                         <com.sss.michael.simpleview.view.AvatarFlowView
                             android:id="@+id/avatarFlow"
                             android:layout_width="wrap_content"
