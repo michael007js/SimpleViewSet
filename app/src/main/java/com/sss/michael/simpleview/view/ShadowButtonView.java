@@ -12,7 +12,6 @@ import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -55,8 +54,14 @@ public class ShadowButtonView extends View {
 
     private final RectF rect = new RectF();
 
-    public ShadowButtonView(Context c) { this(c, null); }
-    public ShadowButtonView(Context c, AttributeSet a) { this(c, a, 0); }
+    public ShadowButtonView(Context c) {
+        this(c, null);
+    }
+
+    public ShadowButtonView(Context c, AttributeSet a) {
+        this(c, a, 0);
+    }
+
     public ShadowButtonView(Context c, AttributeSet a, int defStyle) {
         super(c, a, defStyle);
         initAttrs(c, a);
@@ -67,21 +72,21 @@ public class ShadowButtonView extends View {
 
     private void initAttrs(Context c, AttributeSet attrs) {
         if (attrs != null) {
-             TypedArray ta = c.obtainStyledAttributes(attrs, R.styleable.ShadowButtonView);
-             text = ta.getText(R.styleable.ShadowButtonView_sbv_text);
-             textSizeSp = ta.getDimension(R.styleable.ShadowButtonView_sbv_textSize, sp(16)) / getResources().getDisplayMetrics().scaledDensity;
-             textColor = ta.getColor(R.styleable.ShadowButtonView_sbv_textColor, textColor);
-             maxLines = ta.getInt(R.styleable.ShadowButtonView_sbv_maxLines, maxLines);
-             cornerRadiusPx = ta.getDimension(R.styleable.ShadowButtonView_sbv_cornerRadius, cornerRadiusPx);
-             strokeWidthPx = ta.getDimension(R.styleable.ShadowButtonView_sbv_strokeWidth, strokeWidthPx);
-             strokeColor = ta.getColor(R.styleable.ShadowButtonView_sbv_strokeColor, strokeColor);
-             fillColor = ta.getColor(R.styleable.ShadowButtonView_sbv_fillColor, fillColor);
-             shadowRadiusPx = ta.getDimension(R.styleable.ShadowButtonView_sbv_shadowRadius, shadowRadiusPx);
-             shadowDxPx = ta.getDimension(R.styleable.ShadowButtonView_sbv_shadowDx, shadowDxPx);
-             shadowDyPx = ta.getDimension(R.styleable.ShadowButtonView_sbv_shadowDy, shadowDyPx);
-             shadowColor = ta.getColor(R.styleable.ShadowButtonView_sbv_shadowColor, shadowColor);
-             autoPadding = ta.getBoolean(R.styleable.ShadowButtonView_sbv_autoPadding, true);
-             ta.recycle();
+            TypedArray ta = c.obtainStyledAttributes(attrs, R.styleable.ShadowButtonView);
+            text = ta.getText(R.styleable.ShadowButtonView_sbv_text);
+            textSizeSp = ta.getDimension(R.styleable.ShadowButtonView_sbv_textSize, sp(16)) / getResources().getDisplayMetrics().scaledDensity;
+            textColor = ta.getColor(R.styleable.ShadowButtonView_sbv_textColor, textColor);
+            maxLines = ta.getInt(R.styleable.ShadowButtonView_sbv_maxLines, maxLines);
+            cornerRadiusPx = ta.getDimension(R.styleable.ShadowButtonView_sbv_cornerRadius, cornerRadiusPx);
+            strokeWidthPx = ta.getDimension(R.styleable.ShadowButtonView_sbv_strokeWidth, strokeWidthPx);
+            strokeColor = ta.getColor(R.styleable.ShadowButtonView_sbv_strokeColor, strokeColor);
+            fillColor = ta.getColor(R.styleable.ShadowButtonView_sbv_fillColor, fillColor);
+            shadowRadiusPx = ta.getDimension(R.styleable.ShadowButtonView_sbv_shadowRadius, shadowRadiusPx);
+            shadowDxPx = ta.getDimension(R.styleable.ShadowButtonView_sbv_shadowDx, shadowDxPx);
+            shadowDyPx = ta.getDimension(R.styleable.ShadowButtonView_sbv_shadowDy, shadowDyPx);
+            shadowColor = ta.getColor(R.styleable.ShadowButtonView_sbv_shadowColor, shadowColor);
+            autoPadding = ta.getBoolean(R.styleable.ShadowButtonView_sbv_autoPadding, true);
+            ta.recycle();
         }
         // 计算默认自动 padding（随圆角变化）
         computeAutoPadding();
@@ -112,7 +117,9 @@ public class ShadowButtonView extends View {
         }
     }
 
-    public CharSequence getText() { return text; }
+    public CharSequence getText() {
+        return text;
+    }
 
     public void setMaxLines(int lines) {
         if (lines <= 0) lines = 1;
@@ -132,10 +139,26 @@ public class ShadowButtonView extends View {
         }
     }
 
-    public void setStrokeColor(int color) { this.strokeColor = color; invalidate(); }
-    public void setNormalStrokeColor(int color) { this.normalStrokeColor = color; invalidate(); }
-    public void setFillColor(int color) { this.fillColor = color; invalidate(); }
-    public void setTextColor(int color) { this.textColor = color; textPaint.setColor(color); invalidate(); }
+    public void setStrokeColor(int color) {
+        this.strokeColor = color;
+        invalidate();
+    }
+
+    public void setNormalStrokeColor(int color) {
+        this.normalStrokeColor = color;
+        invalidate();
+    }
+
+    public void setFillColor(int color) {
+        this.fillColor = color;
+        invalidate();
+    }
+
+    public void setTextColor(int color) {
+        this.textColor = color;
+        textPaint.setColor(color);
+        invalidate();
+    }
 
     public void setTextSizeSp(float spVal) {
         this.textSizeSp = spVal;
@@ -151,7 +174,9 @@ public class ShadowButtonView extends View {
     }
 
     // 如果你想手动控制 padding，先调用该方法关闭自动 padding，再 setPadding
-    public void disableAutoPadding() { this.autoPadding = false; }
+    public void disableAutoPadding() {
+        this.autoPadding = false;
+    }
 
     // --- Measure & Layout ---
 
@@ -212,6 +237,7 @@ public class ShadowButtonView extends View {
 
     private StaticLayout makeStaticLayout(CharSequence t, int width, int maxLines, float addLineSpacePx) {
         // 兼容 API：使用已废弃构造器在较低版本仍可用
+        t = t == null ? "" : t;
         StaticLayout sl = new StaticLayout(
                 t, textPaint, Math.max(0, width),
                 Layout.Alignment.ALIGN_NORMAL,
@@ -313,11 +339,14 @@ public class ShadowButtonView extends View {
     private static int dp(float dp) {
         return (int) Math.ceil(dp * ResourcesHolder.density());
     }
+
     private static float sp(float sp) {
         return sp * ResourcesHolder.scaledDensity();
     }
 
-    /** 避免频繁 Context.getResources() 调用的小工具 */
+    /**
+     * 避免频繁 Context.getResources() 调用的小工具
+     */
     private static class ResourcesHolder {
         private static float density = -1f;
         private static float scaledDensity = -1f;
@@ -328,6 +357,7 @@ public class ShadowButtonView extends View {
             }
             return density;
         }
+
         static float scaledDensity() {
             if (scaledDensity < 0f) {
                 scaledDensity = Resources.getSystem().getDisplayMetrics().scaledDensity;

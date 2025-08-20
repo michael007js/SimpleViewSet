@@ -26,9 +26,12 @@
 
             <com.sss.michael.simpleview.view.ShadowButtonView
                 android:layout_width="match_parent"
-                android:layout_margin="20dp"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_margin="20dp" />
 
+            <com.sss.michael.simpleview.view.ShadowAlienButtonView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
             <com.sss.michael.simpleview.view.SimpleEditTextWithMaskedPhone
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />

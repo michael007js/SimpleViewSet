@@ -104,4 +104,45 @@
         <attr name="sbv_shadowColor" format="color" />
         <attr name="sbv_autoPadding" format="boolean" />
     </declare-styleable>
+    <declare-styleable name="ShadowAlienButtonView">
+        <!-- 文本对齐方式：normal/center/opposite -->
+        <attr name="sab_textAlignment" format="enum">
+            <enum name="normal" value="0" />   <!-- ALIGN_NORMAL -->
+            <enum name="center" value="1" />   <!-- ALIGN_CENTER -->
+            <enum name="opposite" value="2" /> <!-- ALIGN_OPPOSITE -->
+        </attr>
+        <!-- 徽标位置 -->
+        <attr name="sab_badgePosition" format="enum">
+            <enum name="left" value="0" />   <!-- BADGE_LEFT -->
+            <enum name="right" value="1" />  <!-- BADGE_RIGHT -->
+        </attr>
+        <!-- 是否启用徽标 -->
+        <attr name="sab_enableBadge" format="boolean" />
+        <!-- 最大行数 -->
+        <attr name="sab_maxLines" format="integer" />
+        <!-- 文本大小 -->
+        <attr name="sab_textSize" format="dimension" />
+        <!-- 文本颜色 -->
+        <attr name="sab_textColor" format="color" />
+        <!-- 文本 -->
+        <attr name="sab_text" format="string" />
+        <!-- 边框宽度 -->
+        <attr name="sab_unCheckedStrokeWidth" format="dimension" />
+        <attr name="sab_checkedStrokeWidth" format="dimension" />
+        <!-- 边框颜色 -->
+        <attr name="sab_unCheckedStrokeColor" format="color" />
+        <attr name="sab_checkedStrokeColor" format="color" />
+        <!-- 填充背景色 -->
+        <attr name="sab_checkedFillBgColor" format="color" />
+        <attr name="sab_unCheckedFillBgColor" format="color" />
+        <!-- 下半部分异形圆角区域颜色 -->
+        <attr name="sab_checkedBottomAlienColor" format="color" />
+        <attr name="sab_unCheckedBottomAlienFillColor" format="color" />
+        <!-- 阴影间隙 -->
+        <attr name="sab_shadowGap" format="dimension" />
+        <!-- 按压位移量 -->
+        <attr name="sab_pressOffset" format="dimension" />
+
+    </declare-styleable>
+
 </resources>
