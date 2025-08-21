@@ -99,7 +99,9 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-
+            <com.sss.michael.simpleview.view.GradientProgressBar
+                android:layout_width="match_parent"
+                android:layout_height="30dp"/>
             <com.sss.michael.simpleview.view.SimpleReboundEffectsView
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
@@ -117,6 +119,7 @@
                         android:layout_height="match_parent"
                         android:gravity="center"
                         android:orientation="vertical">
+
 
                         <com.sss.michael.simpleview.view.SimpleRecommendDashboardView
                             android:layout_width="match_parent"
