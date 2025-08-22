@@ -101,7 +101,28 @@
 
             <com.sss.michael.simpleview.view.GradientProgressBar
                 android:layout_width="match_parent"
-                android:layout_height="30dp"/>
+                android:layout_height="30dp" />
+
+            <com.sss.michael.simpleview.view.SimplePowerBubbleFrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:bfl_arrowHeight="5dp"
+                app:bfl_arrowPositionPercent="0.3"
+                app:bfl_arrowSide="bottom"
+                app:bfl_cornerRadius="5dp"
+                app:bfl_fillColor="@color/colorAccent"
+                app:bfl_gradientEndColor="@color/colorPrimary"
+                app:bfl_gradientStartColor="@color/colorAccent"
+                app:bfl_shadowSoftness="10dp"
+                app:bfl_useGradient="true">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="66666" />
+
+            </com.sss.michael.simpleview.view.SimplePowerBubbleFrameLayout>
+
             <com.sss.michael.simpleview.view.SimpleReboundEffectsView
                 android:layout_width="match_parent"
                 android:layout_height="0dp"

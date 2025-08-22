@@ -145,4 +145,81 @@
 
     </declare-styleable>
 
+    <declare-styleable name="SimplePowerBubbleFrameLayout">
+        <!-- 圆角半径 -->
+        <attr name="bfl_cornerRadius" format="dimension" />
+        <!-- 箭头宽度 -->
+        <attr name="bfl_arrowWidth" format="dimension" />
+        <!-- 箭头高度 -->
+        <attr name="bfl_arrowHeight" format="dimension" />
+        <!-- 箭头尖端圆角半径（如果需要箭头圆润一些） -->
+        <attr name="bfl_arrowCornerRadius" format="dimension" />
+        <!-- 箭头所在的边 -->
+        <attr name="bfl_arrowSide" format="enum">
+            <enum name="top" value="0" />     <!-- 箭头在上边 -->
+            <enum name="bottom" value="1" />  <!-- 箭头在下边 -->
+            <enum name="left" value="2" />    <!-- 箭头在左边 -->
+            <enum name="right" value="3" />   <!-- 箭头在右边 -->
+        </attr>
+        <!-- 箭头在边上的相对位置（百分比 0~1） -->
+        <attr name="bfl_arrowPositionPercent" format="float" />
+        <!-- 箭头在边上的对齐方式 -->
+        <attr name="bfl_arrowGravity" format="enum">
+            <enum name="start" value="0" />   <!-- 靠起始端对齐（比如左或上） -->
+            <enum name="center" value="1" />  <!-- 居中对齐 -->
+            <enum name="end" value="2" />     <!-- 靠结束端对齐（比如右或下） -->
+        </attr>
+        <!-- 是否自动给内容设置内边距（避免内容被箭头遮挡） -->
+        <attr name="bfl_autoInsetPadding" format="dimension" />
+        <!-- 填充颜色（背景色） -->
+        <attr name="bfl_fillColor" format="color" />
+        <!-- 是否启用渐变填充 渐变开启后阴影不生效 -->
+        <attr name="bfl_useGradient" format="boolean" />
+        <!-- 渐变起始颜色 -->
+        <attr name="bfl_gradientStartColor" format="color" />
+        <!-- 渐变结束颜色 -->
+        <attr name="bfl_gradientEndColor" format="color" />
+        <!-- 渐变角度（0~360度，例如 0 表示从左到右） -->
+        <attr name="bfl_gradientAngle" format="float" />
+        <!-- 渐变颜色数组 用英文逗号“,”拼接 只要设置了就覆盖bfl_gradientStartColor与bfl_gradientEndColor -->
+        <attr name="bfl_gradientColors" format="string" />
+        <!-- 渐变位置数组 用英文逗号“,”拼接 -->
+        <attr name="bfl_gradientPositions" format="string" />
+        <!-- 边框颜色 -->
+        <attr name="bfl_strokeColor" format="color" />
+        <!-- 边框宽度 -->
+        <attr name="bfl_strokeWidth" format="dimension" />
+        <!-- 边框虚线：单个线段的长度 -->
+        <attr name="bfl_dashWidth" format="dimension" />
+        <!-- 边框虚线：线段之间的间隔 -->
+        <attr name="bfl_dashGap" format="dimension" />
+        <!-- 边框虚线：偏移量（虚线的起始相位） -->
+        <attr name="bfl_dashPhase" format="dimension" />
+        <!-- 背景透明度（0.0 完全透明，1.0 不透明） -->
+        <attr name="bfl_backgroundAlpha" format="float" />
+        <!-- 内容统一内边距 -->
+        <attr name="bfl_contentPadding" format="dimension" />
+        <!-- 内容左边距 -->
+        <attr name="bfl_contentPaddingLeft" format="dimension" />
+        <!-- 内容上边距 -->
+        <attr name="bfl_contentPaddingTop" format="dimension" />
+        <!-- 内容右边距 -->
+        <attr name="bfl_contentPaddingRight" format="dimension" />
+        <!-- 内容下边距 -->
+        <attr name="bfl_contentPaddingBottom" format="dimension" />
+        <!-- 阴影模糊半径 -->
+        <attr name="bfl_shadowRadius" format="dimension" />
+        <!-- 阴影在 X 方向上的偏移量 -->
+        <attr name="bfl_shadowDx" format="dimension" />
+        <!-- 阴影在 Y 方向上的偏移量 -->
+        <attr name="bfl_shadowDy" format="dimension" />
+        <!-- 阴影颜色（可选） -->
+        <attr name="bfl_shadowColor" format="color" /> <!-- optional -->
+        <!-- 阴影柔和度（越大越模糊，一般比 radius 更细腻的控制） -->
+        <attr name="bfl_shadowSoftness" format="dimension" />
+        <!-- 是否隐藏箭头（true = 不绘制箭头） -->
+        <attr name="bfl_hideArrow" format="boolean" />
+
+    </declare-styleable>
+
 </resources>
