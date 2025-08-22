@@ -148,6 +148,10 @@
     <declare-styleable name="SimplePowerBubbleFrameLayout">
         <!-- 圆角半径 -->
         <attr name="bfl_cornerRadius" format="dimension" />
+        <attr name="bfl_cornerRadiusTopLeft" format="dimension" />
+        <attr name="bfl_cornerRadiusTopRight" format="dimension" />
+        <attr name="bfl_cornerRadiusBottomRight" format="dimension" />
+        <attr name="bfl_cornerRadiusBottomLeft" format="dimension" />
         <!-- 箭头宽度 -->
         <attr name="bfl_arrowWidth" format="dimension" />
         <!-- 箭头高度 -->

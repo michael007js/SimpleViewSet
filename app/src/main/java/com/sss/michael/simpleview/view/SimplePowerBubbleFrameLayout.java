@@ -23,9 +23,9 @@ import java.util.List;
  * <p>
  * 主要特性：
  * - 支持四个方向的箭头显示，可自定义大小、位置和形状
- * - 支持圆角矩形背景，可自定义圆角半径
+ * - 支持圆角矩形背景，可自定义圆角半径（同时支持四个角分别设置，四个角的圆角优先级大于cornerRadiusPx字段，如果分别设置了四个角的圆角，则覆盖cornerRadiusPx）
  * - 支持纯色填充和线性渐变填充（多点颜色和位置可配置）
- * - 支持iOS风格的柔和阴影效果
+ * - 支持iOS风格的柔和阴影效果（渐变开启时自动禁用以避免冲突）
  * - 支持描边效果，包括虚线描边
  * - 支持透明度调节
  * - 自动处理内边距，为箭头和阴影预留空间
@@ -90,6 +90,12 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
 
     // 基础视觉属性
     private float cornerRadiusPx = dp(12);
+    // 支持对四个角单独配置，未配置时为 NaN -> 回退到 cornerRadiusPx
+    private float cornerRadiusTopLeftPx = Float.NaN;
+    private float cornerRadiusTopRightPx = Float.NaN;
+    private float cornerRadiusBottomRightPx = Float.NaN;
+    private float cornerRadiusBottomLeftPx = Float.NaN;
+
     // 顶部/底部：base宽度；左/右：base高度
     private float arrowBasePx = dp(12);
     // 箭头深度（从边缘向外）
@@ -161,6 +167,16 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
         if (attrs != null) {
             TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.SimplePowerBubbleFrameLayout);
             cornerRadiusPx = a.getDimension(R.styleable.SimplePowerBubbleFrameLayout_bfl_cornerRadius, cornerRadiusPx);
+
+            // 读取单角配置（如果 attrs 中存在这些属性）
+            if (a.hasValue(R.styleable.SimplePowerBubbleFrameLayout_bfl_cornerRadiusTopLeft))
+                cornerRadiusTopLeftPx = a.getDimension(R.styleable.SimplePowerBubbleFrameLayout_bfl_cornerRadiusTopLeft, Float.NaN);
+            if (a.hasValue(R.styleable.SimplePowerBubbleFrameLayout_bfl_cornerRadiusTopRight))
+                cornerRadiusTopRightPx = a.getDimension(R.styleable.SimplePowerBubbleFrameLayout_bfl_cornerRadiusTopRight, Float.NaN);
+            if (a.hasValue(R.styleable.SimplePowerBubbleFrameLayout_bfl_cornerRadiusBottomRight))
+                cornerRadiusBottomRightPx = a.getDimension(R.styleable.SimplePowerBubbleFrameLayout_bfl_cornerRadiusBottomRight, Float.NaN);
+            if (a.hasValue(R.styleable.SimplePowerBubbleFrameLayout_bfl_cornerRadiusBottomLeft))
+                cornerRadiusBottomLeftPx = a.getDimension(R.styleable.SimplePowerBubbleFrameLayout_bfl_cornerRadiusBottomLeft, Float.NaN);
 
             // 向后兼容：把 arrowWidth/arrowHeight 映射到 base/depth
             float aw = a.getDimension(R.styleable.SimplePowerBubbleFrameLayout_bfl_arrowWidth, arrowBasePx);
@@ -407,6 +423,9 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
         }
     }
 
+    RectF rect = new RectF();
+    float[] radii = new float[8];
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -437,8 +456,38 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
         }
 
         rectPath.reset();
-        RectF rect = new RectF(left, top, right, bottom);
-        rectPath.addRoundRect(rect, cornerRadiusPx, cornerRadiusPx, Path.Direction.CW);
+        rect.set(left, top, right, bottom);
+
+        // 支持四角不同的圆角：若某角未设置（NaN），回退到 uniform cornerRadiusPx
+        float tl = Float.isNaN(cornerRadiusTopLeftPx) ? cornerRadiusPx : cornerRadiusTopLeftPx;
+        float tr = Float.isNaN(cornerRadiusTopRightPx) ? cornerRadiusPx : cornerRadiusTopRightPx;
+        float br = Float.isNaN(cornerRadiusBottomRightPx) ? cornerRadiusPx : cornerRadiusBottomRightPx;
+        float bl = Float.isNaN(cornerRadiusBottomLeftPx) ? cornerRadiusPx : cornerRadiusBottomLeftPx;
+
+        // 限制半径不超过矩形一半
+        float maxR = Math.min(rect.width() / 2f, rect.height() / 2f);
+        tl = Math.max(0f, Math.min(tl, maxR));
+        tr = Math.max(0f, Math.min(tr, maxR));
+        br = Math.max(0f, Math.min(br, maxR));
+        bl = Math.max(0f, Math.min(bl, maxR));
+
+        // top-left
+        radii[0] = tl;
+        radii[1] = tl;
+
+        // top-right
+        radii[2] = tr;
+        radii[3] = tr;
+
+        // bottom-right
+        radii[4] = br;
+        radii[5] = br;
+
+        // bottom-left
+        radii[6] = bl;
+        radii[7] = bl;
+
+        rectPath.addRoundRect(rect, radii, Path.Direction.CW);
 
         triPath.reset();
         unionPath.reset();
@@ -447,10 +496,10 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
         // 构造箭头路径（顶部/底部/左/右）
         if (!hideArrow && arrowDepthPx > 0 && arrowBasePx > 0) {
             if (arrowSide == SIDE_TOP || arrowSide == SIDE_BOTTOM) {
-                float usable = rect.right - rect.left - 2f * cornerRadiusPx;
+                float usable = rect.right - rect.left - 2f * Math.max(Math.max(tl, tr), Math.max(bl, br));
                 float cx;
                 if (arrowPercent >= 0f)
-                    cx = rect.left + cornerRadiusPx + clamp01(arrowPercent) * usable;
+                    cx = rect.left + Math.max(tl, tr) + clamp01(arrowPercent) * usable;
                 else {
                     int layout = getLayoutDirection();
                     boolean isRtl = (layout == LAYOUT_DIRECTION_RTL);
@@ -458,11 +507,12 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
                     if (g == GRAVITY_START) g = isRtl ? GRAVITY_END : GRAVITY_START;
                     if (g == GRAVITY_END) g = isRtl ? GRAVITY_START : GRAVITY_END;
                     if (g == GRAVITY_CENTER) cx = (rect.left + rect.right) / 2f;
-                    else if (g == GRAVITY_START) cx = rect.left + cornerRadiusPx + arrowBasePx / 2f;
-                    else cx = rect.right - cornerRadiusPx - arrowBasePx / 2f;
+                    else if (g == GRAVITY_START)
+                        cx = rect.left + Math.max(tl, bl) + arrowBasePx / 2f;
+                    else cx = rect.right - Math.max(tr, br) - arrowBasePx / 2f;
                 }
-                float minCx = rect.left + cornerRadiusPx + arrowBasePx / 2f;
-                float maxCx = rect.right - cornerRadiusPx - arrowBasePx / 2f;
+                float minCx = rect.left + Math.max(tl, bl) + arrowBasePx / 2f;
+                float maxCx = rect.right - Math.max(tr, br) - arrowBasePx / 2f;
                 cx = Math.max(minCx, Math.min(maxCx, cx));
                 float baseY = (arrowSide == SIDE_TOP) ? rect.top : rect.bottom;
                 float tipY = (arrowSide == SIDE_TOP) ? (shadowPadTop + halfStroke) : (getHeight() - shadowPadBottom - halfStroke);
@@ -480,18 +530,19 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
                             arrowCornerRadiusPx);
                 }
             } else {
-                float usable = rect.bottom - rect.top - 2f * cornerRadiusPx;
+                float usable = rect.bottom - rect.top - 2f * Math.max(Math.max(tl, tr), Math.max(bl, br));
                 float cy;
                 if (arrowPercent >= 0f)
-                    cy = rect.top + cornerRadiusPx + clamp01(arrowPercent) * usable;
+                    cy = rect.top + Math.max(tl, tr) + clamp01(arrowPercent) * usable;
                 else {
                     int g = arrowGravity;
                     if (g == GRAVITY_CENTER) cy = (rect.top + rect.bottom) / 2f;
-                    else if (g == GRAVITY_START) cy = rect.top + cornerRadiusPx + arrowBasePx / 2f;
-                    else cy = rect.bottom - cornerRadiusPx - arrowBasePx / 2f;
+                    else if (g == GRAVITY_START)
+                        cy = rect.top + Math.max(tl, tr) + arrowBasePx / 2f;
+                    else cy = rect.bottom - Math.max(bl, br) - arrowBasePx / 2f;
                 }
-                float minCy = rect.top + cornerRadiusPx + arrowBasePx / 2f;
-                float maxCy = rect.bottom - cornerRadiusPx - arrowBasePx / 2f;
+                float minCy = rect.top + Math.max(tl, tr) + arrowBasePx / 2f;
+                float maxCy = rect.bottom - Math.max(bl, br) - arrowBasePx / 2f;
                 cy = Math.max(minCy, Math.min(maxCy, cy));
 
                 float baseX, tipX;
@@ -616,8 +667,48 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
         out.close();
     }
 
+    /**
+     * 设置统一圆角，会清除任何单角的自定义值，恢复统一半径模式
+     */
     public void setCornerRadius(float px) {
         this.cornerRadiusPx = px;
+        // 清除单独角的自定义值，回退到统一半径
+        this.cornerRadiusTopLeftPx = Float.NaN;
+        this.cornerRadiusTopRightPx = Float.NaN;
+        this.cornerRadiusBottomRightPx = Float.NaN;
+        this.cornerRadiusBottomLeftPx = Float.NaN;
+        invalidate();
+    }
+
+    /**
+     * 同时设置四个角的圆角（顺序：top-left, top-right, bottom-right, bottom-left）
+     * 调用此方法后，将使用逐角半径；如需恢复统一半径，请调用 setCornerRadius(px)
+     */
+    public void setCornerRadii(float topLeftPx, float topRightPx, float bottomRightPx, float bottomLeftPx) {
+        this.cornerRadiusTopLeftPx = Math.max(0f, topLeftPx);
+        this.cornerRadiusTopRightPx = Math.max(0f, topRightPx);
+        this.cornerRadiusBottomRightPx = Math.max(0f, bottomRightPx);
+        this.cornerRadiusBottomLeftPx = Math.max(0f, bottomLeftPx);
+        invalidate();
+    }
+
+    public void setCornerRadiusTopLeft(float px) {
+        this.cornerRadiusTopLeftPx = Math.max(0f, px);
+        invalidate();
+    }
+
+    public void setCornerRadiusTopRight(float px) {
+        this.cornerRadiusTopRightPx = Math.max(0f, px);
+        invalidate();
+    }
+
+    public void setCornerRadiusBottomRight(float px) {
+        this.cornerRadiusBottomRightPx = Math.max(0f, px);
+        invalidate();
+    }
+
+    public void setCornerRadiusBottomLeft(float px) {
+        this.cornerRadiusBottomLeftPx = Math.max(0f, px);
         invalidate();
     }
 

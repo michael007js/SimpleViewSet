@@ -110,6 +110,7 @@
                 app:bfl_arrowPositionPercent="0.3"
                 app:bfl_arrowSide="bottom"
                 app:bfl_cornerRadius="5dp"
+                app:bfl_cornerRadiusBottomRight="0dp"
                 app:bfl_fillColor="@color/colorAccent"
                 app:bfl_gradientEndColor="@color/colorPrimary"
                 app:bfl_gradientStartColor="@color/colorAccent"
