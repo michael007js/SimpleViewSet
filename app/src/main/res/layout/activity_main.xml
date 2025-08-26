@@ -142,6 +142,9 @@
                         android:gravity="center"
                         android:orientation="vertical">
 
+                        <com.sss.michael.simpleview.view.SimpleDanmuView
+                            android:layout_width="match_parent"
+                            android:layout_height="150dp" />
 
                         <com.sss.michael.simpleview.view.SimpleRecommendDashboardView
                             android:layout_width="match_parent"
