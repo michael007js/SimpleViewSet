@@ -174,7 +174,7 @@
             <enum name="end" value="2" />     <!-- 靠结束端对齐（比如右或下） -->
         </attr>
         <!-- 是否自动给内容设置内边距（避免内容被箭头遮挡） -->
-        <attr name="bfl_autoInsetPadding" format="dimension" />
+        <attr name="bfl_autoInsetPadding" format="boolean" />
         <!-- 填充颜色（背景色） -->
         <attr name="bfl_fillColor" format="color" />
         <!-- 是否启用渐变填充 渐变开启后阴影不生效 -->
@@ -189,8 +189,25 @@
         <attr name="bfl_gradientColors" format="string" />
         <!-- 渐变位置数组 用英文逗号“,”拼接 -->
         <attr name="bfl_gradientPositions" format="string" />
-        <!-- 边框颜色 -->
+        <!-- 是否启用边框渐变填充 渐变开启后阴影不生效 -->
+        <attr name="bfl_useStrokeGradient" format="boolean" />
+        <!-- 边框渐变角度（0~360度，例如 0 表示从左到右） -->
+        <attr name="bfl_stroke_gradientAngle" format="float" />
+        <!-- 边框渐变起始颜色（与边框颜色bfl_strokeColor互斥） -->
+        <attr name="bfl_stroke_gradientStartColor" format="color" />
+        <!-- 边框渐变结束颜色 （与边框颜色bfl_strokeColor互斥）-->
+        <attr name="bfl_stroke_gradientEndColor" format="color" />
+        <!-- 边框颜色（与渐变bfl_stroke_gradientStartColor、bfl_stroke_gradientEndColor互斥） -->
         <attr name="bfl_strokeColor" format="color" />
+        <!-- 边框渐变颜色数组 用英文逗号“,”拼接 只要设置了就覆盖bfl_stroke_gradientStartColor与bfl_stroke_gradientEndColor -->
+        <attr name="bfl_stroke_gradientColors" format="string" />
+        <!-- 边框渐变位置数组 用英文逗号“,”拼接 -->
+        <attr name="bfl_stroke_gradientPositions" format="string" />
+        <!-- 箭头在边上的对齐方式 -->
+        <attr name="bfl_stroke_gradient_type" format="enum">
+            <enum name="linear" value="0" />   <!-- 线性渐变 -->
+            <enum name="radial" value="1" />  <!-- 径向渐变 -->
+        </attr>
         <!-- 边框宽度 -->
         <attr name="bfl_strokeWidth" format="dimension" />
         <!-- 边框虚线：单个线段的长度 -->

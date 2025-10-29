@@ -111,9 +111,14 @@
                 app:bfl_arrowPositionPercent="0.75"
                 app:bfl_arrowSide="bottom"
                 app:bfl_cornerRadius="8dp"
-                app:bfl_fillColor="#31202D"
-                app:bfl_strokeColor="#e9302d"
-                app:bfl_strokeWidth="10dp">
+                app:bfl_fillColor="#333333"
+                app:bfl_strokeWidth="10dp"
+                app:bfl_stroke_gradientEndColor="#4dffffff"
+                app:bfl_stroke_gradientPositions="0,1"
+                app:bfl_stroke_gradientStartColor="#333333"
+                app:bfl_stroke_gradient_type="radial"
+                app:bfl_useGradient="true"
+                app:bfl_useStrokeGradient="true">
 
                 <TextView
                     android:layout_width="wrap_content"

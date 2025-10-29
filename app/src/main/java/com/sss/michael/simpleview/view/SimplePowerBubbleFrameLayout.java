@@ -1,16 +1,23 @@
 package com.sss.michael.simpleview.view;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.*;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.DashPathEffect;
+import android.graphics.LinearGradient;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.PointF;
+import android.graphics.RadialGradient;
+import android.graphics.RectF;
+import android.graphics.Shader;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
-
 
 import com.sss.michael.simpleview.R;
 
@@ -127,6 +134,22 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
     private boolean useStrokeGradient = false;
     private Shader strokeShader = null;
 
+    //--- 边框渐变详细参数（不改变原有接口） ---
+    //渐变类型
+    public static final int STROKE_GRADIENT_LINEAR = 0;
+    public static final int STROKE_GRADIENT_RADIAL = 1;
+
+    //stroke 专用渐变颜色/位置/参数（独立于 fillGradient）
+    private int[] strokeGradientColors = null;
+    private float[] strokeGradientPositions = null;
+    private int strokeGradientType = STROKE_GRADIENT_LINEAR;
+    private float strokeGradientAngleDeg = 0f; //用于线性渐变
+    //用于放射/扩散渐变（相对中心，0..1，基于控件宽高）
+    private float strokeGradientCenterX = 0.5f;
+    private float strokeGradientCenterY = 0.5f;
+    //如果为 <=0 则在绘制时使用 half-diagonal 做为 radius
+    private float strokeGradientRadiusPx = -1f;
+
     //虚线
     private float dashWidthPx = 0f, dashGapPx = 0f, dashPhasePx = 0f;
 
@@ -226,8 +249,9 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
                 fillGradientColors = new int[]{sc, ec};
                 fillGradientPositions = null;
                 fillGradientAngleDeg = a.getFloat(R.styleable.SimplePowerBubbleFrameLayout_bfl_gradientAngle, 0f);
-            }
 
+
+            }
             //从字符串属性读取多点渐变颜色和位置（用英文逗号分隔）
             String colorsStr = a.getString(R.styleable.SimplePowerBubbleFrameLayout_bfl_gradientColors);
             if (colorsStr != null && colorsStr.trim().length() > 0) {
@@ -239,6 +263,33 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
             if (positionsStr != null && positionsStr.trim().length() > 0) {
                 float[] parsedPos = parseFloatPositionsString(positionsStr);
                 if (parsedPos != null && parsedPos.length > 0) fillGradientPositions = parsedPos;
+            }
+
+
+            useStrokeGradient = a.getBoolean(R.styleable.SimplePowerBubbleFrameLayout_bfl_useStrokeGradient, false);
+            if (useStrokeGradient) {
+
+                strokeGradientType = a.getInt(R.styleable.SimplePowerBubbleFrameLayout_bfl_stroke_gradient_type, strokeGradientType);
+
+                int sc = a.getColor(R.styleable.SimplePowerBubbleFrameLayout_bfl_stroke_gradientStartColor, fillColor);
+                int ec = a.getColor(R.styleable.SimplePowerBubbleFrameLayout_bfl_stroke_gradientEndColor, fillColor);
+
+                strokeGradientColors = new int[]{sc, ec};
+                strokeGradientAngleDeg = a.getFloat(R.styleable.SimplePowerBubbleFrameLayout_bfl_stroke_gradientAngle, 0f);
+            }
+
+
+            //从字符串属性读取多点渐变颜色和位置（用英文逗号分隔）
+            String storkeColorsStr = a.getString(R.styleable.SimplePowerBubbleFrameLayout_bfl_stroke_gradientColors);
+            if (storkeColorsStr != null && storkeColorsStr.trim().length() > 0) {
+                int[] parsed = parseColorString(storkeColorsStr);
+                if (parsed != null && parsed.length > 0) strokeGradientColors = parsed;
+            }
+
+            String strokePositionsStr = a.getString(R.styleable.SimplePowerBubbleFrameLayout_bfl_stroke_gradientPositions);
+            if (strokePositionsStr != null && strokePositionsStr.trim().length() > 0) {
+                float[] parsedPos = parseFloatPositionsString(strokePositionsStr);
+                if (parsedPos != null && parsedPos.length > 0) strokeGradientPositions = parsedPos;
             }
 
             a.recycle();
@@ -351,14 +402,30 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
         strokeShader = null;
         strokePaint.setShader(null);
         if (!useStrokeGradient) return;
-        if (fillGradientColors == null || fillGradientColors.length == 0) return;
-        float angleRad = (float) Math.toRadians(fillGradientAngleDeg % 360f);
-        float dx = (float) Math.cos(angleRad), dy = (float) Math.sin(angleRad);
-        float cx = w / 2f, cy = h / 2f;
-        float halfDiag = (float) (Math.hypot(w, h) / 2f);
-        float x0 = cx - dx * halfDiag, y0 = cy - dy * halfDiag;
-        float x1 = cx + dx * halfDiag, y1 = cy + dy * halfDiag;
-        strokeShader = new LinearGradient(x0, y0, x1, y1, applyAlphaToColors(fillGradientColors, backgroundAlpha), fillGradientPositions, Shader.TileMode.CLAMP);
+
+        //优先使用 strokeGradientColors，如未设置则回退到 fillGradientColors（保持兼容）
+        int[] colors = strokeGradientColors != null && strokeGradientColors.length > 0 ? strokeGradientColors : fillGradientColors;
+        float[] positions = strokeGradientPositions != null && strokeGradientPositions.length > 0 ? strokeGradientPositions : fillGradientPositions;
+        if (colors == null || colors.length == 0) return;
+
+        int[] applied = applyAlphaToColors(colors, backgroundAlpha);
+
+        if (strokeGradientType == STROKE_GRADIENT_LINEAR) {
+            float angleRad = (float) Math.toRadians(strokeGradientAngleDeg % 360f);
+            float dx = (float) Math.cos(angleRad), dy = (float) Math.sin(angleRad);
+            float cx = w / 2f, cy = h / 2f;
+            float halfDiag = (float) (Math.hypot(w, h) / 2f);
+            float x0 = cx - dx * halfDiag, y0 = cy - dy * halfDiag;
+            float x1 = cx + dx * halfDiag, y1 = cy + dy * halfDiag;
+            strokeShader = new LinearGradient(x0, y0, x1, y1, applied, positions, Shader.TileMode.CLAMP);
+        } else { //RADIAL
+            float cx = strokeGradientCenterX * w;
+            float cy = strokeGradientCenterY * h;
+            float radius = strokeGradientRadiusPx > 0f ? strokeGradientRadiusPx : (float) (Math.hypot(w, h) / 2f);
+            //RadialGradient 中 colors 与 positions 数量规则同 LinearGradient
+            strokeShader = new RadialGradient(cx, cy, Math.max(1f, radius), applied, positions, Shader.TileMode.MIRROR);
+        }
+
         strokePaint.setShader(strokeShader);
     }
 
@@ -625,10 +692,11 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
             strokePaint.setColor(applyAlphaToColor(strokeColor, backgroundAlpha));
         } else {
             //已在 updateStrokeShader 中准备好 strokeShader
+            if (strokeShader == null) updateStrokeShader(getWidth(), getHeight());
             strokePaint.setShader(strokeShader);
         }
-
-        if (strokeWidthPx > 0 && Color.alpha(strokeColor) != 0) {
+//        if (strokeWidthPx > 0 && Color.alpha(strokeColor) != 0) {
+        if (strokeWidthPx > 0) {
             strokePaint.setStrokeWidth(strokeWidthPx);
             if (merged) {
                 canvas.drawPath(unionPath, strokePaint);
@@ -912,6 +980,61 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
         setContentPadding(left, top, right, bottom);
     }
 
+    //-------------------- 边框渐变设置 API（不修改原有签名） --------------------
+
+    /**
+     * 启用或禁用边框渐变（如果禁用，将使用普通 strokeColor）
+     */
+    public SimplePowerBubbleFrameLayout setUseStrokeGradient(boolean use) {
+        this.useStrokeGradient = use;
+        if (!use) {
+            strokePaint.setShader(null);
+        } else {
+            //如果已经有必要参数，尝试生成 shader
+            updateStrokeShader(getWidth(), getHeight());
+        }
+        return this;
+    }
+
+    /**
+     * 设置边框渐变为线性渐变（颜色与位置）
+     * angleDeg: 渐变角度（度）
+     */
+    public SimplePowerBubbleFrameLayout setStrokeGradientLinear(int[] colors, float[] positions, float angleDeg) {
+        this.strokeGradientType = STROKE_GRADIENT_LINEAR;
+        this.strokeGradientColors = colors != null ? colors.clone() : null;
+        this.strokeGradientPositions = positions != null ? positions.clone() : null;
+        this.strokeGradientAngleDeg = angleDeg;
+        updateStrokeShader(getWidth(), getHeight());
+        return this;
+    }
+
+    /**
+     * 设置边框渐变为放射/扩散 （radial）
+     * centerX/centerY: 0..1 相对控件宽高的中心点
+     * radiusPx: 若 <=0 则自动使用控件 half-diagonal
+     */
+    public SimplePowerBubbleFrameLayout setStrokeGradientRadial(int[] colors, float[] positions, float centerX, float centerY, float radiusPx) {
+        this.strokeGradientType = STROKE_GRADIENT_RADIAL;
+        this.strokeGradientColors = colors != null ? colors.clone() : null;
+        this.strokeGradientPositions = positions != null ? positions.clone() : null;
+        this.strokeGradientCenterX = clamp01(centerX);
+        this.strokeGradientCenterY = clamp01(centerY);
+        this.strokeGradientRadiusPx = radiusPx;
+        updateStrokeShader(getWidth(), getHeight());
+        return this;
+    }
+
+    /**
+     * 设置边框渐变的透明度跟随 backgroundAlpha
+     */
+    public SimplePowerBubbleFrameLayout setBackgroundAlphaForGradients(float alpha) {
+        this.backgroundAlpha = clamp01(alpha);
+        updateFillShader(getWidth(), getHeight());
+        updateStrokeShader(getWidth(), getHeight());
+        return this;
+    }
+
     //-------------------- 工具方法 --------------------
     private int applyAlphaToColor(int color, float factor) {
         int baseA = Color.alpha(color);
@@ -965,7 +1088,7 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
                 long v = Long.parseLong(tmp, 16);
                 //根据长度判断是否带 alpha
                 if (tmp.length() <= 6) {
-                    // RRGGBB -> 加上不透明 alpha
+                    //RRGGBB -> 加上不透明 alpha
                     v = v | 0xFF000000L;
                 }
                 list.add((int) v);
