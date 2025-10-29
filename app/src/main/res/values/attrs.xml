@@ -225,5 +225,12 @@
         <attr name="bfl_hideArrow" format="boolean" />
 
     </declare-styleable>
-
+    <declare-styleable name="SimpleRoundTabViewV3">
+        <attr name="srtv3_maskColor" format="color" />
+        <attr name="srtv3_backgroundColor" format="color" />
+        <attr name="srtv3_gradientMaskColor" format="string" />
+        <attr name="srtv3_gradientMaskPositions" format="string" />
+        <attr name="srtv3_bottomCoverageRectFHeight" format="dimension" />
+        <attr name="srtv3_bottomCoverageRectFColor" format="color" />
+    </declare-styleable>
 </resources>

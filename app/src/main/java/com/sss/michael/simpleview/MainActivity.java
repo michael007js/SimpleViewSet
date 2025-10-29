@@ -431,7 +431,8 @@ public class MainActivity extends AppCompatActivity {
         simpleRoundTabViewV3.setOnSimpleRoundTabViewV3CallBack(new SimpleRoundTabViewV3.OnSimpleRoundTabViewCallBack() {
             @Override
             public void onTabChecked(int fromPosition, int toPosition) {
-                simpleRoundTabViewV3.setRedPoint(false, true, true);
+                boolean[] state = new boolean[]{true, true, true};
+                simpleRoundTabViewV3.setRedPoint(state);
             }
         });
         simpleRoundTabViewV3.setTab(simpleRoundTabViewV3List);
