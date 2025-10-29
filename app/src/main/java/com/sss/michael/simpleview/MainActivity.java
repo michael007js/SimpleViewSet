@@ -36,6 +36,7 @@ import com.sss.michael.simpleview.view.SimpleHalfRingView;
 import com.sss.michael.simpleview.view.SimpleLinearChart;
 import com.sss.michael.simpleview.view.SimpleLinearChart2;
 import com.sss.michael.simpleview.view.SimpleMultipleColumnView;
+import com.sss.michael.simpleview.view.SimplePowerBubbleFrameLayout;
 import com.sss.michael.simpleview.view.SimpleProgressBar;
 import com.sss.michael.simpleview.view.SimpleRotatingView;
 import com.sss.michael.simpleview.view.SimpleRoundTabView;
@@ -660,6 +661,8 @@ public class MainActivity extends AppCompatActivity {
         flow.setAvatars(bitmaps);
         flow.setVisibleCount(3);
         flow.start();
+
+
     }
 
 }

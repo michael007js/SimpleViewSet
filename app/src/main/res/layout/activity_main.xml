@@ -104,22 +104,21 @@
                 android:layout_height="30dp" />
 
             <com.sss.michael.simpleview.view.SimplePowerBubbleFrameLayout
-                android:layout_width="wrap_content"
+                android:id="@+id/SimplePowerBubbleFrameLayout"
+                android:layout_width="100dp"
                 android:layout_height="wrap_content"
-                app:bfl_arrowHeight="5dp"
-                app:bfl_arrowPositionPercent="0.3"
+                android:layout_margin="10dp"
+                app:bfl_arrowPositionPercent="0.75"
                 app:bfl_arrowSide="bottom"
-                app:bfl_cornerRadius="5dp"
-                app:bfl_cornerRadiusBottomRight="0dp"
-                app:bfl_fillColor="@color/colorAccent"
-                app:bfl_gradientEndColor="@color/colorPrimary"
-                app:bfl_gradientStartColor="@color/colorAccent"
-                app:bfl_shadowSoftness="10dp"
-                app:bfl_useGradient="true">
+                app:bfl_cornerRadius="8dp"
+                app:bfl_fillColor="#31202D"
+                app:bfl_strokeColor="#e9302d"
+                app:bfl_strokeWidth="10dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
                     android:text="66666" />
 
             </com.sss.michael.simpleview.view.SimplePowerBubbleFrameLayout>

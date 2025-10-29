@@ -223,6 +223,8 @@
         <attr name="bfl_shadowSoftness" format="dimension" />
         <!-- 是否隐藏箭头（true = 不绘制箭头） -->
         <attr name="bfl_hideArrow" format="boolean" />
+        <!-- 隐藏箭头时是否保留箭头高度（true = 保留） -->
+        <attr name="bfl_holdArrowHeight" format="boolean" />
 
     </declare-styleable>
     <declare-styleable name="SimpleRoundTabViewV3">

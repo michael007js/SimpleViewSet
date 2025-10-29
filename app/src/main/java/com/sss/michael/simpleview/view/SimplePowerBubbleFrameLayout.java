@@ -11,6 +11,7 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
 
+
 import com.sss.michael.simpleview.R;
 
 import java.util.ArrayList;
@@ -46,7 +47,7 @@ import java.util.List;
  * 在大量使用时需注意性能影响
  * <p>
  * 使用示例（XML）：
- * <com.sss.michael.simpleview.view.SimplePowerBubbleFrameLayout
+ * 当宽或高为wrap_content时，建议设置app:bfl_shadowSoftness="0dp"，否则会有个内边距4dp
  * android:layout_width="wrap_content"
  * android:layout_height="wrap_content"
  * app:bfl_cornerRadius="8dp"
@@ -58,14 +59,14 @@ import java.util.List;
  * app:bfl_shadowColor="#33000000"
  * app:bfl_useGradient="true"
  * app:bfl_gradientColors="#FF0000,#00FF00,#0000FF"
- * app:bfl_gradientPositions="0.0,0.5,1.0">
+ * app:bfl_gradientPositions="0.0,0.5,1.0"
  * <p>
  * 使用示例（代码）：
  * bubble.setUniformShadow(dp(8), Color.parseColor("#33000000"), dp(4));
  * bubble.setFillGradient(new int[]{Color.RED, Color.GREEN, Color.BLUE},
  * new float[]{0f, 0.5f, 1f}, 0f);
  */
-@SuppressLint("ObsoleteSdkInt")
+@SuppressWarnings("all")
 public class SimplePowerBubbleFrameLayout extends FrameLayout {
 
     public static final int SIDE_TOP = 0;
@@ -77,81 +78,83 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
     public static final int GRAVITY_CENTER = 1;
     public static final int GRAVITY_END = 2;
 
-    // 箭头形状类型
+    //箭头形状类型
     public static final int ARROW_SHAPE_TRIANGLE = 0;
     public static final int ARROW_SHAPE_ROUNDED_TRIANGLE = 1;
 
-    // 绘制用 Paint / Path
+    //绘制用 Paint / Path
     private final Paint fillPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Path rectPath = new Path();
     private final Path triPath = new Path();
     private final Path unionPath = new Path();
 
-    // 基础视觉属性
+    //基础视觉属性
     private float cornerRadiusPx = dp(12);
-    // 支持对四个角单独配置，未配置时为 NaN -> 回退到 cornerRadiusPx
+    //支持对四个角单独配置，未配置时为 NaN -> 回退到 cornerRadiusPx
     private float cornerRadiusTopLeftPx = Float.NaN;
     private float cornerRadiusTopRightPx = Float.NaN;
     private float cornerRadiusBottomRightPx = Float.NaN;
     private float cornerRadiusBottomLeftPx = Float.NaN;
 
-    // 顶部/底部：base宽度；左/右：base高度
+    //顶部/底部：base宽度；左/右：base高度
     private float arrowBasePx = dp(12);
-    // 箭头深度（从边缘向外）
+    //箭头深度（从边缘向外）
     private float arrowDepthPx = dp(8);
     //箭头圆角
     private float arrowCornerRadiusPx = 0;
     private int arrowSide = SIDE_TOP;
-    // 0..1，<0 使用 gravity
+    //0..1，<0 使用 gravity
     private float arrowPercent = -1f;
     private int arrowGravity = GRAVITY_END;
     private int arrowShape = ARROW_SHAPE_ROUNDED_TRIANGLE;
 
-    // 背景 / 渐变（保留之前功能）
+    //背景 / 渐变（保留之前功能）
     private int fillColor = 0xFF333333;
     //渐变开启后阴影不生效
     private boolean useFillGradient = false;
-    // 渐变多点颜色 只要设置了就覆盖bfl_gradientStartColor与bfl_gradientEndColor
+    //渐变多点颜色 只要设置了就覆盖bfl_gradientStartColor与bfl_gradientEndColor
     private int[] fillGradientColors = null;
-    // 渐变多点位置（0..1）
+    //渐变多点位置（0..1）
     private float[] fillGradientPositions = null;
     private float fillGradientAngleDeg = 0f;
     private Shader fillShader = null;
 
-    // 描边
+    //描边
     private int strokeColor = 0x00000000;
     private float strokeWidthPx = 0f;
     //使用渐变，渐变开启后阴影不生效
     private boolean useStrokeGradient = false;
     private Shader strokeShader = null;
 
-    // 虚线
+    //虚线
     private float dashWidthPx = 0f, dashGapPx = 0f, dashPhasePx = 0f;
 
-    // 透明度（0..1）
+    //透明度（0..1）
     private float backgroundAlpha = 1f;
 
-    // 阴影（外部阴影）
-    // shadowRadiusPx: 用户期望的模糊半径（越大越模糊）
-    // shadowSoftnessPx: 额外的“扩散/柔和度”，与 radius 累加构成 Paint#setShadowLayer 的最终 radius
-    // shadowDxPx / shadowDyPx: 偏移。**如果为 0，我们会得到环绕（四周）均匀阴影**；如果你显式设置非 0，则表现为带方向的阴影
+    //阴影（外部阴影）
+    //shadowRadiusPx: 期望的模糊半径（越大越模糊）
+    //shadowSoftnessPx: 额外的“扩散/柔和度”，与 radius 累加构成 Paint#setShadowLayer 的最终 radius
+    //shadowDxPx / shadowDyPx: 偏移。**如果为 0，会得到环绕（四周）均匀阴影**；如果显式设置非 0，则表现为带方向的阴影
     private float shadowRadiusPx = 0f;
-    // 默认 4dp 的额外柔和量，使阴影更发散（更像 iOS）
+    //默认 4dp 的额外柔和量，使阴影更发散（更像 iOS）
     private float shadowSoftnessPx = dp(4);
     private float shadowDxPx = 0f, shadowDyPx = 0f;
-    // 默认更淡一些
+    //默认更淡一些
     private int shadowColor = 0x33000000;
 
-    // 内容 padding（由 setPadding 映射到这里）
+    //内容 padding（由 setPadding 映射到这里）
     private int contentPadL = 0, contentPadT = 0, contentPadR = 0, contentPadB = 0;
-    // 是否自动为箭头让位
+    //是否自动为箭头让位
     private boolean autoInsetPadding = true;
     private boolean hideArrow = false;
+    //箭头隐藏时是否保留箭头高度
+    private boolean holdArrowHeight = false;
 
-    // 计算出的 shadow 外扩量（由 onMeasure 计算）
+    //计算出的 shadow 外扩量（由 onMeasure 计算）
     private int shadowPadLeft = 0, shadowPadTop = 0, shadowPadRight = 0, shadowPadBottom = 0;
-    // last 用于差量偏移子 view，避免重复累加
+    //last 用于差量偏移子 view，避免重复累加
     private int lastShadowOffsetLeft = 0, lastShadowOffsetTop = 0;
 
     public SimplePowerBubbleFrameLayout(Context context) {
@@ -168,7 +171,7 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
             TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.SimplePowerBubbleFrameLayout);
             cornerRadiusPx = a.getDimension(R.styleable.SimplePowerBubbleFrameLayout_bfl_cornerRadius, cornerRadiusPx);
 
-            // 读取单角配置（如果 attrs 中存在这些属性）
+            //读取单角配置（如果 attrs 中存在这些属性）
             if (a.hasValue(R.styleable.SimplePowerBubbleFrameLayout_bfl_cornerRadiusTopLeft))
                 cornerRadiusTopLeftPx = a.getDimension(R.styleable.SimplePowerBubbleFrameLayout_bfl_cornerRadiusTopLeft, Float.NaN);
             if (a.hasValue(R.styleable.SimplePowerBubbleFrameLayout_bfl_cornerRadiusTopRight))
@@ -178,7 +181,7 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
             if (a.hasValue(R.styleable.SimplePowerBubbleFrameLayout_bfl_cornerRadiusBottomLeft))
                 cornerRadiusBottomLeftPx = a.getDimension(R.styleable.SimplePowerBubbleFrameLayout_bfl_cornerRadiusBottomLeft, Float.NaN);
 
-            // 向后兼容：把 arrowWidth/arrowHeight 映射到 base/depth
+            //向后兼容：把 arrowWidth/arrowHeight 映射到 base/depth
             float aw = a.getDimension(R.styleable.SimplePowerBubbleFrameLayout_bfl_arrowWidth, arrowBasePx);
             float ah = a.getDimension(R.styleable.SimplePowerBubbleFrameLayout_bfl_arrowHeight, arrowDepthPx);
             arrowBasePx = aw;
@@ -194,27 +197,28 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
             backgroundAlpha = clamp01(a.getFloat(R.styleable.SimplePowerBubbleFrameLayout_bfl_backgroundAlpha, backgroundAlpha));
             autoInsetPadding = a.getBoolean(R.styleable.SimplePowerBubbleFrameLayout_bfl_autoInsetPadding, true);
             hideArrow = a.getBoolean(R.styleable.SimplePowerBubbleFrameLayout_bfl_hideArrow, hideArrow);
+            holdArrowHeight = a.getBoolean(R.styleable.SimplePowerBubbleFrameLayout_bfl_holdArrowHeight, holdArrowHeight);
 
-            // dash
+            //dash
             dashWidthPx = a.getDimension(R.styleable.SimplePowerBubbleFrameLayout_bfl_dashWidth, 0f);
             dashGapPx = a.getDimension(R.styleable.SimplePowerBubbleFrameLayout_bfl_dashGap, 0f);
             dashPhasePx = a.getDimension(R.styleable.SimplePowerBubbleFrameLayout_bfl_dashPhase, 0f);
 
-            // 阴影（xml 支持）
+            //阴影（xml 支持）
             shadowRadiusPx = a.getDimension(R.styleable.SimplePowerBubbleFrameLayout_bfl_shadowRadius, shadowRadiusPx);
             shadowDxPx = a.getDimension(R.styleable.SimplePowerBubbleFrameLayout_bfl_shadowDx, shadowDxPx);
             shadowDyPx = a.getDimension(R.styleable.SimplePowerBubbleFrameLayout_bfl_shadowDy, shadowDyPx);
             shadowColor = a.getColor(R.styleable.SimplePowerBubbleFrameLayout_bfl_shadowColor, shadowColor);
             shadowSoftnessPx = a.getDimension(R.styleable.SimplePowerBubbleFrameLayout_bfl_shadowSoftness, shadowSoftnessPx);
 
-            // content padding（旧 API 兼容）
+            //content padding（旧 API 兼容）
             int cpAll = a.getDimensionPixelSize(R.styleable.SimplePowerBubbleFrameLayout_bfl_contentPadding, 0);
             contentPadL = a.getDimensionPixelSize(R.styleable.SimplePowerBubbleFrameLayout_bfl_contentPaddingLeft, cpAll);
             contentPadT = a.getDimensionPixelSize(R.styleable.SimplePowerBubbleFrameLayout_bfl_contentPaddingTop, cpAll);
             contentPadR = a.getDimensionPixelSize(R.styleable.SimplePowerBubbleFrameLayout_bfl_contentPaddingRight, cpAll);
             contentPadB = a.getDimensionPixelSize(R.styleable.SimplePowerBubbleFrameLayout_bfl_contentPaddingBottom, cpAll);
 
-            // 简单的两色线性渐变支持（xml）
+            //简单的两色线性渐变支持（xml）
             useFillGradient = a.getBoolean(R.styleable.SimplePowerBubbleFrameLayout_bfl_useGradient, false);
             if (useFillGradient) {
                 int sc = a.getColor(R.styleable.SimplePowerBubbleFrameLayout_bfl_gradientStartColor, fillColor);
@@ -224,7 +228,7 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
                 fillGradientAngleDeg = a.getFloat(R.styleable.SimplePowerBubbleFrameLayout_bfl_gradientAngle, 0f);
             }
 
-            // 从字符串属性读取多点渐变颜色和位置（用英文逗号分隔）
+            //从字符串属性读取多点渐变颜色和位置（用英文逗号分隔）
             String colorsStr = a.getString(R.styleable.SimplePowerBubbleFrameLayout_bfl_gradientColors);
             if (colorsStr != null && colorsStr.trim().length() > 0) {
                 int[] parsed = parseColorString(colorsStr);
@@ -240,18 +244,18 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
             a.recycle();
         }
 
-        // Paint 初始设置
+        //Paint 初始设置
         fillPaint.setStyle(Paint.Style.FILL);
         strokePaint.setStyle(Paint.Style.STROKE);
         strokePaint.setStrokeWidth(strokeWidthPx);
 
-        // 虚线效果
+        //虚线效果
         updateDashEffect();
 
-        // 阴影：采用 effectiveRadius = radius + softness（使阴影更柔和、扩散更广）
-        // 但如果启用了渐变（useFillGradient），为了视觉一致以及避免软件层混合问题，禁用 iOS 风格柔和阴影
+        //阴影：采用 effectiveRadius = radius + softness（使阴影更柔和、扩散更广）
+        //但如果启用了渐变（useFillGradient），为了视觉一致以及避免软件层混合问题，禁用 iOS 风格柔和阴影
         if (useFillGradient) {
-            // 清除 shadow layer，优先使用硬件层渲染以便 Shader 正常工作
+            //清除 shadow layer，优先使用硬件层渲染以便 Shader 正常工作
             fillPaint.clearShadowLayer();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 setLayerType(LAYER_TYPE_HARDWARE, null);
@@ -260,7 +264,7 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
             }
         } else {
             if (getShadowEffectiveRadius() > 0f) {
-                // setShadowLayer 需要软件层绘制
+                //setShadowLayer 需要软件层绘制
                 setLayerType(LAYER_TYPE_SOFTWARE, null);
                 fillPaint.setShadowLayer(getShadowEffectiveRadius(), shadowDxPx, shadowDyPx, shadowColor);
             }
@@ -307,6 +311,12 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
             else if (arrowSide == SIDE_LEFT) l += Math.ceil(arrowDepthPx);
             else if (arrowSide == SIDE_RIGHT) r += Math.ceil(arrowDepthPx);
         }
+        if (hideArrow && holdArrowHeight && autoInsetPadding) {
+            if (arrowSide == SIDE_TOP) t += Math.ceil(arrowDepthPx);
+            else if (arrowSide == SIDE_BOTTOM) b += Math.ceil(arrowDepthPx);
+            else if (arrowSide == SIDE_LEFT) l += Math.ceil(arrowDepthPx);
+            else if (arrowSide == SIDE_RIGHT) r += Math.ceil(arrowDepthPx);
+        }
 
         super.setPadding(l, t, r, b);
     }
@@ -324,7 +334,7 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
         float x0 = cx - dx * halfDiag, y0 = cy - dy * halfDiag;
         float x1 = cx + dx * halfDiag, y1 = cy + dy * halfDiag;
 
-        // positions 可能为 null（表示均匀分布）
+        //positions 可能为 null（表示均匀分布）
         fillShader = new LinearGradient(x0, y0, x1, y1, applyAlphaToColors(fillGradientColors, backgroundAlpha), fillGradientPositions, Shader.TileMode.CLAMP);
         fillPaint.setShader(fillShader);
     }
@@ -341,8 +351,6 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
         strokeShader = null;
         strokePaint.setShader(null);
         if (!useStrokeGradient) return;
-        // 这里的逻辑和 fill 的类似：你可以扩展为多点渐变、径向、扫描等
-        // 暂时使用与 fill 相同的 colors/positions（若需要独立属性，再扩展）
         if (fillGradientColors == null || fillGradientColors.length == 0) return;
         float angleRad = (float) Math.toRadians(fillGradientAngleDeg % 360f);
         float dx = (float) Math.cos(angleRad), dy = (float) Math.sin(angleRad);
@@ -356,22 +364,22 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        // 先让 FrameLayout 测量子 View（尊重 child 的 margin / layoutParams）
+        //先让 FrameLayout 测量子 View（尊重 child 的 margin / layoutParams）
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         int measuredW = getMeasuredWidth();
         int measuredH = getMeasuredHeight();
 
-        // 计算阴影需要的外扩量（环绕式：四边都至少扩展 effRadius）
+        //计算阴影需要的外扩量（环绕式：四边都至少扩展 effRadius）
         int effRadius = (int) Math.ceil(getShadowEffectiveRadius());
 
-        // 如果用户指定了偏移 dx/dy，我们仍然考虑偏移对某些边的额外需求（向右偏移需要右侧更多空间）
+        //如果指定了偏移 dx/dy，仍然考虑偏移对某些边的额外需求（向右偏移需要右侧更多空间）
         int extraL = effRadius + (int) Math.ceil(Math.max(0f, -shadowDxPx));
         int extraR = effRadius + (int) Math.ceil(Math.max(0f, shadowDxPx));
         int extraT = effRadius + (int) Math.ceil(Math.max(0f, -shadowDyPx));
         int extraB = effRadius + (int) Math.ceil(Math.max(0f, shadowDyPx));
 
-        // 期望的最终尺寸
+        //期望的最终尺寸
         int desiredW = measuredW + extraL + extraR;
         int desiredH = measuredH + extraT + extraB;
 
@@ -390,7 +398,7 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
         else if (heightMode == MeasureSpec.AT_MOST) finalH = Math.min(desiredH, heightSize);
         else finalH = desiredH;
 
-        // 分配可用的 extra 空间（优先保证左/上）
+        //分配可用的 extra 空间（优先保证左/上）
         int availableExtraW = Math.max(0, finalW - measuredW);
         shadowPadLeft = Math.min(extraL, availableExtraW);
         shadowPadRight = availableExtraW - shadowPadLeft;
@@ -406,7 +414,7 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
 
-        // 差量偏移，避免重复累加
+        //差量偏移，避免重复累加
         int dx = shadowPadLeft - lastShadowOffsetLeft;
         int dy = shadowPadTop - lastShadowOffsetTop;
 
@@ -430,7 +438,7 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        // shader
+        //shader
         if (useFillGradient && fillShader == null) updateFillShader(getWidth(), getHeight());
         if (!useFillGradient || fillGradientColors == null || fillGradientColors.length == 0) {
             fillPaint.setShader(null);
@@ -441,14 +449,20 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
 
         final float halfStroke = strokeWidthPx > 0 ? strokeWidthPx / 2f : 0f;
 
-        // 绘制区域以 shadowPad 为基准（子 view 已向右/下偏移 shadowPadLeft/Top）
+        //绘制区域以 shadowPad 为基准（子 view 已向右/下偏移 shadowPadLeft/Top）
         float left = shadowPadLeft + halfStroke;
         float top = shadowPadTop + halfStroke;
         float right = getWidth() - shadowPadRight - halfStroke;
         float bottom = getHeight() - shadowPadBottom - halfStroke;
 
-        // 为箭头预留绘制空间（子 view 的 padding 已由 applyEffectivePadding 处理）
+        //为箭头预留绘制空间（子 view 的 padding 已由 applyEffectivePadding 处理）
         if (!hideArrow) {
+            if (arrowSide == SIDE_TOP) top += arrowDepthPx;
+            else if (arrowSide == SIDE_BOTTOM) bottom -= arrowDepthPx;
+            else if (arrowSide == SIDE_LEFT) left += arrowDepthPx;
+            else if (arrowSide == SIDE_RIGHT) right -= arrowDepthPx;
+        }
+        if (hideArrow && holdArrowHeight) {
             if (arrowSide == SIDE_TOP) top += arrowDepthPx;
             else if (arrowSide == SIDE_BOTTOM) bottom -= arrowDepthPx;
             else if (arrowSide == SIDE_LEFT) left += arrowDepthPx;
@@ -458,32 +472,32 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
         rectPath.reset();
         rect.set(left, top, right, bottom);
 
-        // 支持四角不同的圆角：若某角未设置（NaN），回退到 uniform cornerRadiusPx
+        //支持四角不同的圆角：若某角未设置（NaN），回退到 uniform cornerRadiusPx
         float tl = Float.isNaN(cornerRadiusTopLeftPx) ? cornerRadiusPx : cornerRadiusTopLeftPx;
         float tr = Float.isNaN(cornerRadiusTopRightPx) ? cornerRadiusPx : cornerRadiusTopRightPx;
         float br = Float.isNaN(cornerRadiusBottomRightPx) ? cornerRadiusPx : cornerRadiusBottomRightPx;
         float bl = Float.isNaN(cornerRadiusBottomLeftPx) ? cornerRadiusPx : cornerRadiusBottomLeftPx;
 
-        // 限制半径不超过矩形一半
+        //限制半径不超过矩形一半
         float maxR = Math.min(rect.width() / 2f, rect.height() / 2f);
         tl = Math.max(0f, Math.min(tl, maxR));
         tr = Math.max(0f, Math.min(tr, maxR));
         br = Math.max(0f, Math.min(br, maxR));
         bl = Math.max(0f, Math.min(bl, maxR));
 
-        // top-left
+        //top-left
         radii[0] = tl;
         radii[1] = tl;
 
-        // top-right
+        //top-right
         radii[2] = tr;
         radii[3] = tr;
 
-        // bottom-right
+        //bottom-right
         radii[4] = br;
         radii[5] = br;
 
-        // bottom-left
+        //bottom-left
         radii[6] = bl;
         radii[7] = bl;
 
@@ -493,7 +507,7 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
         unionPath.reset();
         boolean merged = false;
 
-        // 构造箭头路径（顶部/底部/左/右）
+        //构造箭头路径（顶部/底部/左/右）
         if (!hideArrow && arrowDepthPx > 0 && arrowBasePx > 0) {
             if (arrowSide == SIDE_TOP || arrowSide == SIDE_BOTTOM) {
                 float usable = rect.right - rect.left - 2f * Math.max(Math.max(tl, tr), Math.max(bl, br));
@@ -561,7 +575,7 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
                                 tipX, cy,
                                 arrowCornerRadiusPx);
                     }
-                } else { // RIGHT
+                } else { //RIGHT
                     baseX = rect.right;
                     tipX = getWidth() - shadowPadRight - halfStroke;
                     if (arrowShape == ARROW_SHAPE_TRIANGLE) {
@@ -579,7 +593,7 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
                 }
             }
 
-            // 合并路径 -> 优先 Path.op（KitKat+），失败或低版本 fallback addPath（保证只 draw 一次）
+            //合并路径 -> 优先 Path.op（KitKat+），失败或低版本 fallback addPath（保证只 draw 一次）
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                 try {
                     merged = unionPath.op(rectPath, triPath, Path.Op.UNION);
@@ -597,7 +611,7 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
             }
         }
 
-        // 一次性绘制合并路径，避免 shadow 被重复绘制
+        //一次性绘制合并路径，避免 shadow 被重复绘制
         if (merged) {
             canvas.drawPath(unionPath, fillPaint);
         } else {
@@ -605,12 +619,12 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
             if (!triPath.isEmpty()) canvas.drawPath(triPath, fillPaint);
         }
 
-        // 描边（可能是渐变或纯色）
+        //描边（可能是渐变或纯色）
         if (!useStrokeGradient) {
             strokePaint.setShader(null);
             strokePaint.setColor(applyAlphaToColor(strokeColor, backgroundAlpha));
         } else {
-            // 已在 updateStrokeShader 中准备好 strokeShader
+            //已在 updateStrokeShader 中准备好 strokeShader
             strokePaint.setShader(strokeShader);
         }
 
@@ -670,120 +684,123 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
     /**
      * 设置统一圆角，会清除任何单角的自定义值，恢复统一半径模式
      */
-    public void setCornerRadius(float px) {
+    public SimplePowerBubbleFrameLayout setCornerRadius(float px) {
         this.cornerRadiusPx = px;
-        // 清除单独角的自定义值，回退到统一半径
+        //清除单独角的自定义值，回退到统一半径
         this.cornerRadiusTopLeftPx = Float.NaN;
         this.cornerRadiusTopRightPx = Float.NaN;
         this.cornerRadiusBottomRightPx = Float.NaN;
         this.cornerRadiusBottomLeftPx = Float.NaN;
-        invalidate();
+        return this;
     }
 
     /**
      * 同时设置四个角的圆角（顺序：top-left, top-right, bottom-right, bottom-left）
      * 调用此方法后，将使用逐角半径；如需恢复统一半径，请调用 setCornerRadius(px)
      */
-    public void setCornerRadii(float topLeftPx, float topRightPx, float bottomRightPx, float bottomLeftPx) {
+    public SimplePowerBubbleFrameLayout setCornerRadii(float topLeftPx, float topRightPx, float bottomRightPx, float bottomLeftPx) {
         this.cornerRadiusTopLeftPx = Math.max(0f, topLeftPx);
         this.cornerRadiusTopRightPx = Math.max(0f, topRightPx);
         this.cornerRadiusBottomRightPx = Math.max(0f, bottomRightPx);
         this.cornerRadiusBottomLeftPx = Math.max(0f, bottomLeftPx);
-        invalidate();
+        return this;
     }
 
-    public void setCornerRadiusTopLeft(float px) {
+    public SimplePowerBubbleFrameLayout setCornerRadiusTopLeft(float px) {
         this.cornerRadiusTopLeftPx = Math.max(0f, px);
-        invalidate();
+        return this;
     }
 
-    public void setCornerRadiusTopRight(float px) {
+    public SimplePowerBubbleFrameLayout setCornerRadiusTopRight(float px) {
         this.cornerRadiusTopRightPx = Math.max(0f, px);
-        invalidate();
+        return this;
     }
 
-    public void setCornerRadiusBottomRight(float px) {
+    public SimplePowerBubbleFrameLayout setCornerRadiusBottomRight(float px) {
         this.cornerRadiusBottomRightPx = Math.max(0f, px);
-        invalidate();
+        return this;
     }
 
-    public void setCornerRadiusBottomLeft(float px) {
+    public SimplePowerBubbleFrameLayout setCornerRadiusBottomLeft(float px) {
         this.cornerRadiusBottomLeftPx = Math.max(0f, px);
-        invalidate();
+        return this;
     }
 
     /**
      * 设置箭头大小（base 沿边的长度，depth 为箭头向外深度）
      */
-    public void setArrowSize(float basePx, float depthPx) {
+    public SimplePowerBubbleFrameLayout setArrowSize(float basePx, float depthPx) {
         this.arrowBasePx = basePx;
         this.arrowDepthPx = depthPx;
         applyEffectivePadding();
-        requestLayout();
-        invalidate();
+        return this;
     }
 
-    public void setArrowCornerRadius(float px) {
+    public SimplePowerBubbleFrameLayout setArrowCornerRadius(float px) {
         this.arrowCornerRadiusPx = px;
-        invalidate();
+        return this;
     }
 
-    public void setArrowSide(int side) {
+    public SimplePowerBubbleFrameLayout setArrowSide(int side) {
         this.arrowSide = side;
         applyEffectivePadding();
-        requestLayout();
-        invalidate();
+        return this;
     }
 
-    public void setArrowPositionPercent(float percent) {
+    public SimplePowerBubbleFrameLayout setArrowPositionPercent(float percent) {
         this.arrowPercent = percent;
-        invalidate();
+        return this;
     }
 
-    public void setArrowGravity(int gravity) {
+    public SimplePowerBubbleFrameLayout setArrowGravity(int gravity) {
         this.arrowGravity = gravity;
-        invalidate();
+        return this;
     }
 
-    public void setArrowShape(int shape) {
+    public SimplePowerBubbleFrameLayout setArrowShape(int shape) {
         this.arrowShape = shape;
-        invalidate();
+        return this;
     }
 
-    public void setHideArrow(boolean hide) {
-        if (this.hideArrow == hide) return;
+    public SimplePowerBubbleFrameLayout setHoldArrowHeight(boolean holdArrowHeight) {
+        if (this.holdArrowHeight == holdArrowHeight) return this;
+        this.holdArrowHeight = holdArrowHeight;
+        return this;
+    }
+
+    public SimplePowerBubbleFrameLayout setHideArrow(boolean hide) {
+        if (this.hideArrow == hide) return this;
         this.hideArrow = hide;
         applyEffectivePadding();
-        requestLayout();
-        invalidate();
+        return this;
     }
 
     public boolean isArrowHidden() {
         return hideArrow;
     }
 
-    public void setFillColor(int color) {
+    public SimplePowerBubbleFrameLayout setFillColor(int color) {
         this.fillColor = color;
         useFillGradient = false;
         fillPaint.setShader(null);
-        invalidate();
+        return this;
     }
 
-    public void setDash(float dashW, float dashGap, float phase) {
+    public SimplePowerBubbleFrameLayout setDash(float dashW, float dashGap, float phase) {
         this.dashWidthPx = dashW;
         this.dashGapPx = dashGap;
         this.dashPhasePx = phase;
         updateDashEffect();
-        invalidate();
+        return this;
     }
 
-    public void setStroke(int color, float widthPx) {
+    public SimplePowerBubbleFrameLayout setStroke(int color, float widthPx) {
         this.strokeColor = color;
         this.strokeWidthPx = widthPx;
         strokePaint.setStrokeWidth(widthPx);
         applyEffectivePadding();
         updateDashEffect();
-        invalidate();
+        return this;
     }
 
     public void setContentPadding(int l, int t, int r, int b) {
@@ -795,25 +812,25 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
         requestLayout();
     }
 
-    public void setAutoInsetPadding(boolean enable) {
+    public SimplePowerBubbleFrameLayout setAutoInsetPadding(boolean enable) {
         this.autoInsetPadding = enable;
         applyEffectivePadding();
-        requestLayout();
+        return this;
     }
 
     /**
      * 普通的 setShadow（保留兼容）。如果 dx/dy 都为 0，则表现为环绕阴影；否则表现为偏移阴影。
      * 注意：如果当前启用了 useFillGradient（在 XML 中 bfl_useGradient 或代码中 setUseFillGradient(true)），
-     * 我们**不会**在 Paint 上设置柔和的 shadow layer（按你的要求：渐变开启时 iOS 柔和阴影不生效）。
+     * 渐变开启时 iOS 柔和阴影不生效
      */
-    public void setShadow(float radiusPx, float dxPx, float dyPx, int color) {
+    public SimplePowerBubbleFrameLayout setShadow(float radiusPx, float dxPx, float dyPx, int color) {
         this.shadowRadiusPx = Math.max(0f, radiusPx);
         this.shadowDxPx = dxPx;
         this.shadowDyPx = dyPx;
         this.shadowColor = color;
 
         if (useFillGradient) {
-            // 渐变开启时禁用柔和 shadow（仅记录参数，不在 Paint 上生效）
+            //渐变开启时禁用柔和 shadow（仅记录参数，不在 Paint 上生效）
             fillPaint.clearShadowLayer();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                 setLayerType(LAYER_TYPE_HARDWARE, null);
@@ -827,8 +844,7 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
                     setLayerType(LAYER_TYPE_HARDWARE, null);
             }
         }
-        requestLayout();
-        invalidate();
+        return this;
     }
 
     /**
@@ -838,7 +854,7 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
      * @param color      阴影颜色（建议使用低 alpha，例如 #33000000）
      * @param softnessPx 额外扩散（使阴影更柔和，默认 4dp）
      */
-    public void setUniformShadow(float radiusPx, int color, float softnessPx) {
+    public SimplePowerBubbleFrameLayout setUniformShadow(float radiusPx, int color, float softnessPx) {
         this.shadowRadiusPx = Math.max(0f, radiusPx);
         this.shadowSoftnessPx = Math.max(0f, softnessPx);
         this.shadowDxPx = 0f;
@@ -846,14 +862,14 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
         this.shadowColor = color;
 
         if (useFillGradient) {
-            // 渐变开启时禁用柔和 shadow
+            //渐变开启时禁用柔和 shadow
             fillPaint.clearShadowLayer();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                 setLayerType(LAYER_TYPE_HARDWARE, null);
         } else {
             if (getShadowEffectiveRadius() > 0f) {
                 setLayerType(LAYER_TYPE_SOFTWARE, null);
-                // 注意：dx/dy 为 0 -> 环绕阴影
+                //注意：dx/dy 为 0 -> 环绕阴影
                 fillPaint.setShadowLayer(getShadowEffectiveRadius(), 0f, 0f, shadowColor);
             } else {
                 fillPaint.clearShadowLayer();
@@ -861,14 +877,13 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
                     setLayerType(LAYER_TYPE_HARDWARE, null);
             }
         }
-        requestLayout();
-        invalidate();
+        return this;
     }
 
-    public void setShadowSoftness(float softnessPx) {
+    public SimplePowerBubbleFrameLayout setShadowSoftness(float softnessPx) {
         this.shadowSoftnessPx = Math.max(0f, softnessPx);
         if (useFillGradient) {
-            // 渐变开启时不生效
+            //渐变开启时不生效
             fillPaint.clearShadowLayer();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                 setLayerType(LAYER_TYPE_HARDWARE, null);
@@ -880,24 +895,31 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
                 fillPaint.clearShadowLayer();
             }
         }
+        return this;
+    }
+
+    /**
+     * 设置参数后开始绘制，避免多次调用invalidate
+     */
+    public void draw() {
         requestLayout();
         invalidate();
     }
 
-    // setPadding 映射到 content padding（保持 FrameLayout 语义）
+    //setPadding 映射到 content padding（保持 FrameLayout 语义）
     @Override
     public void setPadding(int left, int top, int right, int bottom) {
         setContentPadding(left, top, right, bottom);
     }
 
-    // -------------------- 工具方法 --------------------
+    //-------------------- 工具方法 --------------------
     private int applyAlphaToColor(int color, float factor) {
         int baseA = Color.alpha(color);
         int outA = Math.round(baseA * clamp01(factor));
         return (color & 0x00FFFFFF) | (outA << 24);
     }
 
-    // 给颜色数组应用整体透明度 factor（0..1），返回新数组
+    //给颜色数组应用整体透明度 factor（0..1），返回新数组
     private int[] applyAlphaToColors(int[] colors, float factor) {
         if (colors == null) return null;
         int[] out = new int[colors.length];
@@ -930,25 +952,25 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
             String t = p.trim();
             if (t.length() == 0) continue;
             try {
-                // 优先尝试 Color.parseColor（支持 #hex 和 color names）
+                //优先尝试 Color.parseColor（支持 #hex 和 color names）
                 int c = Color.parseColor(t);
                 list.add(c);
                 continue;
             } catch (IllegalArgumentException ignored) {
             }
             try {
-                // 支持 0xAARRGGBB 或 0xRRGGBB
+                //支持 0xAARRGGBB 或 0xRRGGBB
                 String tmp = t.toLowerCase();
                 if (tmp.startsWith("0x")) tmp = tmp.substring(2);
                 long v = Long.parseLong(tmp, 16);
-                // 根据长度判断是否带 alpha
+                //根据长度判断是否带 alpha
                 if (tmp.length() <= 6) {
                     // RRGGBB -> 加上不透明 alpha
                     v = v | 0xFF000000L;
                 }
                 list.add((int) v);
             } catch (Exception ex) {
-                // 解析失败 -> 忽略（不加入）
+                //解析失败 -> 忽略（不加入）
             }
         }
         if (list.isEmpty()) return null;
@@ -972,7 +994,7 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
                 v = Math.max(0f, Math.min(1f, v));
                 list.add(v);
             } catch (Exception ex) {
-                // 忽略无法解析的项
+                //忽略无法解析的项
             }
         }
         if (list.isEmpty()) return null;
