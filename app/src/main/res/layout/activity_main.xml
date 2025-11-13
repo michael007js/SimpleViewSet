@@ -103,6 +103,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="30dp" />
 
+            <com.sss.michael.simpleview.view.HorizontalProgressView
+                android:layout_width="match_parent"
+                android:layout_height="50dp" />
+
             <com.sss.michael.simpleview.view.SimplePowerBubbleFrameLayout
                 android:id="@+id/SimplePowerBubbleFrameLayout"
                 android:layout_width="100dp"
