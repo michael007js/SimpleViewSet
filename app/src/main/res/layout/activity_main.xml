@@ -125,6 +125,10 @@
 
             </com.sss.michael.simpleview.view.SimplePowerBubbleFrameLayout>
 
+            <com.sss.michael.simpleview.view.SimpleDoubleSeekBar3
+                android:layout_width="match_parent"
+                android:layout_height="30dp" />
+
             <com.sss.michael.simpleview.view.SimpleReboundEffectsView
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
@@ -171,10 +175,6 @@
                         <com.sss.michael.simpleview.view.ShadowAlienButtonView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content" />
-
-                        <com.sss.michael.simpleview.view.SimpleDoubleSeekBar3
-                            android:layout_width="match_parent"
-                            android:layout_height="30dp" />
 
                         <com.sss.michael.simpleview.view.SimpleDoubleSeekBar2
                             android:id="@+id/simpleDoubleSeekBar2"
