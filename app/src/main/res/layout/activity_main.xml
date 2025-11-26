@@ -109,20 +109,13 @@
 
             <com.sss.michael.simpleview.view.SimplePowerBubbleFrameLayout
                 android:id="@+id/SimplePowerBubbleFrameLayout"
-                android:layout_width="100dp"
+                android:layout_width="120dp"
                 android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                app:bfl_arrowPositionPercent="0.75"
-                app:bfl_arrowSide="bottom"
-                app:bfl_cornerRadius="8dp"
-                app:bfl_fillColor="#333333"
-                app:bfl_strokeWidth="10dp"
-                app:bfl_stroke_gradientEndColor="#4dffffff"
-                app:bfl_stroke_gradientPositions="0,1"
-                app:bfl_stroke_gradientStartColor="#333333"
-                app:bfl_stroke_gradient_type="radial"
-                app:bfl_useGradient="true"
-                app:bfl_useStrokeGradient="true">
+                android:layout_margin="50dp"
+                app:bfl_fillColor="#ffffff"
+                app:bfl_shadowSoftness="5dp"
+                app:bfl_strokeWidth="0dp"
+                app:bfl_useGradient="false">
 
                 <TextView
                     android:layout_width="wrap_content"

@@ -15,11 +15,13 @@ import android.graphics.Shader;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
 
 import com.sss.michael.simpleview.R;
+import com.sss.michael.simpleview.utils.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -467,8 +469,8 @@ public class SimplePowerBubbleFrameLayout extends FrameLayout {
 
         //分配可用的 extra 空间（优先保证左/上）
         int availableExtraW = Math.max(0, finalW - measuredW);
-        shadowPadLeft = Math.min(extraL, availableExtraW);
-        shadowPadRight = availableExtraW - shadowPadLeft;
+        shadowPadLeft = Math.max(extraL, availableExtraW);
+        shadowPadRight = shadowPadLeft;
 
         int availableExtraH = Math.max(0, finalH - measuredH);
         shadowPadTop = Math.min(extraT, availableExtraH);
