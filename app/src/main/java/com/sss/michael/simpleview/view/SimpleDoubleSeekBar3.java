@@ -35,14 +35,14 @@ public class SimpleDoubleSeekBar3 extends View {
     private int centerY;
     // 进度条的高度
     private int barHeight = DensityUtil.dp2px(6f);
-    // 颜色值
-    private int[] colors = {Color.RED, Color.rgb(255, 165, 0), Color.rgb(86, 203, 59)};
     // 滑动最小值
     private float minValue = 1;
     // 滑动最大值
     private float maxValue = 99;
     //每百分之1占据的像素值
     private float percentValue = 0;
+    //步进
+    float step = 0.1f;
 
     public SimpleDoubleSeekBar3(Context context) {
         super(context, null);
@@ -51,11 +51,11 @@ public class SimpleDoubleSeekBar3 extends View {
     public SimpleDoubleSeekBar3(Context context, AttributeSet attrs) {
         super(context, attrs);
         paint.setStyle(Paint.Style.FILL);
-        setSectionPercents(1, 50, 80, 99, 50, 79);
+        setSectionPercents(1.0f, 5.0f, 1.0f, 2.0f, 5.0f);
         setOnRangeChangeListener(new OnRangeChangeListener() {
             @Override
             public void onRangeChanged(float leftValue, float leftPercent, float rightValue, float rightPercent) {
-                Log.log(leftValue, leftPercent, rightValue, rightPercent);
+                Log.log(leftValue, leftPercent, rightValue, rightPercent, percentValue, reallyValueWidth);
             }
 
             @Override
@@ -67,10 +67,22 @@ public class SimpleDoubleSeekBar3 extends View {
             public float horizontalOffsetOfThumbAtxAxis(boolean leftThumb, float value) {
                 return 0;
             }
+
+            @Override
+            public int onDrawSection(float sectionPercent, int sectionIndexInArray) {
+                return 0xffe9302d;
+            }
         });
     }
 
 
+    /**
+     * @param minValue        最小值
+     * @param maxValue        最大值
+     * @param leftValue       左边滑块值
+     * @param rightValue      右边滑块值
+     * @param sectionPercents 分段背景百分比，多段
+     */
     public void setSectionPercents(float minValue, float maxValue, float leftValue, float rightValue, float... sectionPercents) {
         this.minValue = minValue;
         this.maxValue = maxValue;
@@ -78,6 +90,14 @@ public class SimpleDoubleSeekBar3 extends View {
         this.rightValue = rightValue;
         this.sectionPercents = sectionPercents;
         invalidate();
+    }
+
+    public float getLeftValue() {
+        return leftValue;
+    }
+
+    public float getRightValue() {
+        return rightValue;
     }
 
     @Override
@@ -107,7 +127,14 @@ public class SimpleDoubleSeekBar3 extends View {
             } else {
                 endX = startX + (sectionPercents[i] - sectionPercents[i - 1]) * percentValue - paddingEnd;
             }
-            paint.setColor(colors[i]);
+            int color;
+
+            if (onRangeChangeListener != null) {
+                color = onRangeChangeListener.onDrawSection(sectionPercents[i], i);
+            } else {
+                color = 0x00000000;
+            }
+            paint.setColor(color);
             canvas.drawRect(startX, centerY - barHeight / 2f, endX, centerY + barHeight / 2f, paint);
             startX = endX;
         }
@@ -137,6 +164,7 @@ public class SimpleDoubleSeekBar3 extends View {
             case MotionEvent.ACTION_DOWN:
                 isLeftThumbPressed = leftRect.contains(x, event.getY());
                 isRightThumbPressed = rightRect.contains(x, event.getY());
+                getParent().requestDisallowInterceptTouchEvent(true);
                 return true;
 
             case MotionEvent.ACTION_MOVE:
@@ -146,7 +174,7 @@ public class SimpleDoubleSeekBar3 extends View {
                 boolean changed = false;
 
                 if (isLeftThumbPressed) {
-                    float newLeft = Math.min(newValue, rightValue - 5);
+                    float newLeft = Math.min(newValue, rightValue - step);
                     if (newLeft != leftValue) {
                         newLeft = Math.max(newLeft, minValue);
                         leftValue = newLeft;
@@ -154,7 +182,7 @@ public class SimpleDoubleSeekBar3 extends View {
                     }
                     invalidate();
                 } else if (isRightThumbPressed) {
-                    float newRight = Math.max(newValue, leftValue + 5);
+                    float newRight = Math.max(newValue, leftValue + step);
                     if (newRight != rightValue) {
                         newRight = Math.min(newRight, maxValue);
                         rightValue = newRight;
@@ -179,7 +207,7 @@ public class SimpleDoubleSeekBar3 extends View {
             case MotionEvent.ACTION_UP:
                 isLeftThumbPressed = false;
                 isRightThumbPressed = false;
-                return true;
+                getParent().requestDisallowInterceptTouchEvent(false);
         }
         return super.onTouchEvent(event);
     }
@@ -257,6 +285,19 @@ public class SimpleDoubleSeekBar3 extends View {
                     return value >= 98 ? -DensityUtil.dp2px(10) : 0;
                 }
             }
+
+            @Override
+             public int onDrawSection(float sectionPercent, int sectionIndexInArray) {
+                 if (sectionIndexInArray == 0) {
+                     return Color.RED;
+                 } else if (sectionIndexInArray == 1) {
+                     return Color.rgb(255, 165, 0);
+                 } else if (sectionIndexInArray == 2) {
+                     return Color.rgb(86, 203, 59);
+
+                 }
+                 return 0;
+             }
         });
     * */
     public interface OnRangeChangeListener {
@@ -287,5 +328,14 @@ public class SimpleDoubleSeekBar3 extends View {
          * @return 偏移量
          */
         float horizontalOffsetOfThumbAtxAxis(boolean leftThumb, float value);
+
+        /**
+         * 绘制分段背景进度
+         *
+         * @param sectionPercent      分段百分比数值
+         * @param sectionIndexInArray 分段数组中的下标
+         * @return 分段颜色
+         */
+        int onDrawSection(float sectionPercent, int sectionIndexInArray);
     }
 }
