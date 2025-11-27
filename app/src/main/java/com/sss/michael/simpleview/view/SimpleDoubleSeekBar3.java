@@ -19,9 +19,9 @@ import com.sss.michael.simpleview.utils.Log;
  * @Description 个简单的双头SeekBar
  */
 public class SimpleDoubleSeekBar3 extends View {
-    private float reallyValueWidth;
+    private float reallyValueWidth; // 可用像素宽度（不含 padding）
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private float[] sectionPercents = {20.0f, 80f, 99f}; // 红、黄、绿
+    private float[] sectionPercents = {20.0f, 80f, 99f}; // 分段的“值”位置（假定为与 min/max 同量纲）
     private float leftValue = 0;
     private float rightValue = 0;
     private float paddingStart, paddingEnd;
@@ -39,10 +39,10 @@ public class SimpleDoubleSeekBar3 extends View {
     private float minValue = 1;
     // 滑动最大值
     private float maxValue = 99;
-    //每百分之1占据的像素值
+    // 每单位值对应的像素（value -> px 的比例）
     private float percentValue = 0;
     //步进
-    float step = 0.1f;
+    float step = 0.01f;
 
     public SimpleDoubleSeekBar3(Context context) {
         super(context, null);
@@ -51,7 +51,7 @@ public class SimpleDoubleSeekBar3 extends View {
     public SimpleDoubleSeekBar3(Context context, AttributeSet attrs) {
         super(context, attrs);
         paint.setStyle(Paint.Style.FILL);
-        setSectionPercents(1.0f, 5.0f, 1.0f, 2.0f, 5.0f);
+        setSectionPercents(220, 995, 400, 666, 500, 800, 995);
         setOnRangeChangeListener(new OnRangeChangeListener() {
             @Override
             public void onRangeChanged(float leftValue, float leftPercent, float rightValue, float rightPercent) {
@@ -60,7 +60,7 @@ public class SimpleDoubleSeekBar3 extends View {
 
             @Override
             public String getPreviewText(boolean leftThumb, float value) {
-                return value + "";
+                return String.format("%.2f", value);
             }
 
             @Override
@@ -70,6 +70,13 @@ public class SimpleDoubleSeekBar3 extends View {
 
             @Override
             public int onDrawSection(float sectionPercent, int sectionIndexInArray) {
+                if (sectionIndexInArray == 0) {
+                    return 0xffff0000;
+                } else if (sectionIndexInArray == 1) {
+                    return 0xff00ff00;
+                } else if (sectionIndexInArray == 2) {
+                    return 0xff0000ff;
+                }
                 return 0xffe9302d;
             }
         });
@@ -81,7 +88,7 @@ public class SimpleDoubleSeekBar3 extends View {
      * @param maxValue        最大值
      * @param leftValue       左边滑块值
      * @param rightValue      右边滑块值
-     * @param sectionPercents 分段背景百分比，多段
+     * @param sectionPercents 分段背景百分比，多段（这里的数组表示“值”位置，必须在 [minValue,maxValue] 范围）
      */
     public void setSectionPercents(float minValue, float maxValue, float leftValue, float rightValue, float... sectionPercents) {
         this.minValue = minValue;
@@ -106,10 +113,12 @@ public class SimpleDoubleSeekBar3 extends View {
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec);
         centerY = height / 2;
-        paddingStart = getPaddingStart() | getPaddingLeft();
-        paddingEnd = getPaddingEnd() | getPaddingRight();
+        paddingStart = Math.max(getPaddingStart(), getPaddingLeft());
+        paddingEnd = Math.max(getPaddingEnd(), getPaddingRight());
         reallyValueWidth = width - paddingStart - paddingEnd;
-        percentValue = reallyValueWidth / (maxValue - minValue);
+        if (reallyValueWidth < 0) reallyValueWidth = 0;
+        float valueRange = maxValue - minValue;
+        percentValue = valueRange == 0 ? 0 : (reallyValueWidth / valueRange);
         setMeasuredDimension(width, height);
     }
 
@@ -118,37 +127,48 @@ public class SimpleDoubleSeekBar3 extends View {
         super.onDraw(canvas);
         // 绘制分段颜色条
         float startX = paddingStart;
+        // sectionPercents 数组表示分段“值”位置，按顺序绘制从 minValue 开始的每一段
+        float prevValue = minValue;
         for (int i = 0; i < sectionPercents.length; i++) {
-            float endX;
-            if (i == 0) {
-                endX = startX + sectionPercents[i] * percentValue;
-            } else if (i == sectionPercents.length - 1) {
-                endX = startX + (sectionPercents[i] - sectionPercents[i - 1]) * percentValue;
-            } else {
-                endX = startX + (sectionPercents[i] - sectionPercents[i - 1]) * percentValue - paddingEnd;
-            }
+            float secVal = sectionPercents[i];
+            // clamp secVal 到 [minValue, maxValue]
+            secVal = Math.max(minValue, Math.min(maxValue, secVal));
+            float segWidth = (secVal - prevValue) * percentValue;
+            float endX = startX + segWidth;
             int color;
-
             if (onRangeChangeListener != null) {
-                color = onRangeChangeListener.onDrawSection(sectionPercents[i], i);
+                color = onRangeChangeListener.onDrawSection(secVal, i);
             } else {
                 color = 0x00000000;
             }
             paint.setColor(color);
             canvas.drawRect(startX, centerY - barHeight / 2f, endX, centerY + barHeight / 2f, paint);
             startX = endX;
+            prevValue = secVal;
+        }
+        // 如果最后的分段没有覆盖到 maxValue，则画剩余的（透明或默认色）
+        if (prevValue < maxValue) {
+            float endX = paddingStart + (maxValue - minValue) * percentValue;
+            paint.setColor(0x00000000);
+            canvas.drawRect(startX, centerY - barHeight / 2f, endX, centerY + barHeight / 2f, paint);
         }
 
         paint.setColor(Color.WHITE);
-        // 绘制滑块
-
+        // 绘制滑块（文字、圆角矩形）
         String leftText = onRangeChangeListener == null ? leftValue + "" : onRangeChangeListener.getPreviewText(true, leftValue);
         String rightText = onRangeChangeListener == null ? rightValue + "" : onRangeChangeListener.getPreviewText(false, rightValue);
         float[] leftSize = getTextSize(leftText);
         float[] rightSize = getTextSize(rightText);
 
-        drawThumb(true, canvas, leftSize, leftValue * percentValue + leftSize[0] / 2, leftText, centerY);
-        drawThumb(false, canvas, rightSize, rightValue * percentValue - paddingEnd + rightSize[0] / 2, rightText, centerY);
+        // 计算真正的 x 中心点（值 -> 像素）
+        float leftCenterX = valueToX(leftValue);
+        float rightCenterX = valueToX(rightValue);
+
+        float leftOffset = onRangeChangeListener == null ? 0f : onRangeChangeListener.horizontalOffsetOfThumbAtxAxis(true, leftValue);
+        float rightOffset = onRangeChangeListener == null ? 0f : onRangeChangeListener.horizontalOffsetOfThumbAtxAxis(false, rightValue);
+
+        drawThumb(true, canvas, leftSize, leftCenterX + leftOffset, leftText, centerY);
+        drawThumb(false, canvas, rightSize, rightCenterX + rightOffset, rightText, centerY);
     }
 
     float[] getTextSize(String text) {
@@ -160,44 +180,45 @@ public class SimpleDoubleSeekBar3 extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         float x = event.getX();
+        float y = event.getY();
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                isLeftThumbPressed = leftRect.contains(x, event.getY());
-                isRightThumbPressed = rightRect.contains(x, event.getY());
+                isLeftThumbPressed = leftRect.contains(x, y);
+                isRightThumbPressed = rightRect.contains(x, y);
                 getParent().requestDisallowInterceptTouchEvent(true);
                 return true;
 
             case MotionEvent.ACTION_MOVE:
-                float percent = x / percentValue;
-                percent = Math.max(minValue, Math.min(maxValue, percent));
-                int newValue = Math.round(percent);
+                // 像素 -> 值（扣除 paddingStart）
+                float rawValue = xToValue(x);
+                rawValue = Math.max(minValue, Math.min(maxValue, rawValue));
+                // 对齐到 step
+                float stepped = alignToStep(rawValue);
+
                 boolean changed = false;
 
                 if (isLeftThumbPressed) {
-                    float newLeft = Math.min(newValue, rightValue - step);
-                    if (newLeft != leftValue) {
-                        newLeft = Math.max(newLeft, minValue);
+                    // 不超过右侧 - step
+                    float newLeft = Math.min(stepped, rightValue - step);
+                    newLeft = Math.max(newLeft, minValue);
+                    if (Float.compare(newLeft, leftValue) != 0) {
                         leftValue = newLeft;
                         changed = true;
                     }
-                    invalidate();
                 } else if (isRightThumbPressed) {
-                    float newRight = Math.max(newValue, leftValue + step);
-                    if (newRight != rightValue) {
-                        newRight = Math.min(newRight, maxValue);
+                    float newRight = Math.max(stepped, leftValue + step);
+                    newRight = Math.min(newRight, maxValue);
+                    if (Float.compare(newRight, rightValue) != 0) {
                         rightValue = newRight;
                         changed = true;
                     }
-                    invalidate();
                 }
                 if (changed) {
                     if (onRangeChangeListener != null) {
-                        float leftPercent = leftValue / reallyValueWidth * 10;
-                        leftPercent = Math.max(leftPercent, 0);
-                        leftPercent = Math.min(leftPercent, 1);
-                        float rightPercent = rightValue / reallyValueWidth * 10;
-                        rightPercent = Math.min(rightPercent, 1);
-                        rightPercent = Math.max(rightPercent, 0);
+                        float leftPercent = (leftValue - minValue) / (maxValue - minValue);
+                        float rightPercent = (rightValue - minValue) / (maxValue - minValue);
+                        leftPercent = Math.max(0f, Math.min(1f, leftPercent));
+                        rightPercent = Math.max(0f, Math.min(1f, rightPercent));
                         onRangeChangeListener.onRangeChanged(leftValue, leftPercent, rightValue, rightPercent);
                     }
                     invalidate();
@@ -205,9 +226,12 @@ public class SimpleDoubleSeekBar3 extends View {
                 return true;
 
             case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
                 isLeftThumbPressed = false;
                 isRightThumbPressed = false;
                 getParent().requestDisallowInterceptTouchEvent(false);
+                invalidate();
+                return true;
         }
         return super.onTouchEvent(event);
     }
@@ -218,25 +242,20 @@ public class SimpleDoubleSeekBar3 extends View {
     private void drawThumb(boolean leftThumb, Canvas canvas, float[] textSize, float xCenter, String text, int centerY) {
         float textWidth = textSize[0];
         float rectWidth = textWidth + thumbPadding * 2;
-        float rectHeight = textSize[1]/* + thumbPadding * 2*/;
+        float rectHeight = textSize[1]; // 文字高度已经包含 ascent/descent
         float left = xCenter - rectWidth / 2;
         float top = centerY - rectHeight / 2;
         float right = xCenter + rectWidth / 2;
         float bottom = centerY + rectHeight / 2;
 
         // 背景：白底
+        paint.setStyle(Paint.Style.FILL);
         paint.setColor(Color.WHITE);
-        float offset = 0;
-        if (onRangeChangeListener != null) {
-            offset = onRangeChangeListener.horizontalOffsetOfThumbAtxAxis(leftThumb, leftThumb ? leftValue : rightValue);
-        } else {
-            offset = leftThumb ? (leftValue < 2 ? DensityUtil.dp2px(5) : 0) : 0;
-        }
 
         if (leftThumb) {
-            leftRect.set(left + offset, top, right + offset, bottom);
+            leftRect.set(left, top, right, bottom);
         } else {
-            rightRect.set(left + offset, top, right + offset, bottom);
+            rightRect.set(left, top, right, bottom);
         }
         canvas.drawRoundRect(leftThumb ? leftRect : rightRect, rectHeight / 2, rectHeight / 2, paint); // 椭圆效果
 
@@ -253,9 +272,38 @@ public class SimpleDoubleSeekBar3 extends View {
         paint.setTextAlign(Paint.Align.CENTER);
         Paint.FontMetrics fm = paint.getFontMetrics();
         float textY = centerY - (fm.ascent + fm.descent) / 2;
-        canvas.drawText(text, xCenter + offset, textY, paint);
+        canvas.drawText(text, xCenter, textY, paint);
     }
 
+    /**
+     * 将值转换为控件内的 x 坐标（像素）
+     */
+    private float valueToX(float value) {
+        if (percentValue == 0) {
+            return paddingStart;
+        }
+        float clamped = Math.max(minValue, Math.min(maxValue, value));
+        return paddingStart + (clamped - minValue) * percentValue;
+    }
+
+    /**
+     * 将 x（像素）转换为对应的值（在 minValue..maxValue 范围内）
+     */
+    private float xToValue(float x) {
+        if (percentValue == 0) return minValue;
+        float relative = x - paddingStart;
+        float val = minValue + (relative / percentValue);
+        return val;
+    }
+
+    /**
+     * 按 step 对齐（避免浮点抖动）
+     */
+    private float alignToStep(float raw) {
+        if (step <= 0) return raw;
+        float steps = Math.round(raw / step);
+        return steps * step;
+    }
 
     private OnRangeChangeListener onRangeChangeListener;
 
@@ -305,9 +353,9 @@ public class SimpleDoubleSeekBar3 extends View {
          * 范围已更改时被调用
          *
          * @param leftValue    左边滑块条值（不是百分比）
-         * @param leftPercent  左边滑块条百分比
+         * @param leftPercent  左边滑块条百分比（0..1）
          * @param rightValue   右边滑块条值（不是百分比）
-         * @param rightPercent 右边滑块条百分比
+         * @param rightPercent 右边滑块条百分比（0..1）
          */
         void onRangeChanged(float leftValue, float leftPercent, float rightValue, float rightPercent);
 
@@ -325,14 +373,14 @@ public class SimpleDoubleSeekBar3 extends View {
          *
          * @param leftThumb 是否是左边滑块
          * @param value     值
-         * @return 偏移量
+         * @return 偏移量（像素）
          */
         float horizontalOffsetOfThumbAtxAxis(boolean leftThumb, float value);
 
         /**
          * 绘制分段背景进度
          *
-         * @param sectionPercent      分段百分比数值
+         * @param sectionPercent      分段百分比数值（这里传入的是该段对应的“值”位置）
          * @param sectionIndexInArray 分段数组中的下标
          * @return 分段颜色
          */
