@@ -10,6 +10,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.sss.michael.simpleview.utils.DensityUtil;
+import com.sss.michael.simpleview.utils.DrawViewUtils;
 import com.sss.michael.simpleview.utils.Log;
 
 /**
@@ -18,13 +19,12 @@ import com.sss.michael.simpleview.utils.Log;
  * @Description 个简单的双头SeekBar
  */
 public class SimpleDoubleSeekBar3 extends View {
-    private int width, height;
+    private float reallyValueWidth;
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private float[] sectionPercents = {20.0f, 80f, 99f}; // 红、黄、绿
     private float leftValue = 0;
     private float rightValue = 0;
-    // 滑块的宽度
-    private int thumbRadius = DensityUtil.dp2px(12);
+    private float paddingStart, paddingEnd;
     // 滑块内边距
     private float thumbPadding = DensityUtil.dp2px(4);
     // 是否按住左边滑块
@@ -35,16 +35,14 @@ public class SimpleDoubleSeekBar3 extends View {
     private int centerY;
     // 进度条的高度
     private int barHeight = DensityUtil.dp2px(6f);
-    // 每个色块开始的x值
-    private float startX;
     // 颜色值
     private int[] colors = {Color.RED, Color.rgb(255, 165, 0), Color.rgb(86, 203, 59)};
     // 滑动最小值
     private float minValue = 1;
     // 滑动最大值
     private float maxValue = 99;
+    //每百分之1占据的像素值
     private float percentValue = 0;
-    private String unit = "%";
 
     public SimpleDoubleSeekBar3(Context context) {
         super(context, null);
@@ -53,7 +51,23 @@ public class SimpleDoubleSeekBar3 extends View {
     public SimpleDoubleSeekBar3(Context context, AttributeSet attrs) {
         super(context, attrs);
         paint.setStyle(Paint.Style.FILL);
-        setSectionPercents(0, 100, 60, 80, 50, 70, 100);
+        setSectionPercents(1, 50, 80, 99, 50, 79);
+        setOnRangeChangeListener(new OnRangeChangeListener() {
+            @Override
+            public void onRangeChanged(float leftValue, float leftPercent, float rightValue, float rightPercent) {
+                Log.log(leftValue, leftPercent, rightValue, rightPercent);
+            }
+
+            @Override
+            public String getPreviewText(boolean leftThumb, float value) {
+                return value + "";
+            }
+
+            @Override
+            public float horizontalOffsetOfThumbAtxAxis(boolean leftThumb, float value) {
+                return 0;
+            }
+        });
     }
 
 
@@ -66,23 +80,16 @@ public class SimpleDoubleSeekBar3 extends View {
         invalidate();
     }
 
-
-    public void setSectionPercents(int leftValue, int rightValue) {
-        if (minValue <= leftValue && leftValue < rightValue && rightValue <= maxValue) {
-            this.leftValue = leftValue;
-            this.rightValue = rightValue;
-            invalidate();
-        }
-    }
-
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        width = MeasureSpec.getSize(widthMeasureSpec);
-        height = MeasureSpec.getSize(heightMeasureSpec);
+        int width = MeasureSpec.getSize(widthMeasureSpec);
+        int height = MeasureSpec.getSize(heightMeasureSpec);
         centerY = height / 2;
-        startX = getPaddingStart();
-        percentValue = (float) (width - getPaddingStart() - getPaddingEnd()) / (maxValue - minValue);
+        paddingStart = getPaddingStart() | getPaddingLeft();
+        paddingEnd = getPaddingEnd() | getPaddingRight();
+        reallyValueWidth = width - paddingStart - paddingEnd;
+        percentValue = reallyValueWidth / (maxValue - minValue);
         setMeasuredDimension(width, height);
     }
 
@@ -90,9 +97,16 @@ public class SimpleDoubleSeekBar3 extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         // 绘制分段颜色条
-        startX = getPaddingStart();
+        float startX = paddingStart;
         for (int i = 0; i < sectionPercents.length; i++) {
-            float endX = i == 0 ? (startX + sectionPercents[i] * percentValue) : (startX + (sectionPercents[i] - sectionPercents[i - 1]) * percentValue);
+            float endX;
+            if (i == 0) {
+                endX = startX + sectionPercents[i] * percentValue;
+            } else if (i == sectionPercents.length - 1) {
+                endX = startX + (sectionPercents[i] - sectionPercents[i - 1]) * percentValue;
+            } else {
+                endX = startX + (sectionPercents[i] - sectionPercents[i - 1]) * percentValue - paddingEnd;
+            }
             paint.setColor(colors[i]);
             canvas.drawRect(startX, centerY - barHeight / 2f, endX, centerY + barHeight / 2f, paint);
             startX = endX;
@@ -101,25 +115,19 @@ public class SimpleDoubleSeekBar3 extends View {
         paint.setColor(Color.WHITE);
         // 绘制滑块
 
-        float[] leftSize = getTextSize(leftValue + unit);
-        float[] rightSize = getTextSize(leftValue + unit);
+        String leftText = onRangeChangeListener == null ? leftValue + "" : onRangeChangeListener.getPreviewText(true, leftValue);
+        String rightText = onRangeChangeListener == null ? rightValue + "" : onRangeChangeListener.getPreviewText(false, rightValue);
+        float[] leftSize = getTextSize(leftText);
+        float[] rightSize = getTextSize(rightText);
 
-        drawThumb(canvas, leftSize, leftValue * percentValue + getPaddingStart(), leftValue + unit, centerY);
-        drawThumb(canvas, rightSize, rightValue * percentValue, rightValue + unit, centerY);
+        drawThumb(true, canvas, leftSize, leftValue * percentValue + leftSize[0] / 2, leftText, centerY);
+        drawThumb(false, canvas, rightSize, rightValue * percentValue - paddingEnd + rightSize[0] / 2, rightText, centerY);
     }
 
     float[] getTextSize(String text) {
-        float[] size = new float[2];
         paint.setTextSize(DensityUtil.sp2px(14f));
         paint.setTextAlign(Paint.Align.CENTER);
-        Paint.FontMetrics fm = paint.getFontMetrics();
-        float textHeight = fm.bottom - fm.top;
-        Log.log(text);
-        float textWidth = paint.measureText(text);
-        textWidth = textWidth + DensityUtil.dp2px(5);
-        size[0] = textWidth;
-        size[1] = textHeight;
-        return size;
+        return DrawViewUtils.getTextWHF(paint, text);
     }
 
     @Override
@@ -127,8 +135,8 @@ public class SimpleDoubleSeekBar3 extends View {
         float x = event.getX();
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                isLeftThumbPressed = Math.abs(x - leftValue * percentValue) < thumbRadius * 2;
-                isRightThumbPressed = Math.abs(x - rightValue * percentValue) < thumbRadius * 2;
+                isLeftThumbPressed = leftRect.contains(x, event.getY());
+                isRightThumbPressed = rightRect.contains(x, event.getY());
                 return true;
 
             case MotionEvent.ACTION_MOVE:
@@ -156,7 +164,13 @@ public class SimpleDoubleSeekBar3 extends View {
                 }
                 if (changed) {
                     if (onRangeChangeListener != null) {
-                        onRangeChangeListener.onRangeChanged(leftValue, rightValue);
+                        float leftPercent = leftValue / reallyValueWidth * 10;
+                        leftPercent = Math.max(leftPercent, 0);
+                        leftPercent = Math.min(leftPercent, 1);
+                        float rightPercent = rightValue / reallyValueWidth * 10;
+                        rightPercent = Math.min(rightPercent, 1);
+                        rightPercent = Math.max(rightPercent, 0);
+                        onRangeChangeListener.onRangeChanged(leftValue, leftPercent, rightValue, rightPercent);
                     }
                     invalidate();
                 }
@@ -170,11 +184,13 @@ public class SimpleDoubleSeekBar3 extends View {
         return super.onTouchEvent(event);
     }
 
-    private void drawThumb(Canvas canvas, float[] textSize, float xCenter, String text, int centerY) {
+    RectF leftRect = new RectF();
+    RectF rightRect = new RectF();
+
+    private void drawThumb(boolean leftThumb, Canvas canvas, float[] textSize, float xCenter, String text, int centerY) {
         float textWidth = textSize[0];
         float rectWidth = textWidth + thumbPadding * 2;
         float rectHeight = textSize[1]/* + thumbPadding * 2*/;
-
         float left = xCenter - rectWidth / 2;
         float top = centerY - rectHeight / 2;
         float right = xCenter + rectWidth / 2;
@@ -182,14 +198,25 @@ public class SimpleDoubleSeekBar3 extends View {
 
         // 背景：白底
         paint.setColor(Color.WHITE);
-        RectF rect = new RectF(left, top, right, bottom);
-        canvas.drawRoundRect(rect, rectHeight / 2, rectHeight / 2, paint); // 椭圆效果
+        float offset = 0;
+        if (onRangeChangeListener != null) {
+            offset = onRangeChangeListener.horizontalOffsetOfThumbAtxAxis(leftThumb, leftThumb ? leftValue : rightValue);
+        } else {
+            offset = leftThumb ? (leftValue < 2 ? DensityUtil.dp2px(5) : 0) : 0;
+        }
+
+        if (leftThumb) {
+            leftRect.set(left + offset, top, right + offset, bottom);
+        } else {
+            rightRect.set(left + offset, top, right + offset, bottom);
+        }
+        canvas.drawRoundRect(leftThumb ? leftRect : rightRect, rectHeight / 2, rectHeight / 2, paint); // 椭圆效果
 
         // 边框：红色
         paint.setStyle(Paint.Style.STROKE);
         paint.setColor(Color.parseColor("#E9302D"));
         paint.setStrokeWidth(DensityUtil.dp2px(1));
-        canvas.drawRoundRect(rect, rectHeight / 2, rectHeight / 2, paint);
+        canvas.drawRoundRect(leftThumb ? leftRect : rightRect, rectHeight / 2, rectHeight / 2, paint);
 
         // 文字：红色
         paint.setStyle(Paint.Style.FILL);
@@ -198,12 +225,9 @@ public class SimpleDoubleSeekBar3 extends View {
         paint.setTextAlign(Paint.Align.CENTER);
         Paint.FontMetrics fm = paint.getFontMetrics();
         float textY = centerY - (fm.ascent + fm.descent) / 2;
-        canvas.drawText(text, xCenter, textY, paint);
+        canvas.drawText(text, xCenter + offset, textY, paint);
     }
 
-    public void setUnit(String unit) {
-        this.unit = unit;
-    }
 
     private OnRangeChangeListener onRangeChangeListener;
 
@@ -211,7 +235,57 @@ public class SimpleDoubleSeekBar3 extends View {
         this.onRangeChangeListener = listener;
     }
 
+    /*
+    eg:
+       setOnRangeChangeListener(new OnRangeChangeListener() {
+            @Override
+            public void onRangeChanged(float leftPercent, float rightPercent) {
+                Log.log(leftPercent, rightPercent);
+            }
+
+            @Override
+            public String getPreviewText(boolean left, float value) {
+                return value + "" + left;
+            }
+
+            @Override
+            public float offset(boolean leftThumb, float value) {
+
+                if (leftThumb) {
+                    return value <= 2 ? DensityUtil.dp2px(5) : 0;
+                } else {
+                    return value >= 98 ? -DensityUtil.dp2px(10) : 0;
+                }
+            }
+        });
+    * */
     public interface OnRangeChangeListener {
-        void onRangeChanged(float leftPercent, float rightPercent);
+        /**
+         * 范围已更改时被调用
+         *
+         * @param leftValue    左边滑块条值（不是百分比）
+         * @param leftPercent  左边滑块条百分比
+         * @param rightValue   右边滑块条值（不是百分比）
+         * @param rightPercent 右边滑块条百分比
+         */
+        void onRangeChanged(float leftValue, float leftPercent, float rightValue, float rightPercent);
+
+        /**
+         * 渲染文字（实时）
+         *
+         * @param leftThumb 是否是左边滑块
+         * @param value     值
+         * @return 渲染文字
+         */
+        String getPreviewText(boolean leftThumb, float value);
+
+        /**
+         * 滑块的X轴横向偏移量（应对滑动到左右顶点时不灵敏的问题）
+         *
+         * @param leftThumb 是否是左边滑块
+         * @param value     值
+         * @return 偏移量
+         */
+        float horizontalOffsetOfThumbAtxAxis(boolean leftThumb, float value);
     }
 }
