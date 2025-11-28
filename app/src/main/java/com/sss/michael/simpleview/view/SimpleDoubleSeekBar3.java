@@ -43,6 +43,10 @@ public class SimpleDoubleSeekBar3 extends View {
     private float percentValue = 0;
     //步进
     float step = 0.01f;
+    //滑块未覆盖边框（两边颜色）
+    private int sideStrokeColor = 0xfff2f2f2;
+    //滑块未覆盖（两边颜色）
+    private int sideColor = 0xfff2f2f2;
 
     public SimpleDoubleSeekBar3(Context context) {
         super(context, null);
@@ -82,14 +86,6 @@ public class SimpleDoubleSeekBar3 extends View {
         });
     }
 
-
-    /**
-     * @param minValue        最小值
-     * @param maxValue        最大值
-     * @param leftValue       左边滑块值
-     * @param rightValue      右边滑块值
-     * @param sectionPercents 分段背景百分比，多段（这里的数组表示“值”位置，必须在 [minValue,maxValue] 范围）
-     */
     public void setSectionPercents(float minValue, float maxValue, float leftValue, float rightValue, float... sectionPercents) {
         this.minValue = minValue;
         this.maxValue = maxValue;
@@ -133,28 +129,24 @@ public class SimpleDoubleSeekBar3 extends View {
         float barBottom = centerY + barHeight / 2f;
         RectF barRect = new RectF(paddingStart, barTop, maxX, barBottom);
 
-        // 绘制进度条整体边框（灰色）
-//        paint.setStyle(Paint.Style.STROKE);
-//        paint.setColor(0xffcccccc); // 边框颜色（浅灰）
-//        paint.setStrokeWidth(DensityUtil.dp2px(1));
         float cornerRadius = Math.max(DensityUtil.dp2px(4), barHeight / 2f);
         canvas.drawRoundRect(barRect, cornerRadius, cornerRadius, paint);
-        paint.setStyle(Paint.Style.FILL); // 恢复填充模式
+        paint.setStyle(Paint.Style.FILL);
 
-        // 绘制左区域（min → 左滑块）：浅灰色背景 + 边框（只绘制在有效区内）
+        // 左区域
         if (leftX > paddingStart) {
             paint.setStyle(Paint.Style.FILL);
-            paint.setColor(0xfff2f2f2); // 浅灰底色
+            paint.setColor(sideColor);
             canvas.drawRoundRect(paddingStart, barTop, leftX, barBottom, cornerRadius, cornerRadius, paint);
 
             paint.setStyle(Paint.Style.STROKE);
-            paint.setColor(0xfff2f2f2);
+            paint.setColor(sideStrokeColor);
             paint.setStrokeWidth(DensityUtil.dp2px(1));
             canvas.drawRoundRect(paddingStart, barTop, leftX, barBottom, cornerRadius, cornerRadius, paint);
             paint.setStyle(Paint.Style.FILL);
         }
 
-        // 绘制中间区域（左滑块 → 右滑块）：按原分段逐段绘制，但只绘制与 [leftX,rightX] 有交集的部分
+        // 中间分段
         if (rightX > leftX) {
             float startX = paddingStart;
             float prevValue = minValue;
@@ -163,7 +155,7 @@ public class SimpleDoubleSeekBar3 extends View {
                 secVal = Math.max(minValue, Math.min(maxValue, secVal));
                 float segStartX = startX;
                 float segEndX = startX + (secVal - prevValue) * percentValue;
-                // 计算当前分段与选中区的交集区间（如果有）
+
                 float drawLeft = Math.max(segStartX, leftX);
                 float drawRight = Math.min(segEndX, rightX);
                 if (drawRight > drawLeft) {
@@ -172,18 +164,17 @@ public class SimpleDoubleSeekBar3 extends View {
                     paint.setColor(color);
                     canvas.drawRect(drawLeft, barTop, drawRight, barBottom, paint);
                 }
-                // 进度继续累加
+
                 startX = segEndX;
                 prevValue = secVal;
             }
-            // 如果 sectionPercents 没覆盖到 maxValue），需要考虑其与选中区的交集
+
             if (prevValue < maxValue) {
                 float segStartX = startX;
                 float segEndX = paddingStart + (maxValue - minValue) * percentValue;
                 float drawLeft = Math.max(segStartX, leftX);
                 float drawRight = Math.min(segEndX, rightX);
                 if (drawRight > drawLeft) {
-                    // 没有回调颜色的话保持透明或默认色（这里用默认红）
                     int color = onRangeChangeListener != null ? onRangeChangeListener.onDrawSection(maxValue, sectionPercents.length) : 0xffe9302d;
                     paint.setStyle(Paint.Style.FILL);
                     paint.setColor(color);
@@ -192,20 +183,20 @@ public class SimpleDoubleSeekBar3 extends View {
             }
         }
 
-        // 5. 绘制右区域（右滑块 → max）：浅灰色背景 + 边框（只绘制在有效区内）
+        // 右侧区域
         if (rightX < maxX) {
             paint.setStyle(Paint.Style.FILL);
-            paint.setColor(0xfff2f2f2); // 浅灰底色
+            paint.setColor(sideColor);
             canvas.drawRoundRect(rightX, barTop, maxX, barBottom, cornerRadius, cornerRadius, paint);
 
             paint.setStyle(Paint.Style.STROKE);
-            paint.setColor(0xfff2f2f2);
+            paint.setColor(sideStrokeColor);
             paint.setStrokeWidth(DensityUtil.dp2px(1));
             canvas.drawRoundRect(rightX, barTop, maxX, barBottom, cornerRadius, cornerRadius, paint);
             paint.setStyle(Paint.Style.FILL);
         }
 
-        // -------------- 以下保留原滑块绘制逻辑 --------------
+        // 滑块绘制
         paint.setColor(Color.WHITE);
         String leftText = onRangeChangeListener == null ? leftValue + "" : onRangeChangeListener.getPreviewText(true, leftValue);
         String rightText = onRangeChangeListener == null ? rightValue + "" : onRangeChangeListener.getPreviewText(false, rightValue);
@@ -237,11 +228,32 @@ public class SimpleDoubleSeekBar3 extends View {
             case MotionEvent.ACTION_DOWN:
                 isLeftThumbPressed = leftRect.contains(x, y);
                 isRightThumbPressed = rightRect.contains(x, y);
+
+                // 两个thumb重叠时的处理 尊选先来后到区分
+                if (isLeftThumbPressed && isRightThumbPressed) {
+                    float leftCenter = leftRect.centerX();
+                    float rightCenter = rightRect.centerX();
+                    float distLeft = Math.abs(x - leftCenter);
+                    float distRight = Math.abs(x - rightCenter);
+
+                    if (distLeft < distRight) {
+                        isRightThumbPressed = false; // 更靠近左 → 拖左
+                    } else if (distRight < distLeft) {
+                        isLeftThumbPressed = false; // 更靠近右 → 拖右
+                    } else {
+                        // 真正重叠时：根据点击方向决定优先权
+                        if (x < leftCenter) {
+                            isRightThumbPressed = false; // 左侧点击 → 拖左
+                        } else {
+                            isLeftThumbPressed = false; // 右侧点击 → 拖右
+                        }
+                    }
+                }
                 getParent().requestDisallowInterceptTouchEvent(true);
                 return true;
 
             case MotionEvent.ACTION_MOVE:
-                // 像素 -> 值（扣除 paddingStart）
+                // 像素 -> 值（减去 paddingStart）
                 float rawValue = xToValue(x);
                 rawValue = Math.max(minValue, Math.min(maxValue, rawValue));
                 // 对齐到 step
@@ -294,7 +306,7 @@ public class SimpleDoubleSeekBar3 extends View {
     private void drawThumb(boolean leftThumb, Canvas canvas, float[] textSize, float xCenter, String text, int centerY) {
         float textWidth = textSize[0];
         float rectWidth = textWidth + thumbPadding * 2;
-        float rectHeight = textSize[1]; // 文字高度已经包含 ascent/descent
+        float rectHeight = textSize[1];
         float left = xCenter - rectWidth / 2;
         float top = centerY - rectHeight / 2;
         float right = xCenter + rectWidth / 2;
