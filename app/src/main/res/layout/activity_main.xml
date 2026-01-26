@@ -125,11 +125,12 @@
 
             </com.sss.michael.simpleview.view.SimplePowerBubbleFrameLayout>
 
+
             <com.sss.michael.simpleview.view.SimpleDoubleSeekBar3
                 android:layout_width="match_parent"
-                android:paddingHorizontal="20dp"
+                android:layout_height="30dp"
                 android:layout_marginHorizontal="10dp"
-                android:layout_height="30dp" />
+                android:paddingHorizontal="20dp" />
 
             <com.sss.michael.simpleview.view.SimpleReboundEffectsView
                 android:layout_width="match_parent"
@@ -137,6 +138,7 @@
                 android:layout_weight="1"
                 app:sre_attenuation="1"
                 app:sre_interceptSlideScope="0dp">
+
 
                 <androidx.core.widget.NestedScrollView
                     android:id="@+id/nestedScrollView"
@@ -149,9 +151,13 @@
                         android:gravity="center"
                         android:orientation="vertical">
 
+                        <com.sss.michael.simpleview.view.SimpleCreditScoreView
+                            android:layout_width="200dp"
+                            android:layout_height="wrap_content" />
+
                         <com.sss.michael.simpleview.view.SimpleDanmuView
                             android:layout_width="match_parent"
-                            android:layout_height="150dp" />
+                            android:layout_height="wrap_content" />
 
                         <com.sss.michael.simpleview.view.SimpleRecommendDashboardView
                             android:layout_width="match_parent"
