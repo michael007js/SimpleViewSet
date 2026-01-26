@@ -244,6 +244,16 @@
         <attr name="bfl_holdArrowHeight" format="boolean" />
 
     </declare-styleable>
+
+    <!--SimpleRoundTabView-->
+    <declare-styleable name="SimpleRoundTabView">
+        <!--内部矩阵与背景之间的间距-->
+        <attr name="srtv_distance" format="dimension" />
+        <!--遮罩色-->
+        <attr name="srtv_maskColor" format="color" />
+        <!--背景色-->
+        <attr name="srtv_backgroundColor" format="color" />
+    </declare-styleable>
     <declare-styleable name="SimpleRoundTabViewV3">
         <attr name="srtv3_maskColor" format="color" />
         <attr name="srtv3_backgroundColor" format="color" />

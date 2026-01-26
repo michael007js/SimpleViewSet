@@ -3,6 +3,7 @@ package com.sss.michael.simpleview.view;
 import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -13,6 +14,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 
+import com.sss.michael.simpleview.R;
 import com.sss.michael.simpleview.utils.DensityUtil;
 import com.sss.michael.simpleview.utils.DrawViewUtils;
 
@@ -43,7 +45,7 @@ public class SimpleRoundTabView extends View {
     /**
      * 遮罩色
      */
-    private int maskColor = Color.parseColor("#00ff00");
+    private int maskColor = Color.parseColor("#ffffff");
     /**
      * 遮罩矩阵
      */
@@ -95,6 +97,12 @@ public class SimpleRoundTabView extends View {
                 list.add(simpleRoundTabBean);
             }
         }
+        TypedArray a = context.obtainStyledAttributes(attrs,
+                R.styleable.SimpleRoundTabView, defStyleAttr, defStyleAttr);
+        distance = a.getDimensionPixelOffset(R.styleable.SimpleRoundTabView_srtv_distance, distance);
+        maskColor = a.getColor(R.styleable.SimpleRoundTabView_srtv_maskColor, maskColor);
+        backgroundColor = a.getColor(R.styleable.SimpleRoundTabView_srtv_backgroundColor, backgroundColor);
+        a.recycle();
     }
 
     @Override
@@ -135,7 +143,7 @@ public class SimpleRoundTabView extends View {
 
 
         if (list.size() > 0) {
-            //等分每个tab的宽度
+            // 等分每个tab的宽度
             eachRectWidth = (width - distance * 2) / list.size();
             for (int i = 0; i < list.size(); i++) {
                 if (i == 0) {
@@ -159,16 +167,16 @@ public class SimpleRoundTabView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        //绘制背景
+        // 绘制背景
         paint.setColor(backgroundColor);
         canvas.drawRoundRect(backgroundRectF, getRadius(false), getRadius(false), paint);
 
-        //绘制前景tab矩阵
+        // 绘制前景tab矩阵
         for (SimpleRoundTabBean bean : list) {
             bean.getPaint().setColor(bean.backgroundColor);
             canvas.drawRoundRect(bean.rectF, getRadius(false), getRadius(false), bean.getPaint());
         }
-        //绘制遮罩
+        // 绘制遮罩
         for (SimpleRoundTabBean bean : list) {
             if (bean.checked) {
                 if (!animationIsRunning) {
@@ -179,10 +187,19 @@ public class SimpleRoundTabView extends View {
                 break;
             }
         }
-        //绘制文字
+        // 绘制文字
         for (SimpleRoundTabBean bean : list) {
             bean.getPaint().setColor(bean.getTextColor());
             canvas.drawText(bean.text, bean.rectF.left + bean.rectF.width() / 2, bean.rectF.top + bean.rectF.height() / 2 + (bean.getSize()[1] >> 1) - DensityUtil.dp2px(2), bean.getPaint());
+        }
+        // 绘制圆点
+        for (SimpleRoundTabBean bean : list) {
+            if (bean.showCornerMark) {
+                bean.getPaint().setColor(bean.cornerMarkColor);
+                // 圆心为文字右上角点位偏移圆点直径长度的位置
+                canvas.drawCircle(bean.rectF.left + bean.rectF.width() / 2 + (float) bean.getSize()[0] / 2 + (bean.showRadius * 2),
+                        bean.rectF.top + bean.rectF.height() / 2 - (float) bean.getSize()[1] / 2 - (bean.showRadius * 2), bean.showRadius, bean.getPaint());
+            }
         }
     }
 
@@ -200,14 +217,14 @@ public class SimpleRoundTabView extends View {
                 for (int i = 0; i < list.size(); i++) {
                     if (list.get(i).rectF.contains(clickX, clickY)) {
                         int fromPosition = 0;
-                        //获取起始下标
+                        // 获取起始下标
                         for (int ii = 0; ii < list.size(); ii++) {
                             if (list.get(ii).checked) {
                                 fromPosition = ii;
                                 break;
                             }
                         }
-                        //重置所有选中状态
+                        // 重置所有选中状态
                         for (int iii = 0; iii < list.size(); iii++) {
                             list.get(iii).checked = false;
                         }
@@ -224,6 +241,25 @@ public class SimpleRoundTabView extends View {
     public void setList(List<SimpleRoundTabBean> list) {
         this.list = list;
         requestLayout();
+    }
+
+    public void cornerMark(int position, boolean showCornerMark, boolean invalidateEnable) {
+        if (position >= 0 && position < list.size()) {
+            list.get(position).showCornerMark = showCornerMark;
+            if (invalidateEnable) {
+                invalidate();
+            }
+        }
+    }
+
+    public void select(int position) {
+        if (position >= 0 && position < list.size()) {
+            for (int i = 0; i < list.size(); i++) {
+                list.get(i).checked = false;
+            }
+            list.get(position).checked = true;
+            invalidate();
+        }
     }
 
     private ValueAnimator valueAnimator;
@@ -302,6 +338,17 @@ public class SimpleRoundTabView extends View {
         }
     }
 
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if (valueAnimator != null) {
+            valueAnimator.cancel();
+            valueAnimator.removeAllListeners();
+            valueAnimator.removeAllUpdateListeners();
+        }
+    }
+
     public static class SimpleRoundTabBean {
         private Paint paint = new Paint();
 
@@ -337,6 +384,18 @@ public class SimpleRoundTabView extends View {
          * 文字大小
          */
         public int textSize = DensityUtil.sp2px(14);
+        /**
+         * 显示角标
+         */
+        public boolean showCornerMark = false;
+        /**
+         * 角标半径
+         */
+        public int showRadius = DensityUtil.dp2px(2);
+        /**
+         * 有选中数据时的小圆点颜色
+         */
+        public int cornerMarkColor = Color.parseColor("#e9302d");
 
         int getTextColor() {
             if (checked) {
