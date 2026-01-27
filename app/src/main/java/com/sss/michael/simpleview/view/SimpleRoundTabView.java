@@ -35,6 +35,10 @@ public class SimpleRoundTabView extends View {
      */
     private int eachRectWidth;
     /**
+     * 两行文字之间的行间距
+     */
+    private int textLineSpacing = DensityUtil.dp2px(3);
+    /**
      * 背景矩阵
      */
     private RectF backgroundRectF = new RectF();
@@ -110,9 +114,13 @@ public class SimpleRoundTabView extends View {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         int widthMode = MeasureSpec.getMode(widthMeasureSpec);
         int widthSize = MeasureSpec.getSize(widthMeasureSpec);
-        int maxTextHeight = 0;
-        for (int i = 0; i < list.size(); i++) {
-            maxTextHeight = Math.max(maxTextHeight, list.get(i).getSize()[1]);
+        int maxContentHeight = 0;
+        for (SimpleRoundTabBean bean : list) {
+            int h = bean.getMainTextHeight();
+            if (bean.hasSubText()) {
+                h += textLineSpacing + bean.getSubTextHeight();
+            }
+            maxContentHeight = Math.max(maxContentHeight, h);
         }
         switch (widthMode) {
             case MeasureSpec.AT_MOST:
@@ -131,7 +139,7 @@ public class SimpleRoundTabView extends View {
                 height = heightSize;
                 break;
             case MeasureSpec.UNSPECIFIED:
-                height = maxTextHeight + getPaddingTop() + getPaddingBottom();
+                height = maxContentHeight + getPaddingTop() + getPaddingBottom() + distance * 2;
                 break;
         }
 
@@ -159,6 +167,15 @@ public class SimpleRoundTabView extends View {
                     list.get(i).rectF.right = list.get(i - 1).rectF.right + eachRectWidth;
                 }
             }
+
+            for (int i = 0; i < list.size(); i++) {
+                list.get(i).rectF.set(
+                        distance + i * eachRectWidth,
+                        distance,
+                        distance + (i + 1) * eachRectWidth,
+                        height - distance
+                );
+            }
         }
         setMeasuredDimension(width, height);
     }
@@ -173,8 +190,8 @@ public class SimpleRoundTabView extends View {
 
         // 绘制前景tab矩阵
         for (SimpleRoundTabBean bean : list) {
-            bean.getPaint().setColor(bean.backgroundColor);
-            canvas.drawRoundRect(bean.rectF, getRadius(false), getRadius(false), bean.getPaint());
+            bean.getPaint(null).setColor(bean.backgroundColor);
+            canvas.drawRoundRect(bean.rectF, getRadius(false), getRadius(false), bean.getPaint(null));
         }
         // 绘制遮罩
         for (SimpleRoundTabBean bean : list) {
@@ -189,16 +206,47 @@ public class SimpleRoundTabView extends View {
         }
         // 绘制文字
         for (SimpleRoundTabBean bean : list) {
-            bean.getPaint().setColor(bean.getTextColor());
-            canvas.drawText(bean.text, bean.rectF.left + bean.rectF.width() / 2, bean.rectF.top + bean.rectF.height() / 2 + (bean.getSize()[1] >> 1) - DensityUtil.dp2px(2), bean.getPaint());
-        }
-        // 绘制圆点
-        for (SimpleRoundTabBean bean : list) {
+            float centerX = bean.rectF.centerX();
+            float centerY = bean.rectF.centerY();
+
+            if (bean.hasSubText()) {
+                // 两行模式
+                int mainH = bean.getMainTextHeight();
+                int subH = bean.getSubTextHeight();
+                float totalH = mainH + textLineSpacing + subH;
+
+                // 绘制主标题
+                Paint mainTextPaint = bean.getPaint(true);
+                mainTextPaint.setTextSize(bean.textSize);
+                mainTextPaint.setColor(bean.getTextColor());
+                mainTextPaint.setTypeface(bean.checked ? Typeface.DEFAULT_BOLD : Typeface.DEFAULT);
+                float mainBaseline = centerY - (totalH / 2) + mainH - DensityUtil.dp2px(1);
+                canvas.drawText(bean.text, centerX, mainBaseline, mainTextPaint);
+
+                // 绘制副标题
+                Paint subTextPaint = bean.getPaint(false);
+                subTextPaint.setTextSize(bean.subTextSize);
+                subTextPaint.setColor(bean.getSubTextColor());
+                subTextPaint.setTypeface(Typeface.DEFAULT);
+                float subBaseline = mainBaseline + textLineSpacing + subH;
+                canvas.drawText(bean.subText, centerX, subBaseline, subTextPaint);
+
+            } else {
+                // 单行模式
+                Paint mainTextPaint = bean.getPaint(true);
+                mainTextPaint.setTextSize(bean.textSize);
+                mainTextPaint.setColor(bean.getTextColor());
+                mainTextPaint.setTypeface(bean.checked ? Typeface.DEFAULT_BOLD : Typeface.DEFAULT);
+                float baseline = centerY + (bean.getMainTextHeight() >> 1) - DensityUtil.dp2px(2);
+                canvas.drawText(bean.text, centerX, baseline, mainTextPaint);
+            }
+
+            // 绘制圆点
             if (bean.showCornerMark) {
-                bean.getPaint().setColor(bean.cornerMarkColor);
-                // 圆心为文字右上角点位偏移圆点直径长度的位置
-                canvas.drawCircle(bean.rectF.left + bean.rectF.width() / 2 + (float) bean.getSize()[0] / 2 + (bean.showRadius * 2),
-                        bean.rectF.top + bean.rectF.height() / 2 - (float) bean.getSize()[1] / 2 - (bean.showRadius * 2), bean.showRadius, bean.getPaint());
+                bean.getPaint(null).setColor(bean.cornerMarkColor);
+                float dotX = centerX + (bean.getMainTextWidth() / 2f) + (bean.showRadius * 2);
+                float dotY = centerY - (bean.hasSubText() ? (bean.getMainTextHeight()) : (bean.getMainTextHeight() / 2f));
+                canvas.drawCircle(dotX, dotY, bean.showRadius, bean.getPaint(null));
             }
         }
     }
@@ -369,6 +417,10 @@ public class SimpleRoundTabView extends View {
          */
         public String text = "";
         /**
+         * 副标题文字
+         */
+        public String subText = "";
+        /**
          * 未选中时文字颜色
          */
         public int normalTextColor = Color.parseColor("#666666");
@@ -377,6 +429,14 @@ public class SimpleRoundTabView extends View {
          */
         public int checkedTextColor = Color.parseColor("#e9302d");
         /**
+         * 副标题未选中时文字颜色
+         */
+        public int subNormalTextColor = Color.parseColor("#666666");
+        /**
+         * 副标题选中时文字颜色
+         */
+        public int subCheckedTextColor = Color.parseColor("#e9302d");
+        /**
          * 背景色
          */
         public int backgroundColor = Color.parseColor("#f2f2f2");
@@ -384,6 +444,10 @@ public class SimpleRoundTabView extends View {
          * 文字大小
          */
         public int textSize = DensityUtil.sp2px(14);
+        /**
+         * 副标题文字大小
+         */
+        public int subTextSize = DensityUtil.sp2px(10);
         /**
          * 显示角标
          */
@@ -397,6 +461,10 @@ public class SimpleRoundTabView extends View {
          */
         public int cornerMarkColor = Color.parseColor("#e9302d");
 
+        public boolean hasSubText() {
+            return subText != null && !subText.isEmpty();
+        }
+
         int getTextColor() {
             if (checked) {
                 return checkedTextColor;
@@ -405,19 +473,43 @@ public class SimpleRoundTabView extends View {
             }
         }
 
-        Paint getPaint() {
+        int getSubTextColor() {
+            return checked ? subCheckedTextColor : subNormalTextColor;
+        }
+
+        Paint getPaint(Boolean isSubText) {
             paint.setTextAlign(Paint.Align.CENTER);
-            paint.setTextSize(textSize);
+            if (isSubText != null) {
+                paint.setTextSize(isSubText ? subTextSize : textSize);
+            }
             if (checked) {
-                paint.setTypeface(Typeface.DEFAULT_BOLD);
+                if (isSubText != null) {
+                    paint.setTypeface(isSubText ? Typeface.DEFAULT : Typeface.DEFAULT_BOLD);
+                } else {
+                    paint.setTypeface(Typeface.DEFAULT_BOLD);
+                }
             } else {
                 paint.setTypeface(Typeface.DEFAULT);
             }
             return paint;
         }
 
-        int[] getSize() {
-            return DrawViewUtils.getTextWH(getPaint(), text);
+        // 获取主标题宽度
+        int getMainTextWidth() {
+            getPaint(true).setTextSize(textSize);
+            return DrawViewUtils.getTextWH(paint, text)[0];
+        }
+
+        // 获取主标题高度
+        int getMainTextHeight() {
+            getPaint(true).setTextSize(textSize);
+            return DrawViewUtils.getTextWH(paint, text)[1];
+        }
+
+        // 获取副标题高度
+        int getSubTextHeight() {
+            getPaint(false).setTextSize(subTextSize);
+            return DrawViewUtils.getTextWH(paint, subText)[1];
         }
     }
 

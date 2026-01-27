@@ -8,7 +8,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,7 +35,6 @@ import com.sss.michael.simpleview.view.SimpleHalfRingView;
 import com.sss.michael.simpleview.view.SimpleLinearChart;
 import com.sss.michael.simpleview.view.SimpleLinearChart2;
 import com.sss.michael.simpleview.view.SimpleMultipleColumnView;
-import com.sss.michael.simpleview.view.SimplePowerBubbleFrameLayout;
 import com.sss.michael.simpleview.view.SimpleProgressBar;
 import com.sss.michael.simpleview.view.SimpleRotatingView;
 import com.sss.michael.simpleview.view.SimpleRoundTabView;
@@ -397,6 +395,7 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; i < 3; i++) {
             SimpleRoundTabView.SimpleRoundTabBean simpleRoundTabBean = new SimpleRoundTabView.SimpleRoundTabBean();
             simpleRoundTabBean.text = "标签No." + (i + 1);
+            simpleRoundTabBean.subText = "标签No" + (i + 1);
             simpleRoundTabBean.checked = i == 0;
             simpleRoundTabViewList.add(simpleRoundTabBean);
         }
