@@ -6,50 +6,96 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.Point;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.sss.michael.simpleview.utils.DensityUtil;
+import com.sss.michael.simpleview.utils.DrawViewUtils;
 import com.sss.michael.simpleview.utils.EmptyUtils;
 
 @SuppressWarnings("all")
 public class SimpleRecommendDashboardViewV2 extends View {
     private final boolean DEBUG = true;
+    /**
+     * 中心点
+     */
+    private Point centerPoint = new Point();
+    /**
+     * 宽度
+     */
+    private int width;
+    /**
+     * 高度
+     */
+    private int height;
+    /**
+     * 外圆环宽度
+     */
+    private int outerCircleWidth = DensityUtil.dp2px(10);
+    /**
+     * 放大量，建议小于0.5
+     * 外圆环半径百分比（取宽高最小的一个）
+     * 控制{@link #outerCircleRingRect}大小
+     * 因所有元素都是基于{@link #outerCircleRingRect}绘制
+     * 同时也是控制所有元素的相对位置
+     */
+    private float outerCircleRingEnlargePercent = 0.15f;
+    /**
+     * 外圆环位置
+     */
+    private RectF outerCircleRingRect = new RectF();
 
-    // 中心点
-    private float centerX, centerY;
-    // 控件宽高
-    private int width, height;
-    // 圆环画笔
-    private Paint outerCirclePaint;
-    // 刻度画笔 (虚线)
-    private Paint scalePaint;
-    // 文字画笔
-    private Paint textPaint;
-    // 进度条画笔
-    private Paint progressPaint;
+    /**
+     * 外圆环与内圆环半径之间的间距
+     */
+    private int distanceBetweenOfOuterAndInnerCircleRingRadius = DensityUtil.dp2px(8);
+    /**
+     * 内环宽度
+     */
+    private int innerCircleWidth = DensityUtil.dp2px(5);
 
-    // 圆环绘制区域
-    private RectF circleRect = new RectF();
-    // 圆环宽度
-    private int circleStrokeWidth = DensityUtil.dp2px(8);
-    // 整体向上偏移量
-    private int offsetToUp = DensityUtil.dp2px(80);
-    // 圆环半径（0表示自动计算）
-    private int customRadius = 0;
-    // padding
-    private int padding = 0;
 
-    // 数据模型
-    private SimpleDashboardBean model;
-    // 动画进度
-    private float progress = 0f;
-    private ValueAnimator valueAnimator;
+    private SimpleRecommendDashboardViewV2.SimpleRecommendDashboardViewBean model;
+
+    public void setModel(SimpleRecommendDashboardViewV2.SimpleRecommendDashboardViewBean model, boolean animation) {
+        this.model = model;
+        if (animation) {
+            progress = 0f;
+            animation();
+        } else {
+            progress = 1f;
+            invalidate();
+        }
+    }
+
+    ValueAnimator valueAnimator;
+
+    float progress = 0f;
+
+    void animation() {
+        if (valueAnimator != null) {
+            valueAnimator.cancel();
+        }
+        valueAnimator = ValueAnimator.ofFloat(0f, 1f);
+        valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(@NonNull ValueAnimator animation) {
+                progress = (float) animation.getAnimatedValue();
+                invalidate();
+            }
+        });
+        valueAnimator.setInterpolator(new DecelerateInterpolator(1.2f));
+        valueAnimator.setDuration((long) (progress * 10 + 500));
+        valueAnimator.start();
+    }
 
     public SimpleRecommendDashboardViewV2(Context context) {
         this(context, null);
@@ -61,224 +107,302 @@ public class SimpleRecommendDashboardViewV2 extends View {
 
     public SimpleRecommendDashboardViewV2(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        setBackgroundColor(Color.TRANSPARENT);
-
-        // 外圆环画笔
-        outerCirclePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        outerCirclePaint.setStyle(Paint.Style.STROKE);
-        outerCirclePaint.setStrokeWidth(circleStrokeWidth);
-        outerCirclePaint.setColor(0x80FFFFFF);
-
-        // 刻度画笔 (圆环内侧的虚线)
-        scalePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        scalePaint.setStyle(Paint.Style.STROKE);
-        scalePaint.setStrokeWidth(DensityUtil.dp2px(3));
-        scalePaint.setColor(0x40FFFFFF);
-        // 设置虚线效果
-        scalePaint.setPathEffect(new DashPathEffect(
-                new float[]{DensityUtil.dp2px(3), DensityUtil.dp2px(4)}, 0));
-
-        // 文字画笔
-        textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        textPaint.setTextAlign(Paint.Align.CENTER);
-        textPaint.setColor(Color.WHITE);
-
-        // 进度条画笔
-        progressPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        progressPaint.setStyle(Paint.Style.STROKE);
-        progressPaint.setStrokeWidth(circleStrokeWidth);
-        progressPaint.setColor(Color.WHITE);
-
         if (DEBUG) {
-            setModel(new SimpleDashboardBean(0, 0, 0, "适合你的大学"), true);
+            SimpleRecommendDashboardViewV2.SimpleRecommendDashboardViewBean model = new SimpleRecommendDashboardViewV2.SimpleRecommendDashboardViewBean(
+                    0.5f, 90, "0", "999", "建议拨打报警电话");
+            setModel(model, true);
+            setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    setModel(model, true);
+                }
+            });
         }
     }
 
     /**
-     * 设置数据并刷新
-     *
-     * @param bean      数据实体
-     * @param animation 是否开启动画
+     * 向上的偏移量,用来控制整体向上绘制偏移
      */
-    public void setModel(SimpleDashboardBean bean, boolean animation) {
-        this.model = bean;
-        if (animation) {
-            startAnim();
-        } else {
-            progress = 1f;
-            invalidate();
-        }
-    }
-
-    /**
-     * 设置圆环半径
-     *
-     * @param radius 半径（dp），0表示自动计算
-     */
-    public void setRadius(int radius) {
-        this.customRadius = DensityUtil.dp2px(radius);
-        requestLayout();
-    }
-
-    private void startAnim() {
-        if (valueAnimator != null) valueAnimator.cancel();
-        valueAnimator = ValueAnimator.ofFloat(0f, 1f);
-        valueAnimator.setDuration(800);
-        valueAnimator.setInterpolator(new DecelerateInterpolator(1.5f));
-        valueAnimator.addUpdateListener(animation -> {
-            progress = (float) animation.getAnimatedValue();
-            invalidate();
-        });
-        valueAnimator.start();
-    }
+    int offsetToUp = DensityUtil.dp2px(20);
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         width = MeasureSpec.getSize(widthMeasureSpec);
 
-        // 高度处理：如果是精确模式就用给定值，否则默认200dp
+        offsetToUp = DensityUtil.dp2px(20);
         int heightSize = MeasureSpec.getSize(heightMeasureSpec);
         if (MeasureSpec.EXACTLY == MeasureSpec.getMode(heightMeasureSpec)) {
             height = heightSize;
+            offsetToUp = DensityUtil.dp2px(20);
         } else {
             height = DensityUtil.dp2px(200);
+            offsetToUp = height / 5;
         }
         setMeasuredDimension(width, height);
 
-        // 计算中心点
-        centerX = width / 2f;
-        centerY = height;
+        int centerX = width / 2;
+        int centerY = height - offsetToUp;
 
-        // 计算圆环的边界 RectF
-        int diameter;
-        if (customRadius > 0) {
-            // 使用自定义半径
-            diameter = customRadius * 2;
-        } else {
-            // 自动计算：取宽高中较小的值来确定直径
-            diameter = Math.min(width, height * 2) - DensityUtil.dp2px(20);
-        }
-        padding = Math.max(Math.max(getPaddingLeft(), getPaddingRight()), Math.max(getPaddingTop(), getPaddingBottom()));
-        diameter -= padding * 2;
-        int textSize = DensityUtil.dp2px(40);
-        circleRect.left = (centerX - diameter / 2) + textSize;
-        circleRect.top = (centerY - diameter / 2f) + textSize - offsetToUp;
-        circleRect.right = (centerX + diameter / 2f) - textSize;
-        circleRect.bottom = centerY + diameter / 2f - offsetToUp;
+        centerPoint.set(centerX, centerY);
+
+        int value = Math.min(width, height);
+        outerCircleRingRect.left = centerX - (value >> 1) - outerCircleRingEnlargePercent * value + DensityUtil.dp2px(10);
+        outerCircleRingRect.top = centerY - (value >> 1) - outerCircleRingEnlargePercent * value;
+        outerCircleRingRect.right = centerX + (value >> 1) + outerCircleRingEnlargePercent * value - DensityUtil.dp2px(10);
+        outerCircleRingRect.bottom = centerY;
     }
 
-    float mainTextSize = DensityUtil.sp2px(50f);
-    float unitTextSize = DensityUtil.sp2px(14f);
+
+    //指针X轴起始坐标
+    float pointStartX;
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if (model == null) return;
+        if (model == null) {
+            return;
+        }
+        if (DEBUG) {
+            setBackgroundColor(0xff12345f);
+            DEBUG_PAINT.setStyle(Paint.Style.STROKE);
+            canvas.drawRect(outerCircleRingRect, DEBUG_PAINT);
+        } else {
+            //背景色
+            setBackgroundColor(Color.TRANSPARENT);
+        }
+        //开始角度
+        int startAngle = 180;//向前偏移角度以填充满底图
+        //结束角度
+        int maxSweepAngle = 180;//向后偏移角度以填充满底图
+        //总绘制角度
+        float totalAngle = startAngle + maxSweepAngle - 180f;
 
-        // 绘制外围实线环
-        canvas.drawArc(circleRect, 180, 180, false, outerCirclePaint);
+        //外圆环向底部偏移，因outerCircleRingRect是一整个矩形，只需要画一半的圆，绘制圆环时需要向下偏移outerCircleRingRect的一半高度
+        int circleRingOffsetToBottom = (int) (outerCircleRingRect.bottom / 2);
+        //外圆环底部需要根据放大量来修正底部位置【外圆环位置底部  + 圆环向底部偏移 + 外圆环矩阵高度 * 放大量】
+        float bottom = outerCircleRingRect.bottom + circleRingOffsetToBottom + outerCircleRingRect.height() * outerCircleRingEnlargePercent;
+        //绘制外圆环底图
+        outerCircleRingPaint.setColor(0x40ffffff);
+        canvas.drawArc(
+                outerCircleRingRect.left + (outerCircleWidth >> 1),
+                outerCircleRingRect.top + (outerCircleWidth >> 1),
+                outerCircleRingRect.right - (outerCircleWidth >> 1),
+                bottom,
+                startAngle, maxSweepAngle, false, outerCircleRingPaint);
 
-        // 绘制进度条（与实线圆弧重合，根据count与maxValue的百分比显示）
-        float countProgress = (float) model.count / model.maxValue;
-        float sweepAngle = 180 * countProgress * progress;
-        canvas.drawArc(circleRect, 180, sweepAngle, false, progressPaint);
+        //绘制内圆环底图
+        innerCircleRingPaint.setColor(0x40ffffff);
+        canvas.drawArc(
+                outerCircleRingRect.left + (outerCircleWidth >> 1) + innerCircleWidth + distanceBetweenOfOuterAndInnerCircleRingRadius,
+                outerCircleRingRect.top + (outerCircleWidth >> 1) + innerCircleWidth + distanceBetweenOfOuterAndInnerCircleRingRadius,
+                outerCircleRingRect.right - (outerCircleWidth >> 1) - innerCircleWidth - distanceBetweenOfOuterAndInnerCircleRingRadius,
+                bottom - distanceBetweenOfOuterAndInnerCircleRingRadius,
+                startAngle, maxSweepAngle, false, innerCircleRingPaint);
 
-        // 绘制内侧的虚线刻度环 (稍微比外圆环小一点)
-        RectF scaleRect = new RectF(circleRect);
-        float inset = circleStrokeWidth + DensityUtil.dp2px(8); // 向内偏移
-        scaleRect.inset(inset, inset);
-        canvas.drawArc(scaleRect, 180, 180, false, scalePaint);
+        //冲起始角度
+        float chongStartAngle = startAngle;
+        float chongEndAngle = model.current * 180 * progress;
+        chongEndAngle = Math.min(chongEndAngle, totalAngle);
+        //绘制冲外圆环底图
+        outerCircleRingPaint.setColor(0xffd8d8d8);
+        canvas.drawArc(
+                outerCircleRingRect.left + (outerCircleWidth >> 1),
+                outerCircleRingRect.top + (outerCircleWidth >> 1),
+                outerCircleRingRect.right - (outerCircleWidth >> 1),
+                bottom,
+                chongStartAngle, chongEndAngle, false, outerCircleRingPaint);
 
-        // 绘制底部左右的数字 (0 和 107)
-        textPaint.setTextSize(DensityUtil.dp2px(16));
+
+        ///////////////////////////
+        //底部文字与底边之间的距离
+        int textOffsetToBottom = DensityUtil.dp2px(3);
+
+        //底部两侧文字与外圆环之间的距离
+        int distanceBetweenOfBottomTextAndOuterCircleRing = distanceBetweenOfOuterAndInnerCircleRingRadius * 2;
+
+        //底部左侧低点文本
+        String textOfLowest = EmptyUtils.isEmpty(model.textOfLowest) ? "" : model.textOfLowest;
+        textPaint.setTextSize(DensityUtil.dp2px(10f));
         textPaint.setTypeface(Typeface.DEFAULT);
-        textPaint.setAlpha((int) (255 * progress));
+        int[] textOfLowestSize = DrawViewUtils.getTextWH(textPaint, textOfLowest);
+        canvas.drawText(textOfLowest, outerCircleRingRect.left - textOfLowestSize[0] / 2 - distanceBetweenOfBottomTextAndOuterCircleRing, outerCircleRingRect.bottom - textOffsetToBottom, textPaint);
 
-        // 计算圆环半径
-        float radius = (circleRect.right - circleRect.left) / 2f;
-        // 计算数字X轴位置：与圆环左右端点对齐
-        float leftNumberX = circleRect.left;
-        float rightNumberX = circleRect.right;
+        //底部右侧高点文本
+        String textOfMaxest = EmptyUtils.isEmpty(model.textOfMaxest) ? "" : model.textOfMaxest;
+        textPaint.setTextSize(DensityUtil.dp2px(10f));
+        textPaint.setTypeface(Typeface.DEFAULT);
+        int[] textOfMaxestSize = DrawViewUtils.getTextWH(textPaint, textOfMaxest);
+        canvas.drawText(textOfMaxest, outerCircleRingRect.right + textOfMaxestSize[0] / 2 + distanceBetweenOfBottomTextAndOuterCircleRing, outerCircleRingRect.bottom - textOffsetToBottom, textPaint);
 
-        // 底部左侧 - 显示minValue
-        String leftText = String.valueOf(model.minValue);
-        // 位置：与圆环底部Y轴对齐（圆环底部是centerY - offsetToUp）
-        canvas.drawText(leftText, leftNumberX - DensityUtil.dp2px(20), centerY - offsetToUp + DensityUtil.dp2px(20), textPaint);
+        ///////////////////////////👇计算中间文字👇///////////////////////////
 
-        // 底部右侧 - 显示maxValue
-        String rightText = String.valueOf(model.maxValue);
-        canvas.drawText(rightText, rightNumberX + DensityUtil.dp2px(10), centerY - offsetToUp + DensityUtil.dp2px(20), textPaint);
+        //中心上方百分比数字文本
+        String textOfCenterUpperNumber;
+        if (model.current > 0) {
+            textOfCenterUpperNumber = Math.round(model.current * model.centerTotal * progress) + "";
+        } else {
+            textOfCenterUpperNumber = "--";
+        }
 
-        // 绘制中心的主要文字内容
-        // 计算动画过程中的数值
-        int currentCount = (int) (model.count * progress);
-        String mainNumber = String.valueOf(currentCount);
-        String suffix = "所";
-        String subText = EmptyUtils.isEmpty(model.descText) ? "适合你的大学" : model.descText;
 
-        // 绘制下方描述适合你的大学
-        textPaint.setTextSize(DensityUtil.dp2px(18));
-        textPaint.setTextAlign(Paint.Align.CENTER);
-        textPaint.setAlpha((int) (255 * progress));
-        // 先确定"适合你的大学"的位置，跟随offsetToUp偏移
-        float subTextBaseline = centerY + DensityUtil.dp2px(15) - offsetToUp;
-        canvas.drawText(subText, centerX, subTextBaseline, textPaint);
-
-        // 绘制主数字
-        textPaint.setTextSize(mainTextSize); // 大号字体
+        textPaint.setTextSize(DensityUtil.dp2px(40));
         textPaint.setTypeface(Typeface.DEFAULT_BOLD);
-        textPaint.setAlpha((int) (255 * progress));
+        int[] textOfCenterUpperNumberSize = DrawViewUtils.getTextWH(textPaint, textOfCenterUpperNumber);
 
-        // 测量文字高度
-        Paint.FontMetrics fm = textPaint.getFontMetrics();
-        // 计算适合你的大学的Top位置
-        Paint.FontMetrics subTextFm = new Paint.FontMetrics();
+        //中心上方百分比符号文本
+        String textOfCenterUpperPercent = "";
+        textPaint.setTextSize(DensityUtil.dp2px(12));
+        textPaint.setTypeface(Typeface.DEFAULT_BOLD);
+        int[] textOfCenterUpperPercentSize = DrawViewUtils.getTextWH(textPaint, textOfCenterUpperPercent);
+
+        //中心下方文本
+        String textOfCenterLower = EmptyUtils.isEmpty(model.textOfCenterLower) ? "" : model.textOfCenterLower;
         textPaint.setTextSize(DensityUtil.dp2px(18));
-        textPaint.getFontMetrics(subTextFm);
-        float subTextTop = subTextBaseline + subTextFm.top;
-        textPaint.setTextSize(mainTextSize);
-
-        // 计算100所的Bottom位置，与适合你的大学Top位置相差10dp
-        float mainTextBottom = subTextTop - DensityUtil.dp2px(10);
-        // 计算100的baseline
-        float mainTextBaseline = mainTextBottom - fm.bottom;
-
-        // 计算总宽度（数字 + 后缀）
-        textPaint.setTextAlign(Paint.Align.LEFT);
-        float numberWidth = textPaint.measureText(mainNumber);
-
-        // 临时设置后缀字体大小测量宽度
-        float originalTextSize = textPaint.getTextSize();
-        textPaint.setTextSize(unitTextSize);
-        float suffixWidth = textPaint.measureText(suffix);
-        textPaint.setTextSize(originalTextSize);
-
-        // 计算起始X坐标，确保整体居中
-        textPaint.setTextSize(mainTextSize);
-        float totalWidth = numberWidth + suffixWidth + DensityUtil.dp2px(5);
-        float startX = centerX - totalWidth / 2;
-
-        canvas.drawText(mainNumber, startX, mainTextBaseline, textPaint);
-
-        // 绘制小后缀 "所
-        textPaint.setTextSize(unitTextSize);
         textPaint.setTypeface(Typeface.DEFAULT);
-        // 位置：紧跟在数字后面，且靠上一点
-        canvas.drawText(suffix, startX + numberWidth + DensityUtil.dp2px(5), mainTextBaseline - DensityUtil.dp2px(5), textPaint);
+        int[] textOfCenterLowerSize = DrawViewUtils.getTextWH(textPaint, textOfCenterLower);
+        ///////////////////////////👆计算中间文字👆///////////////////////////
+
+        //是否贴底显示，如果是，则跟随矩阵底部
+        boolean toBottom = true;
+
+
+        //中心上方百分比数字文本
+        float textOfCenterUpperNumberX = outerCircleRingRect.left + outerCircleRingRect.width() / 2 - textOfCenterUpperPercentSize[0];
+        float textOfCenterUpperNumberY;
+        if (model.current == 0) {
+            //居中
+            textOfCenterUpperNumberY = outerCircleRingRect.top + outerCircleRingRect.height() / 2 + textOfCenterLowerSize[1];
+        } else {
+            if (toBottom) {
+                textOfCenterUpperNumberY = outerCircleRingRect.bottom - textOfCenterUpperNumberSize[1] - textOfCenterLowerSize[1];
+            } else {
+                //垂直90时指针到中心点之间的距离
+                float effectiveDistanceOfPointAndCenterPoint = outerCircleRingRect.left + outerCircleRingRect.width() / 2 - pointStartX;
+                textOfCenterUpperNumberY = outerCircleRingRect.top + effectiveDistanceOfPointAndCenterPoint / 2 + textOfCenterUpperNumberSize[1] - textOfCenterLowerSize[1];
+            }
+        }
+
+        textPaint.setTextSize(DensityUtil.dp2px(40));
+        textPaint.setTypeface(Typeface.DEFAULT_BOLD);
+        canvas.drawText(textOfCenterUpperNumber, textOfCenterUpperNumberX, textOfCenterUpperNumberY, textPaint);
+
+
+        //中心上方百分号文本
+        textPaint.setTextSize(DensityUtil.dp2px(12));
+        textPaint.setTypeface(Typeface.DEFAULT);
+        float textOfCenterUpperPercentX = textOfCenterUpperNumberX + textOfCenterUpperNumberSize[0] / 2 + textOfCenterUpperPercentSize[0];
+        float textOfCenterUpperPercentY = textOfCenterUpperNumberY;
+        canvas.drawText(textOfCenterUpperPercent, textOfCenterUpperPercentX, textOfCenterUpperPercentY, textPaint);
+
+        //中心下方文本
+        float textOfCenterLowerX = outerCircleRingRect.left + outerCircleRingRect.width() / 2;
+        float textOfCenterLowerY;
+        if (toBottom) {
+            textOfCenterLowerY = outerCircleRingRect.bottom - textOffsetToBottom;
+        } else {
+            textOfCenterLowerY = textOfCenterUpperNumberY + textOfCenterLowerSize[1] + DensityUtil.dp2px(10);
+        }
+        textPaint.setTextSize(DensityUtil.dp2px(18));
+        textPaint.setTypeface(Typeface.DEFAULT);
+        canvas.drawText(textOfCenterLower, textOfCenterLowerX, textOfCenterLowerY, textPaint);
+
+        /////////////////////////////////////////////////////////////////////
+
+
     }
 
-    public static class SimpleDashboardBean {
-        int count;
-        int minValue;
-        int maxValue;
-        String descText;
+    /**
+     * debug画笔
+     */
+    Paint DEBUG_PAINT = new Paint(Paint.ANTI_ALIAS_FLAG);
 
-        public SimpleDashboardBean(int count, int minValue, int maxValue, String descText) {
-            this.count = count;
-            this.minValue = minValue;
-            this.maxValue = maxValue;
-            this.descText = descText;
+    /**
+     * 文字画笔
+     */
+    Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+    {
+        textPaint.setTextAlign(Paint.Align.CENTER);
+        textPaint.setColor(Color.WHITE);
+    }
+
+    /**
+     * 折线画笔
+     */
+    Paint brokenLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+    {
+        int separation = DensityUtil.dp2px(2);
+        brokenLinePaint.setColor(0x40ffffff);
+        brokenLinePaint.setStyle(Paint.Style.STROKE);
+        brokenLinePaint.setDither(true);
+        brokenLinePaint.setStrokeWidth(innerCircleWidth);
+        brokenLinePaint.setPathEffect(new DashPathEffect(new float[]{separation * 2, separation}, 0));
+    }
+
+    /**
+     * 内圆环画笔
+     */
+    Paint innerCircleRingPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+    {
+        int separation = DensityUtil.dp2px(3);
+        innerCircleRingPaint.setStyle(Paint.Style.STROKE);
+        innerCircleRingPaint.setDither(true);
+        innerCircleRingPaint.setStrokeWidth(innerCircleWidth);
+        innerCircleRingPaint.setPathEffect(new DashPathEffect(new float[]{separation, separation}, 0));
+    }
+
+    /**
+     * 圆环画笔
+     */
+    private Paint outerCircleRingPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+    {
+        outerCircleRingPaint.setStyle(Paint.Style.STROKE);
+        outerCircleRingPaint.setStrokeWidth(outerCircleWidth);
+    }
+
+    /**
+     * 指针
+     */
+    Paint pointerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+    {
+        pointerPaint.setStrokeWidth(5);
+        pointerPaint.setColor(Color.WHITE);
+        pointerPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        pointerPaint.setStrokeCap(Paint.Cap.ROUND);
+    }
+
+    /**
+     * 指针路径
+     */
+    private Path mPointerPath = new Path();
+
+    public static class SimpleRecommendDashboardViewBean {
+
+
+        float current;
+
+        int centerTotal;
+        //底部左侧低点文本
+        String textOfLowest;
+        //底部右侧高点文本
+        String textOfMaxest;
+        //中心下方文本
+        String textOfCenterLower;
+
+        float percent;
+
+        public SimpleRecommendDashboardViewBean(float percent, int centerTotal, String textOfLowest, String textOfMaxest, String textOfCenterLower) {
+            this.current = percent;
+            this.centerTotal = centerTotal;
+            this.textOfLowest = textOfLowest;
+            this.textOfMaxest = textOfMaxest;
+            this.textOfCenterLower = textOfCenterLower;
         }
+
     }
 }
